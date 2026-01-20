@@ -100,5 +100,3 @@ npm run build
 sudo systemctl restart proxhost-backup
 ```
 
-## 📄 License
-Private / Proprietary. Created by [Janik Hartmann](https://github.com/jahartmann).
