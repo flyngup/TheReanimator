@@ -1,102 +1,112 @@
+# Reanimator
+**Proxmox Configuration Backup & Disaster Recovery – Simplified.**
 
-# Reanimator - Backup & Recovery System
+---
 
-**Reanimator** is a modern, high-performance Backup & Recovery solution specialized for Proxmox environments. It provides a sleek, real-time dashboard for monitoring server health, managing storage pools, and orchestrating centralized configuration backups.
+### Language / Sprache 
+[![Deutsch](https://img.shields.io/badge/Sprache-Deutsch-blue?style=for-the-badge)](#-reanimator-deutsch) 
+[![English](https://img.shields.io/badge/Language-English-red?style=for-the-badge)](#-reanimator-english)
 
-## 🚀 Features
+---
 
-### 🖥️ Dashboard & Monitoring
-- **Real-time Overview**: Monitor CPU, RAM, and Disk usage across your entire infrastructure.
-- **Cluster Awareness**: Automatically detects and groups Proxmox clusters.
-- **Storage Dashboard**: Dedicated view for shared (Ceph/NFS) vs. local (ZFS/LVM) storage utilization.
-- **Server Health**: Instant status indicators for online/offline states.
+## 🇩🇪 Reanimator (Deutsch)
 
-### 🔍 Detailed Server Insights
-- **Hardware Analysis**: Deep dive into physical vs. virtual disks (NVMe, SSD, HDD recognition).
-- **Network Topology**: Visualization of network interfaces, bridges (vmbr), and bonds.
-- **Storage Pools**: Detailed breakdown of ZFS, LVM-Thin, and Ceph pools using native Proxmox tools (`pvesm`).
-- **Debugging**: Integrated debug console for troubleshooting connection issues directly in the UI.
+Reanimator ist ein spezialisiertes Tool für Proxmox-Umgebungen, das dort ansetzt, wo normale Backups oft aufhören: bei der Konfiguration. Während Proxmox Backup Server (PBS) VMs sichert, hilft Reanimator bei deinen Nodes, die Verwaltung deiner Storage-Pools und die Sicherung deiner `/etc`-Konfigurationen.
 
+### 💡 Warum Reanimator?
+Jeder, der schon einmal einen Proxmox-Node nach einem Hardware-Defekt neu aufsetzen musste, weiß: Die VMs sind meist sicher, aber die Netzwerk-Bridges, ZFS-Pool-Konfigurationen und Corosync-Settings manuell wiederherzustellen, kostet Zeit und Nerven.
 
-### 💾 Backup & Disaster Recovery
-- **Configuration Backups**: Automated backups of critical `/etc` configurations (network, corosync, storage).
-- **One-Click Restore**: Seamlessly restore configurations to get servers back online fast.
-- **Recovery Guides**: Automatically generated, step-by-step Markdown guides for manual disaster recovery.
-- **History & Versioning**: Track changes and roll back to previous states.
+Reanimator automatisiert diesen Prozess und bietet dir ein zentrales Dashboard für deine gesamte Infrastruktur.
 
-### ⚡ Power Tools
-- **Bulk Commander**: Execute shell commands or VM actions (Start/Stop) across multiple nodes simultaneously.
-- **Library Sync**: Synchronize ISOs and Templates between servers with a single click.
-- **Smart Migration**: Visual stepper for migration progress, live terminal logs, and history tracking.
-- **Robust Discovery**: Automatic detection of VMs on standalone nodes and clusters via efficient API/SSH fallbacks.
+### ✨ Kernfunktionen
+* **📊 Monitoring & Dashboard:** Echtzeit-Status von CPU, RAM und Disk-Auslastung sowie Cluster-Erkennung.
+* **💾 Backup & Recovery:** Automatische Sicherung von `/etc` (Network, Corosync, Storage) inkl. generierter Markdown-Anleitungen für den Notfall.
+* **⚡ Power-Tools:** Bulk Commander für Befehle auf mehreren Nodes, ISO-Sync und visuelle Migrations-Logs.
+* **🔍 Hardware-Analyse:** Unterscheidung von NVMe, SSD und HDD direkt im UI.
 
-## 🛠️ Technology Stack
+### 🛠️ Technology Stack
+* **Frontend:** Next.js 15 (App Router), Tailwind CSS
+* **UI:** Luzid UI / Shadcn & Lucide Icons
+* **Backend:** Server Actions & Node.js
+* **Database:** SQLite via `better-sqlite3`
+* **Communication:** SSH (agentenlos via `ssh2`)
 
-- **Frontend**: [Next.js 15](https://nextjs.org/) (App Directory), [Tailwind CSS](https://tailwindcss.com/)
-- **UI Components**: [Luzid UI / Shadcn](https://ui.shadcn.com/), [Lucide React](https://lucide.dev/)
-- **Backend**: Next.js Server Actions, Node.js
-- **Database**: [SQLite](https://www.sqlite.org/) (`better-sqlite3`)
-- **Connectivity**: SSH (`ssh2`) for secure, agentless server communication.
-
-## 🔗 Releases
-
-You can download the latest beta release from the [Releases Page](https://github.com/jahartmann/Reanimator/releases).
-
-**Current Version**: `v1.0.0-beta`
-
-To install a specific version, check the tags in this repository.
-
-## 📦 Installation & Setup
-
-### Prerequisites
-- Node.js 18+
-- Git
-
-### Quick Start
-
-1. **Clone the repository**
+### 🚀 Quick Start
+1. **Repository klonen**
    ```bash
-   git clone https://github.com/jahartmann/Reanimator.git
-   cd Reanimator
+   git clone https://github.com/jahartmann/TheReanimator.git
+   cd TheReanimator
    ```
 
-2. **Install Dependencies**
+2. **Installation**
    ```bash
    npm install
-   ```
-
-3. **Initialize Database**
-   The application uses a local SQLite database (`data/proxhost.db`). Migrations are run automatically on build.
-   ```bash
    npm run migrate
    ```
 
-4. **Build & Run**
+3. **Starten**
    ```bash
    npm run build
    npm start
    ```
 
-   The application will be available at `http://localhost:3000`.
+### ⚙️ Konfiguration
+Gehe im Dashboard auf Server -> New Server. Du benötigst:
+* Hostname/IP des Nodes.
+* Einen autorisierten SSH-Key (empfohlen).
 
-### Development Mode
-```bash
-npm run dev
-```
+[⬆️ Nach oben](#reanimator)
 
-## ⚙️ Configuration
+---
 
-### Adding Servers
-Navigate to the **Server** tab and click **New Server**. You will need:
-- **Hostname/IP**: The address of your Proxmox node.
-- **SSH Key**: A private SSH key authorized on the target node (usually root).
+## 🇺🇸 Reanimator (English)
+Reanimator is a specialized tool for Proxmox environments that picks up where traditional backups often leave off: system configuration. While Proxmox Backup Server (PBS) secures your VMs and containers, Reanimator focuses on the health of your nodes, the management of your storage pools, and the safety of your /etc configurations.
 
-### Updating
-You can update the application directly from the **Settings** page or manually:
-```bash
-git pull
-npm install
-npm run build
-sudo systemctl restart proxhost-backup
-```
+### 💡 Why Reanimator?
+Anyone who has ever had to rebuild a Proxmox node after a hardware failure knows the pain: your VMs might be safe on a backup, but manually restoring network bridges, ZFS pool configurations, and Corosync settings costs significant time and nerves.
 
+Reanimator automates this process and provides a centralized dashboard for your entire infrastructure.
+
+### ✨ Core Features
+* **📊 Monitoring & Dashboard:** Real-time CPU, RAM, and Disk usage status plus automatic cluster detection.
+* **💾 Backup & Recovery:** Automatically backs up critical /etc files and generates step-by-step Markdown recovery guides.
+* **⚡ Admin Power-Tools:** Bulk Commander for multi-node commands, ISO/Template sync, and visual migration logs.
+* **🔍 Hardware Analysis:** Identify NVMe, SSD, and HDD types directly in the UI.
+
+### 🛠️ Technology Stack
+* **Frontend:** Next.js 15 (App Router), Tailwind CSS
+* **UI:** Lucid UI / Shadcn & Lucide Icons
+* **Backend:** Server Actions & Node.js
+* **Database:** SQLite via `better-sqlite3`
+* **Communication:** Secure, agentless access via SSH (`ssh2`)
+
+### 🚀 Quick Start
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/jahartmann/TheReanimator.git
+   cd TheReanimator
+   ```
+
+2. **Installation**
+   ```bash
+   npm install
+   npm run migrate
+   ```
+
+3. **Start the app**
+   ```bash
+   npm run build
+   npm start
+   ```
+
+### ⚙️ Configuration
+Navigate to Server -> New Server in the dashboard. You will need:
+* Hostname or IP of the node.
+* An SSH key authorized on the target node (recommended).
+
+### 🤝 Contributing
+Feedback, bug reports, and pull requests are welcome!
+
+**License:** MIT
+
+[⬆️ Back to top](#reanimator)
