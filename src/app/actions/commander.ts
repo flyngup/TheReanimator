@@ -2,6 +2,7 @@
 
 import db from '@/lib/db';
 import { createSSHClient } from '@/lib/ssh';
+import { getCurrentUser } from './userAuth';
 
 export interface CommandResult {
     targetId: number;
@@ -30,6 +31,9 @@ interface VM {
 }
 
 export async function runBulkNodeCommand(serverIds: number[], command: string): Promise<CommandResult[]> {
+    const user = await getCurrentUser();
+    if (!user) throw new Error('Unauthorized');
+
     const servers = db.prepare(`SELECT * FROM servers WHERE id IN (${serverIds.join(',')})`).all() as Server[];
     const results: CommandResult[] = [];
 
@@ -62,6 +66,9 @@ export async function runBulkNodeCommand(serverIds: number[], command: string): 
 }
 
 export async function runBulkVMCommand(vmIds: number[], command: string): Promise<CommandResult[]> {
+    const user = await getCurrentUser();
+    if (!user) throw new Error('Unauthorized');
+
     const vms = db.prepare(`SELECT * FROM vms WHERE id IN (${vmIds.join(',')})`).all() as VM[];
     const serversMap = new Map<number, Server>();
     const results: CommandResult[] = [];

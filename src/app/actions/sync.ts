@@ -3,8 +3,12 @@
 import db from '@/lib/db';
 import { createSSHClient } from '@/lib/ssh';
 import { revalidatePath } from 'next/cache';
+import { getCurrentUser } from './userAuth';
 
 export async function syncServerVMs(serverId: number) {
+    const user = await getCurrentUser();
+    if (!user) throw new Error('Unauthorized');
+
     const server = db.prepare('SELECT * FROM servers WHERE id = ?').get(serverId) as any;
     if (!server) throw new Error('Server not found');
 

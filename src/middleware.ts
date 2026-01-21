@@ -12,10 +12,9 @@ export function middleware(request: NextRequest) {
         return NextResponse.next();
     }
 
-    // Allow static files and API routes
+    // Allow static files only - API routes now require auth
     if (
         pathname.startsWith('/_next') ||
-        pathname.startsWith('/api') ||
         pathname.includes('.') // Static files like .ico, .png, etc.
     ) {
         return NextResponse.next();

@@ -1,6 +1,7 @@
 'use server';
 
 import db from '@/lib/db';
+import { getCurrentUser } from './userAuth';
 
 export interface Server {
     id: number;
@@ -18,6 +19,9 @@ export interface Server {
 }
 
 export async function getServers(): Promise<Server[]> {
+    const user = await getCurrentUser();
+    if (!user) throw new Error('Unauthorized');
+
     const rows = db.prepare('SELECT * FROM servers ORDER BY name').all() as any[];
     return rows.map(row => ({
         id: row.id,
@@ -28,9 +32,10 @@ export async function getServers(): Promise<Server[]> {
         ssh_host: row.ssh_host,
         ssh_port: row.ssh_port,
         ssh_user: row.ssh_user,
-        ssh_key: row.ssh_key,
+        // SECURITY: Never send sensitive credentials to frontend
+        ssh_key: undefined,
         group_name: row.group_name,
-        auth_token: row.auth_token,
+        auth_token: undefined,
         ssl_fingerprint: row.ssl_fingerprint
     }));
 }

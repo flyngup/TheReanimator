@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import db, { getBackupDir } from '@/lib/db';
 import { createSSHClient } from '@/lib/ssh';
+import { getCurrentUser } from './userAuth';
 
 interface StorageStats {
     total: number;
@@ -32,6 +33,9 @@ interface ServerStorage {
 
 // Get storage statistics for the backup directory
 export async function getStorageStats(): Promise<StorageStats> {
+    const user = await getCurrentUser();
+    if (!user) throw new Error('Unauthorized');
+
     let used = 0;
     let backupCount = 0;
     let lastBackupTime: Date | null = null;
@@ -102,6 +106,9 @@ export async function getStorageStats(): Promise<StorageStats> {
 
 // Get storage pools from all servers via SSH
 export async function getServerStorages(): Promise<ServerStorage[]> {
+    const user = await getCurrentUser();
+    if (!user) throw new Error('Unauthorized');
+
     const servers = db.prepare(`
         SELECT id, name, type, ssh_host, ssh_port, ssh_user, ssh_key 
         FROM servers 

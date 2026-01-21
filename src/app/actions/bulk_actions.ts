@@ -3,6 +3,7 @@
 import db from '@/lib/db';
 import { createSSHClient } from '@/lib/ssh';
 import { getServer } from './vm';
+import { getCurrentUser } from './userAuth';
 
 export interface BulkCommandResult {
     serverId: number;
@@ -13,10 +14,15 @@ export interface BulkCommandResult {
 }
 
 export async function getBulkServers() {
+    const user = await getCurrentUser();
+    if (!user) throw new Error('Unauthorized');
     return db.prepare('SELECT id, name, ssh_host as host FROM servers ORDER BY name ASC').all() as { id: number, name: string, host: string }[];
 }
 
 export async function executeBulkCommand(serverIds: number[], command: string): Promise<BulkCommandResult[]> {
+    const user = await getCurrentUser();
+    if (!user) throw new Error('Unauthorized');
+
     if (!command.trim()) return [];
     if (serverIds.length === 0) return [];
 

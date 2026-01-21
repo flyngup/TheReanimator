@@ -6,6 +6,7 @@ import { getServer, determineNodeName } from './vm';
 import { getVMs, getVMConfig } from './vm';
 import { analyzeConfigWithAI, analyzeHostWithAI, HealthResult, getAISettings } from './ai';
 import { runNetworkAnalysis } from './network_analysis';
+import { getCurrentUser } from './userAuth';
 
 export interface ScanResult {
     id: number;
@@ -17,6 +18,9 @@ export interface ScanResult {
 }
 
 export async function getScanResults(serverId: number): Promise<ScanResult[]> {
+    const user = await getCurrentUser();
+    if (!user) throw new Error('Unauthorized');
+
     const rows = db.prepare('SELECT * FROM scan_results WHERE server_id = ? ORDER BY created_at DESC').all(serverId) as any[];
     return rows.map(row => ({
         ...row,
@@ -25,6 +29,9 @@ export async function getScanResults(serverId: number): Promise<ScanResult[]> {
 }
 
 export async function scanAllVMs(serverId: number) {
+    const user = await getCurrentUser();
+    if (!user) throw new Error('Unauthorized');
+
     try {
         const settings = await getAISettings();
         if (!settings.enabled) return { success: false, error: 'AI ist deaktiviert.' };
@@ -68,6 +75,9 @@ export async function scanAllVMs(serverId: number) {
 }
 
 export async function scanHost(serverId: number) {
+    const user = await getCurrentUser();
+    if (!user) throw new Error('Unauthorized');
+
     const settings = await getAISettings();
     if (!settings.enabled) return { success: false, error: 'AI ist deaktiviert.' };
 
