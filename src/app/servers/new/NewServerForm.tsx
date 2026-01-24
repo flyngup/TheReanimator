@@ -34,7 +34,7 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
 
     async function handleTestSSH(formData: FormData) {
         setSSHStatus('none');
-        setSSHMessage('Teste Verbindung...');
+        setSSHMessage('Проверка соединения...');
 
         const res = await testSSHConnection(formData);
 
@@ -66,7 +66,7 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
 
     async function handleGenToken() {
         setTokenStatus('none');
-        setTokenMessage('Generiere Token...');
+        setTokenMessage('Генерация токена...');
 
         const form = document.querySelector('form') as HTMLFormElement;
         const formData = new FormData(form);
@@ -77,12 +77,12 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
 
         if (res.success && res.token) {
             setTokenStatus('success');
-            setTokenMessage('Token generiert!');
+            setTokenMessage('Токен сгенерирован!');
             const tokenInput = document.getElementById('token') as HTMLInputElement;
             if (tokenInput) tokenInput.value = res.token;
         } else {
             setTokenStatus('error');
-            setTokenMessage(res.message || 'Fehler');
+            setTokenMessage(res.message || 'Ошибка');
         }
     }
 
@@ -104,26 +104,26 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
                     </Button>
                 </Link>
                 <div>
-                    <h1 className="text-2xl font-bold">Server hinzufügen</h1>
-                    <p className="text-muted-foreground">Proxmox VE oder PBS verbinden</p>
+                    <h1 className="text-2xl font-bold">Добавить сервер</h1>
+                    <p className="text-muted-foreground">Подключить Proxmox VE или PBS</p>
                 </div>
             </div>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Server-Konfiguration</CardTitle>
-                    <CardDescription>Geben Sie die Verbindungsdaten ein.</CardDescription>
+                    <CardTitle>Конфигурация сервера</CardTitle>
+                    <CardDescription>Введите данные подключения.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form action={handleSubmit} className="space-y-4">
                         <div className="grid gap-2">
-                            <label htmlFor="name" className="text-sm font-medium">Name</label>
-                            <Input id="name" name="name" placeholder="Mein PVE Server" required />
+                            <label htmlFor="name" className="text-sm font-medium">Название</label>
+                            <Input id="name" name="name" placeholder="Мой PVE сервер" required />
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="grid gap-2">
-                                <label htmlFor="type" className="text-sm font-medium">Typ</label>
+                                <label htmlFor="type" className="text-sm font-medium">Тип</label>
                                 <select
                                     id="type"
                                     name="type"
@@ -136,11 +136,11 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
                             </div>
 
                             <div className="grid gap-2">
-                                <label className="text-sm font-medium">Gruppe</label>
+                                <label className="text-sm font-medium">Группа</label>
                                 {isNewGroup ? (
                                     <div className="flex gap-2">
                                         <Input
-                                            placeholder="Gruppenname eingeben..."
+                                            placeholder="Введите название группы..."
                                             value={newGroupName}
                                             onChange={(e) => setNewGroupName(e.target.value)}
                                             className="flex-1"
@@ -151,7 +151,7 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
                                             size="sm"
                                             onClick={() => { setIsNewGroup(false); setNewGroupName(''); }}
                                         >
-                                            Abbrechen
+                                            Отмена
                                         </Button>
                                     </div>
                                 ) : (
@@ -161,7 +161,7 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
                                             onChange={(e) => setSelectedGroup(e.target.value)}
                                             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm flex-1"
                                         >
-                                            <option value="">Keine Gruppe</option>
+                                            <option value="">Без группы</option>
                                             {existingGroups.map(g => (
                                                 <option key={g} value={g}>{g}</option>
                                             ))}
@@ -171,7 +171,7 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
                                             variant="outline"
                                             size="icon"
                                             onClick={() => setIsNewGroup(true)}
-                                            title="Neue Gruppe erstellen"
+                                            title="Создать новую группу"
                                         >
                                             <Plus className="h-4 w-4" />
                                         </Button>
@@ -188,11 +188,11 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
                         <div className="p-4 bg-muted/50 rounded-lg space-y-4 border">
                             <h4 className="font-medium text-sm flex items-center gap-2">
                                 <Key className="h-4 w-4" />
-                                API Token Generator (Optional)
+                                Генератор API токена (опционально)
                             </h4>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="grid gap-2">
-                                    <label className="text-xs">Benutzer (für Token-Gen)</label>
+                                    <label className="text-xs">Пользователь (для генерации токена)</label>
                                     <Input
                                         value={pmUser}
                                         onChange={e => setPmUser(e.target.value)}
@@ -200,7 +200,7 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
                                     />
                                 </div>
                                 <div className="grid gap-2">
-                                    <label className="text-xs">Passwort (für Token-Gen)</label>
+                                    <label className="text-xs">Пароль (для генерации токена)</label>
                                     <Input
                                         type="password"
                                         value={pmPass}
@@ -211,7 +211,7 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
                             </div>
                             <div className="flex items-center gap-2">
                                 <Button type="button" size="sm" variant="outline" onClick={handleGenToken}>
-                                    Token generieren
+                                    Сгенерировать токен
                                 </Button>
                                 {tokenMessage && (
                                     <span className={`text-xs ${tokenStatus === 'success' ? 'text-green-500' : 'text-red-500'}`}>
@@ -222,18 +222,18 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
                         </div>
 
                         <div className="grid gap-2">
-                            <label htmlFor="token" className="text-sm font-medium">API Token</label>
+                            <label htmlFor="token" className="text-sm font-medium">API токен</label>
                             <Input id="token" name="token" placeholder="user@pam!tokenid=secret" required />
                             <p className="text-xs text-muted-foreground">
-                                Wird oben automatisch ausgefüllt oder manuell eingeben.
+                                Будет заполнено автоматически выше или введите вручную.
                             </p>
                         </div>
 
                         <div className="grid gap-2">
-                            <label htmlFor="ssl_fingerprint" className="text-sm font-medium">SSL Fingerprint (SHA256)</label>
+                            <label htmlFor="ssl_fingerprint" className="text-sm font-medium">SSL отпечаток (SHA256)</label>
                             <Input id="ssl_fingerprint" name="ssl_fingerprint" placeholder="AA:BB:CC..." />
                             <p className="text-xs text-muted-foreground">
-                                Optional. Wird für Cross-Cluster Migration benötigt.
+                                Опционально. Необходимо для миграции между кластерами.
                             </p>
                         </div>
 
@@ -241,7 +241,7 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
 
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
-                                <h4 className="font-medium">SSH Konfiguration</h4>
+                                <h4 className="font-medium">SSH конфигурация</h4>
                                 <div className="flex items-center gap-2">
                                     {sshMessage && (
                                         <span className={`text-xs ${sshStatus === 'success' ? 'text-green-500' : 'text-red-500'}`}>
@@ -258,7 +258,7 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
                                         }}
                                     >
                                         <Network className="mr-2 h-3 w-3" />
-                                        Verbindung testen
+                                        Проверить соединение
                                     </Button>
                                 </div>
                             </div>
@@ -273,10 +273,10 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
                                             <Network className="h-4 w-4" />
                                         </div>
                                         <div className="space-y-1">
-                                            <h4 className="font-medium text-sm text-blue-500">Proxmox Cluster Erkannt</h4>
+                                            <h4 className="font-medium text-sm text-blue-500">Обнаружен Proxmox кластер</h4>
                                             <p className="text-xs text-muted-foreground">
-                                                Es wurden {detectedNodes.length} Nodes im Cluster gefunden.
-                                                Möchten Sie alle Nodes auf einmal importieren?
+                                                Найдено {detectedNodes.length} нод в кластере.
+                                                Импортировать все ноды сразу?
                                             </p>
 
                                             <div className="flex items-center gap-2 mt-2">
@@ -289,7 +289,7 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
                                                     onChange={(e) => setImportCluster(e.target.checked)}
                                                 />
                                                 <label htmlFor="import_cluster" className="text-sm font-medium cursor-pointer">
-                                                    Ja, alle {detectedNodes.length} Cluster-Nodes importieren
+                                                    Да, импортировать все {detectedNodes.length} нод кластера
                                                 </label>
                                             </div>
 
@@ -308,31 +308,31 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
                                         </div>
                                     </div>
                                     <p className="text-[10px] text-muted-foreground pl-11">
-                                        Hinweis: Es wird für alle Nodes der gleiche API-Token und SSH-Nutzer verwendet.
-                                        Stellen Sie sicher, dass der Token "Cluster-weit" gültig ist (Standard).
+                                        Примечание: для всех нод будет использоваться один API токен и SSH пользователь.
+                                        Убедитесь, что токен действителен для всего кластера (по умолчанию).
                                     </p>
                                 </div>
                             )}
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="grid gap-2">
-                                    <label htmlFor="ssh_host" className="text-sm font-medium">SSH Host (Optional)</label>
-                                    <Input id="ssh_host" name="ssh_host" placeholder="z.B. 192.168.1.100" />
+                                    <label htmlFor="ssh_host" className="text-sm font-medium">SSH хост (опционально)</label>
+                                    <Input id="ssh_host" name="ssh_host" placeholder="напр. 192.168.1.100" />
                                 </div>
                                 <div className="grid gap-2">
-                                    <label htmlFor="ssh_port" className="text-sm font-medium">SSH Port</label>
+                                    <label htmlFor="ssh_port" className="text-sm font-medium">SSH порт</label>
                                     <Input id="ssh_port" name="ssh_port" type="number" defaultValue="22" />
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="grid gap-2">
-                                    <label htmlFor="ssh_user" className="text-sm font-medium">SSH Benutzer</label>
+                                    <label htmlFor="ssh_user" className="text-sm font-medium">SSH пользователь</label>
                                     <Input id="ssh_user" name="ssh_user" defaultValue="root" />
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <label htmlFor="ssh_password" className="text-sm font-medium">SSH Passwort</label>
+                                    <label htmlFor="ssh_password" className="text-sm font-medium">SSH пароль</label>
                                     <Input id="ssh_password" name="ssh_password" type="password" />
                                 </div>
                             </div>
@@ -340,11 +340,11 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
 
                         <div className="flex justify-end gap-2 pt-4">
                             <Link href="/servers">
-                                <Button type="button" variant="ghost">Abbrechen</Button>
+                                <Button type="button" variant="ghost">Отмена</Button>
                             </Link>
                             <Button type="submit">
                                 <Save className="mr-2 h-4 w-4" />
-                                Speichern
+                                Сохранить
                             </Button>
                         </div>
                     </form>

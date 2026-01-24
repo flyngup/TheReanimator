@@ -58,11 +58,11 @@ export function ServerVisualization({ system, networks, disks, pools, serverType
         if (hoveredComponent === 'cpu') {
             return (
                 <div className="flex flex-col justify-center h-full">
-                    <p className="text-xs text-zinc-400 mb-2">Prozessor</p>
-                    <p className="text-xs text-white font-medium leading-tight mb-3">{system.cpu || 'Unbekannt'}</p>
+                    <p className="text-xs text-zinc-400 mb-2">Процессор</p>
+                    <p className="text-xs text-white font-medium leading-tight mb-3">{system.cpu || 'Неизвестно'}</p>
                     <div className="space-y-2">
-                        <UsageBar usage={cpuUsage} color={getUsageColor(cpuUsage)} label="Auslastung" />
-                        <p className="text-[10px] text-zinc-500">Load: {system.loadAvg} • Cores: {system.cpuCores}</p>
+                        <UsageBar usage={cpuUsage} color={getUsageColor(cpuUsage)} label="Загрузка" />
+                        <p className="text-[10px] text-zinc-500">Нагрузка: {system.loadAvg} • Ядер: {system.cpuCores}</p>
                     </div>
                 </div>
             )
@@ -70,12 +70,12 @@ export function ServerVisualization({ system, networks, disks, pools, serverType
         if (hoveredComponent === 'ram') {
             return (
                 <div className="flex flex-col justify-center h-full">
-                    <p className="text-xs text-zinc-400 mb-2">Arbeitsspeicher</p>
+                    <p className="text-xs text-zinc-400 mb-2">Оперативная память</p>
                     <p className="text-lg text-white font-bold">
-                        {(system.memoryUsed / 1024 / 1024 / 1024).toFixed(1)} / {(system.memoryTotal / 1024 / 1024 / 1024).toFixed(1)} GB
+                        {(system.memoryUsed / 1024 / 1024 / 1024).toFixed(1)} / {(system.memoryTotal / 1024 / 1024 / 1024).toFixed(1)} ГБ
                     </p>
                     <div className="mt-3">
-                        <UsageBar usage={memUsage} color={getUsageColor(memUsage)} label="Belegt" />
+                        <UsageBar usage={memUsage} color={getUsageColor(memUsage)} label="Занято" />
                     </div>
                 </div>
             )
@@ -98,19 +98,19 @@ export function ServerVisualization({ system, networks, disks, pools, serverType
                         <span className="text-xs text-zinc-500 bg-zinc-800 px-1 rounded">{disk.type}</span>
                     </div>
                     <div className="space-y-1 text-xs">
-                        <div className="flex justify-between"><span className="text-zinc-500">Size:</span> <span className="text-zinc-300">{disk.size}</span></div>
-                        <div className="flex justify-between"><span className="text-zinc-500">Model:</span> <span className="text-zinc-300 truncate w-32 text-right">{disk.model || '-'}</span></div>
+                        <div className="flex justify-between"><span className="text-zinc-500">Размер:</span> <span className="text-zinc-300">{disk.size}</span></div>
+                        <div className="flex justify-between"><span className="text-zinc-500">Модель:</span> <span className="text-zinc-300 truncate w-32 text-right">{disk.model || '-'}</span></div>
 
                         {smart ? (
                             <>
-                                <div className="flex justify-between"><span className="text-zinc-500">Health:</span> <span className={isFailed ? 'text-red-500 font-bold' : 'text-green-500'}>{smart.health}</span></div>
-                                {smart.temperature && <div className="flex justify-between"><span className="text-zinc-500">Temp:</span> <span className="text-zinc-300">{smart.temperature}°C</span></div>}
-                                {smart.wearLevel !== undefined && <div className="flex justify-between"><span className="text-zinc-500">Wearout:</span> <span className={smart.wearLevel < 10 ? 'text-amber-500' : 'text-zinc-300'}>{100 - smart.wearLevel}% Used</span></div>}
+                                <div className="flex justify-between"><span className="text-zinc-500">Здоровье:</span> <span className={isFailed ? 'text-red-500 font-bold' : 'text-green-500'}>{smart.health}</span></div>
+                                {smart.temperature && <div className="flex justify-between"><span className="text-zinc-500">Температура:</span> <span className="text-zinc-300">{smart.temperature}°C</span></div>}
+                                {smart.wearLevel !== undefined && <div className="flex justify-between"><span className="text-zinc-500">Износ:</span> <span className={smart.wearLevel < 10 ? 'text-amber-500' : 'text-zinc-300'}>{100 - smart.wearLevel}% использовано</span></div>}
                             </>
                         ) : (
-                            <div className="flex justify-between"><span className="text-zinc-500">Mount:</span> <span className="text-zinc-300 truncate w-32 text-right">{disk.mountpoint}</span></div>
+                            <div className="flex justify-between"><span className="text-zinc-500">Монтирование:</span> <span className="text-zinc-300 truncate w-32 text-right">{disk.mountpoint}</span></div>
                         )}
-                        <div className="flex justify-between"><span className="text-zinc-500">Transport:</span> <span className="text-zinc-300">{disk.transport || 'SATA'}</span></div>
+                        <div className="flex justify-between"><span className="text-zinc-500">Интерфейс:</span> <span className="text-zinc-300">{disk.transport || 'SATA'}</span></div>
                     </div>
                 </div>
             )
@@ -120,7 +120,7 @@ export function ServerVisualization({ system, networks, disks, pools, serverType
             const typeColor = pool.type === 'zfs' ? 'text-cyan-400' : 'text-zinc-400';
             return (
                 <div className="flex flex-col justify-center h-full">
-                    <p className="text-xs text-zinc-400 mb-1">Storage Pool</p>
+                    <p className="text-xs text-zinc-400 mb-1">Пул хранилища</p>
                     <div className="flex items-center gap-2 mb-3">
                         <Database className={`h-4 w-4 ${typeColor}`} />
                         <span className="font-bold text-white text-sm">{pool.name}</span>
@@ -128,8 +128,8 @@ export function ServerVisualization({ system, networks, disks, pools, serverType
                     </div>
                     <div className="space-y-2">
                         <div className="flex justify-between text-xs text-zinc-400">
-                            <span>Belegt: {pool.used}</span>
-                            <span>Gesamt: {pool.size}</span>
+                            <span>Занято: {pool.used}</span>
+                            <span>Всего: {pool.size}</span>
                         </div>
                     </div>
                 </div>
@@ -147,12 +147,12 @@ export function ServerVisualization({ system, networks, disks, pools, serverType
                     <div className="space-y-1 text-xs">
                         <div className="flex justify-between"><span className="text-zinc-500">IP:</span> <span className="text-zinc-300 font-mono">{net.ip}</span></div>
                         <div className="flex justify-between"><span className="text-zinc-500">MAC:</span> <span className="text-zinc-300 font-mono">{net.mac}</span></div>
-                        <div className="flex justify-between"><span className="text-zinc-500">State:</span> <span className={isActive ? 'text-green-400' : 'text-red-400'}>{net.state}</span></div>
-                        {net.speed && <div className="flex justify-between"><span className="text-zinc-500">Speed:</span> <span className="text-zinc-300">{net.speed}</span></div>}
-                        {net.bridge && <div className="flex justify-between"><span className="text-zinc-500">Bridge:</span> <span className="text-zinc-300">{net.bridge}</span></div>}
+                        <div className="flex justify-between"><span className="text-zinc-500">Состояние:</span> <span className={isActive ? 'text-green-400' : 'text-red-400'}>{net.state}</span></div>
+                        {net.speed && <div className="flex justify-between"><span className="text-zinc-500">Скорость:</span> <span className="text-zinc-300">{net.speed}</span></div>}
+                        {net.bridge && <div className="flex justify-between"><span className="text-zinc-500">Мост:</span> <span className="text-zinc-300">{net.bridge}</span></div>}
                         {net.slaves && net.slaves.length > 0 && (
                             <div className="pt-1 border-t border-zinc-700 mt-1">
-                                <span className="text-zinc-500 block mb-1">Slaves:</span>
+                                <span className="text-zinc-500 block mb-1">Подчинённые:</span>
                                 <div className="flex flex-wrap gap-1">
                                     {net.slaves.map(s => <span key={s} className="px-1 bg-zinc-800 rounded text-[9px] text-zinc-300">{s}</span>)}
                                 </div>
@@ -162,7 +162,7 @@ export function ServerVisualization({ system, networks, disks, pools, serverType
                 </div>
             )
         }
-        return <div className="flex items-center justify-center h-full text-zinc-500 text-xs">Select Component</div>
+        return <div className="flex items-center justify-center h-full text-zinc-500 text-xs">Выберите компонент</div>
     }
 
     return (
@@ -182,11 +182,11 @@ export function ServerVisualization({ system, networks, disks, pools, serverType
                     {/* ... LEDs ... */}
                     <div className="flex items-center gap-2">
                         <div className={`w-2 h-2 rounded-full animate-pulse ${cpuUsage > 80 ? 'bg-red-500' : 'bg-green-500'}`} />
-                        <span className="text-[10px] text-zinc-500 uppercase tracking-wider">CPU</span>
+                        <span className="text-[10px] text-zinc-500 uppercase tracking-wider">ЦП</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <div className={`w-2 h-2 rounded-full animate-pulse ${memUsage > 80 ? 'bg-red-500' : 'bg-green-500'}`} />
-                        <span className="text-[10px] text-zinc-500 uppercase tracking-wider">MEM</span>
+                        <span className="text-[10px] text-zinc-500 uppercase tracking-wider">Память</span>
                     </div>
                 </div>
 
@@ -201,7 +201,7 @@ export function ServerVisualization({ system, networks, disks, pools, serverType
                         <Cpu className="h-5 w-5 mb-3" style={{ color: primaryColor }} />
                         {/* CPU Circle visualization */}
                         <div className="flex justify-center"><span className="text-xl font-bold text-white">{cpuUsage.toFixed(0)}%</span></div>
-                        <p className="text-center text-[10px] text-zinc-500 mt-1">{system.cpuCores} Cores</p>
+                        <p className="text-center text-[10px] text-zinc-500 mt-1">{system.cpuCores} ядер</p>
                     </motion.div>
 
                     {/* RAM Box */}
@@ -217,55 +217,59 @@ export function ServerVisualization({ system, networks, disks, pools, serverType
                     </motion.div>
 
                     {/* Storage Box (Contains Disks) */}
-                    <div className="col-span-2 relative bg-zinc-800/50 rounded-lg p-4 border border-zinc-700 overflow-hidden flex flex-col">
+                    <div className="col-span-2 relative bg-zinc-800/50 rounded-lg p-4 border border-zinc-700 flex flex-col">
                         <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
                                 <HardDrive className="h-5 w-5" style={{ color: primaryColor }} />
-                                <span className="text-xs font-semibold text-zinc-400">Storage</span>
+                                <span className="text-xs font-semibold text-zinc-400">Хранилище</span>
                             </div>
                         </div>
 
-                        {/* Interactive Disks Grid */}
-                        <div className="grid grid-cols-4 gap-2">
-                            {physicalDisks.slice(0, 8).map((disk, i) => {
-                                const smart = health?.smart?.find(s => s.device === disk.name);
-                                const isFailed = smart?.health === 'FAILED';
-                                const isWarning = smart?.wearLevel !== undefined && smart.wearLevel < 10;
-                                let borderColor = '';
-                                if (isFailed) borderColor = '!border-red-500 !border-2 animate-pulse';
-                                else if (isWarning) borderColor = '!border-amber-500 !border-2';
+                        {/* Interactive Disks Grid with scroll */}
+                        <div className="max-h-32 overflow-y-auto pr-1 custom-scrollbar">
+                            <div className="grid grid-cols-4 gap-2">
+                                {physicalDisks.map((disk, i) => {
+                                    const smart = health?.smart?.find(s => s.device === disk.name);
+                                    const isFailed = smart?.health === 'FAILED';
+                                    const isWarning = smart?.wearLevel !== undefined && smart.wearLevel < 10;
+                                    let borderColor = '';
+                                    if (isFailed) borderColor = '!border-red-500 !border-2 animate-pulse';
+                                    else if (isWarning) borderColor = '!border-amber-500 !border-2';
 
-                                return (
-                                    <motion.div
-                                        key={i}
-                                        className={`h-10 rounded-sm flex flex-col items-center justify-center text-[9px] cursor-pointer ${disk.transport === 'nvme' ? 'bg-purple-500/20 border-purple-500/40' :
-                                            disk.rotational === false ? 'bg-blue-500/20 border-blue-500/40' :
-                                                'bg-zinc-700 border-zinc-600'
-                                            } ${borderColor}`}
-                                        onHoverStart={() => { setHoveredComponent('disk'); setDetailData(disk); }}
-                                        onHoverEnd={() => { setHoveredComponent(null); setDetailData(null); }}
-                                        whileHover={{ scale: 1.1, zIndex: 10, borderColor: '#fff' }}
-                                    >
-                                        <span className={`font-mono font-bold ${isFailed ? 'text-red-500' : 'text-zinc-300'}`}>{disk.name}</span>
-                                    </motion.div>
-                                )
-                            })}
+                                    return (
+                                        <motion.div
+                                            key={i}
+                                            className={`h-10 rounded-sm flex flex-col items-center justify-center text-[9px] cursor-pointer shrink-0 ${disk.transport === 'nvme' ? 'bg-purple-500/20 border-purple-500/40' :
+                                                disk.rotational === false ? 'bg-blue-500/20 border-blue-500/40' :
+                                                    'bg-zinc-700 border-zinc-600'
+                                                } ${borderColor}`}
+                                            onHoverStart={() => { setHoveredComponent('disk'); setDetailData(disk); }}
+                                            onHoverEnd={() => { setHoveredComponent(null); setDetailData(null); }}
+                                            whileHover={{ scale: 1.05, borderColor: '#fff' }}
+                                        >
+                                            <span className={`font-mono font-bold ${isFailed ? 'text-red-500' : 'text-zinc-300'}`}>{disk.name}</span>
+                                        </motion.div>
+                                    )
+                                })}
+                            </div>
                         </div>
 
-                        {/* Interactive Pools */}
-                        <div className="mt-auto pt-2 flex gap-2 overflow-hidden">
-                            {pools.map((pool, i) => (
-                                <motion.div
-                                    key={i}
-                                    className="flex items-center gap-1.5 text-[10px] bg-zinc-800/80 px-2 py-1 rounded cursor-pointer border border-transparent"
-                                    onHoverStart={() => { setHoveredComponent('pool'); setDetailData(pool); }}
-                                    onHoverEnd={() => { setHoveredComponent(null); setDetailData(null); }}
-                                    whileHover={{ borderColor: primaryColor }}
-                                >
-                                    <Database className="h-3 w-3 text-zinc-400" />
-                                    <span className="text-zinc-300">{pool.name}</span>
-                                </motion.div>
-                            ))}
+                        {/* Interactive Pools with scroll if needed */}
+                        <div className="mt-2 pt-2 max-h-16 overflow-y-auto custom-scrollbar">
+                            <div className="flex flex-wrap gap-2">
+                                {pools.map((pool, i) => (
+                                    <motion.div
+                                        key={i}
+                                        className="flex items-center gap-1.5 text-[10px] bg-zinc-800/80 px-2 py-1 rounded cursor-pointer border border-transparent"
+                                        onHoverStart={() => { setHoveredComponent('pool'); setDetailData(pool); }}
+                                        onHoverEnd={() => { setHoveredComponent(null); setDetailData(null); }}
+                                        whileHover={{ borderColor: primaryColor }}
+                                    >
+                                        <Database className="h-3 w-3 text-zinc-400" />
+                                        <span className="text-zinc-300">{pool.name}</span>
+                                    </motion.div>
+                                ))}
+                            </div>
                         </div>
                     </div>
 
@@ -273,7 +277,7 @@ export function ServerVisualization({ system, networks, disks, pools, serverType
                     <div className="relative bg-zinc-800/50 rounded-lg p-4 border border-zinc-700 overflow-hidden flex flex-col">
                         <div className="flex items-center gap-2 mb-3">
                             <Network className="h-5 w-5" style={{ color: primaryColor }} />
-                            <span className="text-xs font-semibold text-zinc-400">Network</span>
+                            <span className="text-xs font-semibold text-zinc-400">Сеть</span>
                         </div>
                         <div className="grid grid-cols-2 gap-1.5 align-start content-start">
                             {networks.slice(0, 8).map((net, i) => {
@@ -328,13 +332,13 @@ export function ServerVisualization({ system, networks, disks, pools, serverType
                         <span className="font-mono text-[10px]">{system.kernel}</span>
                     </div>
                     <div>
-                        <span className="text-zinc-400">Up: {system.uptime}</span>
+                        <span className="text-zinc-400">Время работы: {system.uptime}</span>
                     </div>
                 </div>
 
             </div>
             <p className="text-center text-xs text-muted-foreground mt-4">
-                Hover über einzelne Disks/Ports für Details
+                Наведите на диски/порты для деталей
             </p>
         </div>
     );

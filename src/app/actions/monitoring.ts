@@ -60,6 +60,39 @@ function formatBytesSimple(bytes: number): string {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
+function formatUptime(uptime: string): string {
+    if (!uptime || uptime === 'Unknown' || uptime === '-') {
+        return uptime;
+    }
+
+    // Parse "up X weeks, Y days, Z hours, W minutes" format from uptime -p
+    const translated = uptime
+        .replace(/^up\s*/, '')
+        .replace(/weeks?/, 'недель')
+        .replace(/days?/, 'дней')
+        .replace(/hours?/, 'часов')
+        .replace(/minutes?/, 'минут')
+        .replace(/,\s*/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    return translated || uptime;
+}
+
+function formatMemoryString(memory: string): string {
+    if (!memory || memory === '-') {
+        return memory;
+    }
+
+    // Parse "251Gi total, 155Gi used" format from free -h
+    const translated = memory
+        .replace(/total/, 'всего')
+        .replace(/used/, 'занято')
+        .replace(/,/g, ',');
+
+    return translated || memory;
+}
+
 async function getSystemStats(ssh: any) {
     try {
         const [
@@ -98,11 +131,11 @@ async function getSystemStats(ssh: any) {
             hostname,
             os: osRelease.trim(),
             kernel,
-            uptime,
+            uptime: formatUptime(uptime),
             cpu: cpuInfo,
             cpuCores,
             cpuUsage,
-            memory: memReadable,
+            memory: formatMemoryString(memReadable),
             memoryTotal,
             memoryUsed,
             memoryUsage,

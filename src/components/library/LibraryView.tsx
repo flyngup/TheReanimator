@@ -46,16 +46,16 @@ export function LibraryView({ initialItems, servers }: LibraryViewProps) {
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">ISO & Template Library</h1>
+                    <h1 className="text-3xl font-bold tracking-tight">Библиотека ISO и шаблонов</h1>
                     <p className="text-muted-foreground">
-                        Globaler Katalog ({initialItems.length} Elemente)
+                        Глобальный каталог ({initialItems.length} элементов)
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
                     <Button variant="outline" size="sm" asChild>
                         <Link href="/library">
                             <RefreshCw className="h-4 w-4 mr-2" />
-                            Scan Refresh
+                            Обновить скан
                         </Link>
                     </Button>
                 </div>
@@ -64,15 +64,15 @@ export function LibraryView({ initialItems, servers }: LibraryViewProps) {
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-card p-4 rounded-lg border shadow-sm">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full md:w-auto">
                     <TabsList>
-                        <TabsTrigger value="all">Alle</TabsTrigger>
-                        <TabsTrigger value="iso" className="flex gap-2"><Disc className="w-4 h-4" /> ISO Images</TabsTrigger>
-                        <TabsTrigger value="vztmpl" className="flex gap-2"><FileCode className="w-4 h-4" /> Templates</TabsTrigger>
+                        <TabsTrigger value="all">Все</TabsTrigger>
+                        <TabsTrigger value="iso" className="flex gap-2"><Disc className="w-4 h-4" /> ISO образы</TabsTrigger>
+                        <TabsTrigger value="vztmpl" className="flex gap-2"><FileCode className="w-4 h-4" /> Шаблоны</TabsTrigger>
                     </TabsList>
                 </Tabs>
                 <div className="relative w-full md:w-72">
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
-                        placeholder="Suchen..."
+                        placeholder="Поиск..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="pl-8"
@@ -102,7 +102,7 @@ export function LibraryView({ initialItems, servers }: LibraryViewProps) {
                         </CardHeader>
                         <CardContent className="flex-1 pb-3">
                             <div className="text-sm font-medium mb-2 text-muted-foreground flex items-center gap-2">
-                                <HardDrive className="h-4 w-4" /> Verfügbar auf:
+                                <HardDrive className="h-4 w-4" /> Доступно на:
                             </div>
                             <div className="flex flex-wrap gap-2">
                                 {item.locations.map((loc, i) => (
@@ -124,7 +124,7 @@ export function LibraryView({ initialItems, servers }: LibraryViewProps) {
 
                 {filteredItems.length === 0 && (
                     <div className="col-span-full py-12 text-center text-muted-foreground bg-muted/10 rounded-lg border border-dashed">
-                        Keine Elemente gefunden
+                        Элементы не найдены
                     </div>
                 )}
             </div>

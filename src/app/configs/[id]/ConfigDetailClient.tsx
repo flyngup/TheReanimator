@@ -188,9 +188,9 @@ export default function ConfigDetailClient({
         try {
             const res = await fetch(`/api/config-backups/${backupId}?file=${encodeURIComponent(path)}`);
             const data = await res.json();
-            setFileContent(data.content || 'Fehler beim Laden');
+            setFileContent(data.content || 'Ошибка загрузки');
         } catch {
-            setFileContent('Fehler beim Laden');
+            setFileContent('Ошибка загрузки');
         }
         setLoadingContent(false);
     }
@@ -233,8 +233,8 @@ export default function ConfigDetailClient({
             });
 
             if (!res.ok) {
-                const errorData = await res.json().catch(() => ({ error: 'Download failed' }));
-                throw new Error(errorData.error || 'Download failed');
+                const errorData = await res.json().catch(() => ({ error: 'Ошибка загрузки' }));
+                throw new Error(errorData.error || 'Ошибка загрузки');
             }
 
             const blob = await res.blob();
@@ -247,7 +247,7 @@ export default function ConfigDetailClient({
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         } catch (err) {
-            alert(`Download fehlgeschlagen: ${err instanceof Error ? err.message : 'Unbekannter Fehler'}`);
+            alert(`Ошибка загрузки: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`);
         }
         setDownloading(false);
     }
@@ -316,8 +316,8 @@ export default function ConfigDetailClient({
         if (pathsToRestore.length === 0) return;
 
         const confirmMsg = pathsToRestore.length === 1
-            ? `Datei "${pathsToRestore[0]}" auf dem Server wiederherstellen?`
-            : `${pathsToRestore.length} Dateien auf dem Server wiederherstellen?`;
+            ? `Восстановить файл "${pathsToRestore[0]}" на сервере?`
+            : `Восстановить ${pathsToRestore.length} файлов на сервере?`;
 
         if (!confirm(confirmMsg)) return;
 
@@ -336,11 +336,11 @@ export default function ConfigDetailClient({
                 if (result.success) successCount++;
                 results.push(`${filePath}: ${result.success ? '✓' : result.message}`);
             } catch (e) {
-                results.push(`${filePath}: Fehler`);
+                results.push(`${filePath}: Ошибка`);
             }
         }
 
-        alert(`Restore abgeschlossen: ${successCount}/${pathsToRestore.length} erfolgreich`);
+        alert(`Восстановление завершено: ${successCount}/${pathsToRestore.length} успешно`);
         setRestoring(false);
     }
 
@@ -371,21 +371,21 @@ export default function ConfigDetailClient({
                     <div className="w-20 h-20 rounded-2xl bg-blue-500/10 flex items-center justify-center mb-6">
                         <CheckSquare className="h-10 w-10 text-blue-500" />
                     </div>
-                    <h3 className="text-lg font-semibold mb-2">Mehrfachauswahl</h3>
+                    <h3 className="text-lg font-semibold mb-2">Выбрано несколько</h3>
                     <p className="text-sm text-muted-foreground mb-6">
-                        {selection.fileCount} Dateien ausgewählt
+                        {selection.fileCount} файлов выбрано
                     </p>
 
                     <div className="grid grid-cols-2 gap-4 mb-8 w-full max-w-xs">
                         <div className="bg-muted/30 rounded-lg p-4 text-center">
                             <Files className="h-5 w-5 mx-auto mb-2 text-blue-500" />
                             <p className="text-2xl font-bold">{selection.fileCount}</p>
-                            <p className="text-xs text-muted-foreground">Dateien</p>
+                            <p className="text-xs text-muted-foreground">Файлов</p>
                         </div>
                         <div className="bg-muted/30 rounded-lg p-4 text-center">
                             <Archive className="h-5 w-5 mx-auto mb-2 text-green-500" />
                             <p className="text-2xl font-bold">{formatBytes(selection.totalSize)}</p>
-                            <p className="text-xs text-muted-foreground">Größe</p>
+                            <p className="text-xs text-muted-foreground">Размер</p>
                         </div>
                     </div>
 
@@ -400,7 +400,7 @@ export default function ConfigDetailClient({
                             ) : (
                                 <Download className="h-4 w-4 mr-2" />
                             )}
-                            Auswahl herunterladen
+                            Скачать выбор
                         </Button>
                         <Button
                             className="w-full"
@@ -413,7 +413,7 @@ export default function ConfigDetailClient({
                             ) : (
                                 <Upload className="h-4 w-4 mr-2" />
                             )}
-                            Auswahl wiederherstellen
+                            Восстановить выбор
                         </Button>
                     </div>
                 </div>
@@ -435,17 +435,17 @@ export default function ConfigDetailClient({
                         <div className="bg-muted/30 rounded-lg p-4 text-center">
                             <Files className="h-5 w-5 mx-auto mb-2 text-blue-500" />
                             <p className="text-2xl font-bold">{info.fileCount}</p>
-                            <p className="text-xs text-muted-foreground">Dateien</p>
+                            <p className="text-xs text-muted-foreground">Файлов</p>
                         </div>
                         <div className="bg-muted/30 rounded-lg p-4 text-center">
                             <Archive className="h-5 w-5 mx-auto mb-2 text-green-500" />
                             <p className="text-2xl font-bold">{formatBytes(info.totalSize)}</p>
-                            <p className="text-xs text-muted-foreground">Größe</p>
+                            <p className="text-xs text-muted-foreground">Размер</p>
                         </div>
                     </div>
 
                     <div className="w-full max-w-xs space-y-2">
-                        <p className="text-xs text-muted-foreground mb-3">Enthält {info.children.length} Einträge</p>
+                        <p className="text-xs text-muted-foreground mb-3">Содержит {info.children.length} элементов</p>
                         <Button
                             className="w-full"
                             onClick={handlePreviewDownload}
@@ -456,7 +456,7 @@ export default function ConfigDetailClient({
                             ) : (
                                 <Download className="h-4 w-4 mr-2" />
                             )}
-                            Ordner herunterladen
+                            Скачать папку
                         </Button>
                         <Button
                             className="w-full"
@@ -469,7 +469,7 @@ export default function ConfigDetailClient({
                             ) : (
                                 <Upload className="h-4 w-4 mr-2" />
                             )}
-                            Ordner wiederherstellen
+                            Восстановить папку
                         </Button>
                     </div>
                 </div>
@@ -492,7 +492,7 @@ export default function ConfigDetailClient({
                 <div className="w-16 h-16 rounded-full bg-muted/10 flex items-center justify-center">
                     <FileText className="h-8 w-8 opacity-20" />
                 </div>
-                <p>Wählen Sie eine Datei oder einen Ordner aus</p>
+                <p>Выберите файл или папку</p>
             </div>
         );
     }
@@ -501,8 +501,8 @@ export default function ConfigDetailClient({
     function getPreviewTitle() {
         if (selectedItem?.type === 'file') return selectedItem.path;
         if (selectedItem?.type === 'folder') return selectedItem.info.path;
-        if (selectedItem?.type === 'multiple') return `${selectedItem.selection.fileCount} Dateien ausgewählt`;
-        return 'Keine Auswahl';
+        if (selectedItem?.type === 'multiple') return `${selectedItem.selection.fileCount} файлов выбрано`;
+        return 'Ничего не выбрано';
     }
 
     return (
@@ -521,13 +521,13 @@ export default function ConfigDetailClient({
                         </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground flex items-center gap-2">
-                        Backup vom {new Date(backupDate).toLocaleString('de-DE')}
+                        Бэкап от {new Date(backupDate).toLocaleString('ru-RU')}
                     </p>
                 </div>
                 {downloading && (
                     <div className="flex items-center gap-2 text-primary animate-pulse">
                         <Loader2 className="h-5 w-5 animate-spin" />
-                        <span className="text-sm font-medium">Download...</span>
+                        <span className="text-sm font-medium">Загрузка...</span>
                     </div>
                 )}
             </div>
@@ -540,21 +540,21 @@ export default function ConfigDetailClient({
                             className="h-12 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 font-medium"
                         >
                             <Download className="mr-2 h-4 w-4" />
-                            Dateien ({files.length})
+                            Файлы ({files.length})
                         </TabsTrigger>
                         <TabsTrigger
                             value="guide"
                             className="h-12 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 font-medium"
                         >
                             <BookOpen className="mr-2 h-4 w-4" />
-                            Anleitung
+                            Инструкция
                         </TabsTrigger>
                         <TabsTrigger
                             value="info"
                             className="h-12 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 font-medium"
                         >
                             <Info className="mr-2 h-4 w-4" />
-                            System-Info
+                            Система
                         </TabsTrigger>
                     </TabsList>
                 </div>
@@ -568,7 +568,7 @@ export default function ConfigDetailClient({
                                 {loading ? (
                                     <div className="flex justify-center items-center h-full text-muted-foreground">
                                         <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                                        Lade Datei-Liste...
+                                        Загрузка списка файлов...
                                     </div>
                                 ) : (
                                     <FileBrowser
@@ -616,7 +616,7 @@ export default function ConfigDetailClient({
                                         <Separator orientation="vertical" className="h-4 self-center" />
                                         <Button variant="outline" size="sm" className="h-8 shadow-none" onClick={() => handleRestore()} disabled={restoring}>
                                             {restoring ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-                                            <span className="ml-2">Restore</span>
+                                            <span className="ml-2">Восстановить</span>
                                         </Button>
                                     </div>
                                 )}
@@ -634,10 +634,10 @@ export default function ConfigDetailClient({
                         <CardHeader className="py-4 px-6 border-b bg-muted/10">
                             <CardTitle className="flex items-center gap-2">
                                 <ShieldCheck className="h-5 w-5 text-green-500" />
-                                Disaster Recovery Anleitung
+                                Инструкция по восстановлению
                             </CardTitle>
                             <CardDescription>
-                                Automatisch generierte Schritte zur Wiederherstellung dieses Servers
+                                Автоматически сгенерированные шаги для восстановления этого сервера
                             </CardDescription>
                         </CardHeader>
                         <ScrollArea className="flex-1">
@@ -651,7 +651,7 @@ export default function ConfigDetailClient({
                                 ) : (
                                     <div className="text-center py-20 text-muted-foreground">
                                         <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 opacity-20" />
-                                        <p>Lade Anleitung...</p>
+                                        <p>Загрузка инструкции...</p>
                                     </div>
                                 )}
                             </CardContent>
@@ -667,23 +667,23 @@ export default function ConfigDetailClient({
                                 <CardHeader className="py-4 bg-muted/20 border-b">
                                     <CardTitle className="flex items-center gap-2 text-base">
                                         <HardDrive className="h-4 w-4 text-blue-500" />
-                                        OS & Host
+                                        ОС и Хост
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="p-0">
                                     {parsedSysInfo ? (
                                         <div className="divide-y divide-border/50">
                                             <div className="p-4 grid grid-cols-3 gap-2 hover:bg-muted/5 transition-colors">
-                                                <span className="text-sm font-medium text-muted-foreground">Hostname</span>
+                                                <span className="text-sm font-medium text-muted-foreground">Имя хоста</span>
                                                 <span className="col-span-2 text-sm font-mono bg-muted/30 px-2 py-0.5 rounded w-fit">{parsedSysInfo.hostname}</span>
                                             </div>
                                             <div className="p-4 grid grid-cols-3 gap-2 hover:bg-muted/5 transition-colors">
-                                                <span className="text-sm font-medium text-muted-foreground">OS Name</span>
-                                                <span className="col-span-2 text-sm">{parsedSysInfo.osRelease.PRETTY_NAME || parsedSysInfo.osRelease.NAME || 'N/A'}</span>
+                                                <span className="text-sm font-medium text-muted-foreground">Название ОС</span>
+                                                <span className="col-span-2 text-sm">{parsedSysInfo.osRelease.PRETTY_NAME || parsedSysInfo.osRelease.NAME || 'Н/Д'}</span>
                                             </div>
                                             <div className="p-4 grid grid-cols-3 gap-2 hover:bg-muted/5 transition-colors">
-                                                <span className="text-sm font-medium text-muted-foreground">Version</span>
-                                                <span className="col-span-2 text-sm">{parsedSysInfo.osRelease.VERSION || 'N/A'}</span>
+                                                <span className="text-sm font-medium text-muted-foreground">Версия</span>
+                                                <span className="col-span-2 text-sm">{parsedSysInfo.osRelease.VERSION || 'Н/Д'}</span>
                                             </div>
                                         </div>
                                     ) : (
@@ -696,7 +696,7 @@ export default function ConfigDetailClient({
                                 <CardHeader className="py-4 bg-muted/20 border-b">
                                     <CardTitle className="flex items-center gap-2 text-base">
                                         <Network className="h-4 w-4 text-purple-500" />
-                                        Netzwerk-Konfiguration
+                                        Сетевая конфигурация
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="p-0">
@@ -738,7 +738,7 @@ export default function ConfigDetailClient({
                                 <CardHeader className="py-4 bg-muted/20 border-b shrink-0">
                                     <CardTitle className="flex items-center gap-2 text-base">
                                         <HardDrive className="h-4 w-4 text-emerald-500" />
-                                        Disks & Filesystem
+                                        Диски и файловая система
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="p-0 flex-1 overflow-hidden bg-[#1e1e1e]">
@@ -747,7 +747,7 @@ export default function ConfigDetailClient({
                                             {parsedSysInfo ? (
                                                 <div className="space-y-6">
                                                     <div>
-                                                        <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3">Block Devices</h4>
+                                                        <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3">Блоковые устройства</h4>
                                                         {parsedSysInfo.disks.length > 0 ? (
                                                             <div className="grid gap-2 grid-cols-2">
                                                                 {parsedSysInfo.disks.filter(d => d.type === 'disk').map((disk, i) => (
@@ -764,7 +764,7 @@ export default function ConfigDetailClient({
                                                         )}
                                                     </div>
                                                     <div>
-                                                        <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">File System Table (fstab)</h4>
+                                                        <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">Таблица файловых систем (fstab)</h4>
                                                         <pre className="text-xs font-mono text-zinc-300 leading-relaxed whitespace-pre-wrap bg-zinc-900/50 p-3 rounded border border-zinc-800">
                                                             {parsedSysInfo.fstab}
                                                         </pre>

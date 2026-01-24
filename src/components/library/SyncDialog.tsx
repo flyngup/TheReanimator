@@ -42,7 +42,7 @@ export function SyncDialog({ item, servers, onSuccess }: SyncDialogProps) {
             setStorages(avail);
             if (avail.length > 0) setTargetStorage(avail[0]);
         } catch (error) {
-            toast.error("Fehler beim Laden der Storages");
+            toast.error("Ошибка загрузки хранилищ");
         } finally {
             setLoadingStorages(false);
         }
@@ -59,11 +59,11 @@ export function SyncDialog({ item, servers, onSuccess }: SyncDialogProps) {
                 targetStorage,
                 item.type
             );
-            toast.success("Synchronisation erfolgreich", { description: `${item.name} wurde kopiert.` });
+            toast.success("Синхронизация успешна", { description: `${item.name} скопирован.` });
             setOpen(false);
             if (onSuccess) onSuccess();
         } catch (error: any) {
-            toast.error("Synchronisation fehlgeschlagen", { description: error.message });
+            toast.error("Ошибка синхронизации", { description: error.message });
         } finally {
             setSyncing(false);
         }
@@ -76,30 +76,30 @@ export function SyncDialog({ item, servers, onSuccess }: SyncDialogProps) {
             <DialogTrigger asChild>
                 <Button variant="ghost" size="sm" disabled={eligibleTargets.length === 0}>
                     <Copy className="h-4 w-4 mr-2" />
-                    Sync
+                    Синхронизировать
                 </Button>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Image synchronisieren</DialogTitle>
+                    <DialogTitle>Синхронизация образа</DialogTitle>
                     <DialogDescription>
-                        Kopieren Sie <strong>{item.name}</strong> auf einen anderen Server.
+                        Копировать <strong>{item.name}</strong> на другой сервер.
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="grid gap-4 py-4">
                     <div className="grid gap-2">
-                        <Label>Quelle</Label>
+                        <Label>Источник</Label>
                         <div className="text-sm font-mono bg-muted p-2 rounded">
                             {sourceLocation.serverName} ({sourceLocation.storage})
                         </div>
                     </div>
 
                     <div className="grid gap-2">
-                        <Label>Ziel-Server</Label>
+                        <Label>Целевой сервер</Label>
                         <Select value={targetServerId} onValueChange={handleServerChange}>
                             <SelectTrigger>
-                                <SelectValue placeholder="Server wählen" />
+                                <SelectValue placeholder="Выберите сервер" />
                             </SelectTrigger>
                             <SelectContent>
                                 {eligibleTargets.map(s => (
@@ -111,10 +111,10 @@ export function SyncDialog({ item, servers, onSuccess }: SyncDialogProps) {
 
                     {targetServerId && (
                         <div className="grid gap-2">
-                            <Label>Ziel-Storage</Label>
+                            <Label>Целевое хранилище</Label>
                             <Select value={targetStorage} onValueChange={setTargetStorage} disabled={loadingStorages || storages.length === 0}>
                                 <SelectTrigger>
-                                    <SelectValue placeholder={loadingStorages ? "Lade Storages..." : "Storage wählen"} />
+                                    <SelectValue placeholder={loadingStorages ? "Загрузка хранилищ..." : "Выберите хранилище"} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {storages.map(s => (
@@ -123,17 +123,17 @@ export function SyncDialog({ item, servers, onSuccess }: SyncDialogProps) {
                                 </SelectContent>
                             </Select>
                             {storages.length === 0 && !loadingStorages && targetServerId && (
-                                <p className="text-xs text-red-500">Kein kompatibler Storage gefunden.</p>
+                                <p className="text-xs text-red-500">Совместимое хранилище не найдено.</p>
                             )}
                         </div>
                     )}
                 </div>
 
                 <DialogFooter>
-                    <Button variant="outline" onClick={() => setOpen(false)} disabled={syncing}>Abbrechen</Button>
+                    <Button variant="outline" onClick={() => setOpen(false)} disabled={syncing}>Отмена</Button>
                     <Button onClick={handleSync} disabled={!targetServerId || !targetStorage || syncing}>
                         {syncing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Synchronisieren
+                        Синхронизировать
                     </Button>
                 </DialogFooter>
             </DialogContent>

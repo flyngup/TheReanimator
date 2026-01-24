@@ -365,11 +365,11 @@ async function testServerToServerSSH(
         }
     } catch (e: any) {
         throw new Error(
-            `Server-to-Server SSH fehlgeschlagen!\n\n` +
-            `Der Quellserver muss per SSH auf den Zielserver zugreifen können.\n` +
-            `Bitte auf dem QUELLSERVER ausführen:\n\n` +
+            `Server-to-Server SSH не удалось!\n\n` +
+            `Исходный сервер должен иметь доступ по SSH к целевому серверу.\n` +
+            `Выполните на ИСХОДНОМ сервере:\n\n` +
             `  ssh-copy-id root@${targetHost}\n\n` +
-            `Fehler: ${e.message}`
+            `Ошибка: ${e.message}`
         );
     }
 }
@@ -390,7 +390,7 @@ async function runPreFlightChecks(
         await sourceSsh.exec('echo "OK"');
         log('[Check 1/6] ✓ Source SSH OK');
     } catch (e) {
-        throw new Error('SSH-Verbindung zum Quellserver fehlgeschlagen');
+        throw new Error('SSH-подключение к исходному серверу не удалось');
     }
 
     // 2. SSH Connectivity - Target
@@ -399,7 +399,7 @@ async function runPreFlightChecks(
         await targetSsh.exec('echo "OK"');
         log('[Check 2/6] ✓ Target SSH OK');
     } catch (e) {
-        throw new Error('SSH-Verbindung zum Zielserver fehlgeschlagen');
+        throw new Error('SSH-подключение к целевому серверу не удалось');
     }
 
     // 3. VM State Recovery
@@ -818,7 +818,7 @@ async function migrateRemote(ctx: MigrationContext): Promise<string> {
             try { await targetSsh.exec(`rm -f ${targetBackupDir}/*`); } catch { }
         }
 
-        throw new Error(`Migration fehlgeschlagen:\n\n${error.message}\n\nBitte prüfen Sie:\n- SSH-Zugang zwischen den Servern (für SCP)\n- Genügend Speicherplatz für Backup in /tmp\n- Ziel-Storage ist erreichbar`);
+        throw new Error(`Миграция не удалась:\n\n${error.message}\n\nПожалуйста, проверьте:\n- SSH-доступ между серверами (для SCP)\n- Достаточно места для бэкапа в /tmp\n- Целевое хранилище доступно`);
     }
 }
 
@@ -903,10 +903,10 @@ async function pollMigrationTaskWithLogs(
             const logJson = await client.exec(logCmd);
             const logData = JSON.parse(logJson);
             const lastLogs = logData.slice(-15).map((l: any) => l.t).join('\n');
-            errorDetails = `\n\nLetzte Log-Einträge:\n${lastLogs}`;
+            errorDetails = `\n\nПоследние записи лога:\n${lastLogs}`;
         } catch { }
 
-        throw new Error(`Migration fehlgeschlagen mit Status: ${exitStatus}${errorDetails}`);
+        throw new Error(`Миграция не удалась со статусом: ${exitStatus}${errorDetails}`);
     }
 
     log('[Migration] Task completed with status: OK');

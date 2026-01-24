@@ -111,7 +111,7 @@ export default function TagsPage() {
                 setTags(tData);
             }
         } catch (e) {
-            if (!silent) toast.error('Scan failed');
+            if (!silent) toast.error('Сканирование не удалось');
         } finally {
             setScanning(false);
         }
@@ -133,7 +133,7 @@ export default function TagsPage() {
     }
 
     async function handleDeleteTag(id: number) {
-        if (!confirm('Tag löschen?')) return;
+        if (!confirm('Удалить тег?')) return;
         await deleteTag(id);
         loadData();
     }
@@ -153,8 +153,8 @@ export default function TagsPage() {
     }
 
     async function handleAssign() {
-        if (selectedVMs.size === 0 || selectedTags.size === 0) return alert('Bitte VMs und Tags wählen');
-        if (!confirm(`${selectedTags.size} Tags an ${selectedVMs.size} VMs zuweisen?`)) return;
+        if (selectedVMs.size === 0 || selectedTags.size === 0) return alert('Выберите VM и теги');
+        if (!confirm(`${selectedTags.size} тегов назначить ${selectedVMs.size} VM?`)) return;
 
         setAssigning(true);
         const tagNames = tags.filter(t => selectedTags.has(t.id)).map(t => t.name);
@@ -180,7 +180,7 @@ export default function TagsPage() {
         // Maybe optional.
 
         setAssigning(false);
-        alert('Zugewiesen!\n' + results.join('\n'));
+        alert('Назначено!\n' + results.join('\n'));
         setSelectedVMs(new Set());
         setSelectedTags(new Set());
     }
@@ -213,12 +213,12 @@ export default function TagsPage() {
         <div className="container mx-auto py-8">
             <div className="flex justify-between items-center mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold">Tag Management</h1>
-                    <p className="text-muted-foreground">Zentrale Verwaltung aller Proxmox Tags</p>
+                    <h1 className="text-3xl font-bold">Управление тегами</h1>
+                    <p className="text-muted-foreground">Центральное управление всеми тегами Proxmox</p>
                 </div>
                 <Button onClick={() => handleScan(false)} disabled={scanning} variant="outline">
                     <RefreshCw className={`mr-2 h-4 w-4 ${scanning ? 'animate-spin' : ''}`} />
-                    Cluster Scan
+                    Сканирование кластера
                 </Button>
 
             </div>
@@ -226,29 +226,29 @@ export default function TagsPage() {
             <Tabs defaultValue="manage">
                 {/* ... (rest of tabs) ... */}
                 <TabsList>
-                    <TabsTrigger value="manage">Tags Verwalten</TabsTrigger>
-                    <TabsTrigger value="assign">Zuweisen</TabsTrigger>
+                    <TabsTrigger value="manage">Управление тегами</TabsTrigger>
+                    <TabsTrigger value="assign">Назначить</TabsTrigger>
                 </TabsList>
 
                 {/* MANAGE TAB */}
                 <TabsContent value="manage" className="space-y-6">
                     <Card>
-                        <CardHeader><CardTitle>Neuen Tag erstellen</CardTitle></CardHeader>
+                        <CardHeader><CardTitle>Создать новый тег</CardTitle></CardHeader>
                         <CardContent>
                             <div className="flex gap-4 items-end">
                                 <div className="space-y-2 flex-1">
-                                    <Label>Name</Label>
-                                    <Input value={newTagName} onChange={e => setNewTagName(e.target.value)} placeholder="z.B. production" />
+                                    <Label>Название</Label>
+                                    <Input value={newTagName} onChange={e => setNewTagName(e.target.value)} placeholder="например, production" />
                                 </div>
                                 <div className="space-y-2 w-32">
-                                    <Label>Farbe</Label>
+                                    <Label>Цвет</Label>
                                     <div className="flex gap-2">
                                         <Input type="color" value={newTagColor} onChange={e => setNewTagColor(e.target.value)} className="w-12 p-1" />
                                         <Input value={newTagColor} onChange={e => setNewTagColor(e.target.value)} />
                                     </div>
                                 </div>
                                 <Button onClick={handleCreateTag} disabled={!newTagName}>
-                                    <Plus className="mr-2 h-4 w-4" /> Erstellen
+                                    <Plus className="mr-2 h-4 w-4" /> Создать
                                 </Button>
                             </div>
                         </CardContent>
@@ -259,9 +259,9 @@ export default function TagsPage() {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Tag</TableHead>
-                                        <TableHead>Farbe</TableHead>
-                                        <TableHead className="text-right">Aktionen</TableHead>
+                                        <TableHead>Тег</TableHead>
+                                        <TableHead>Цвет</TableHead>
+                                        <TableHead className="text-right">Действия</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -288,7 +288,7 @@ export default function TagsPage() {
                                     {tags.length === 0 && (
                                         <TableRow>
                                             <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
-                                                Keine Tags gefunden. Starten Sie einen Scan.
+                                                Теги не найдены. Запустите сканирование.
                                             </TableCell>
                                         </TableRow>
                                     )}
@@ -303,7 +303,7 @@ export default function TagsPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         {/* 1. Select Tags */}
                         <Card className="lg:col-span-1 h-[600px] flex flex-col">
-                            <CardHeader><CardTitle>1. Tags wählen</CardTitle></CardHeader>
+                            <CardHeader><CardTitle>1. Выберите теги</CardTitle></CardHeader>
                             <CardContent className="flex-1 overflow-auto p-4 pt-0">
                                 <div className="space-y-2">
                                     {tags.map(tag => (
@@ -325,9 +325,9 @@ export default function TagsPage() {
                         {/* 2. Select VMs */}
                         <Card className="lg:col-span-2 h-[600px] flex flex-col">
                             <CardHeader className="flex flex-row items-center justify-between">
-                                <CardTitle>2. VMs wählen</CardTitle>
+                                <CardTitle>2. Выберите VM</CardTitle>
                                 <div className="text-sm text-muted-foreground">
-                                    {selectedVMs.size} ausgewählt
+                                    {selectedVMs.size} выбрано
                                 </div>
                             </CardHeader>
                             <CardContent className="flex-1 overflow-auto p-4 pt-0">
@@ -375,7 +375,7 @@ export default function TagsPage() {
                                                     )
                                                 })}
                                                 {(!vmsByServer[server.id] || vmsByServer[server.id].length === 0) && (
-                                                    <p className="text-sm text-muted-foreground italic">Keine VMs gefunden API Error?</p>
+                                                    <p className="text-sm text-muted-foreground italic">VM не найдены, ошибка API?</p>
                                                 )}
                                             </div>
                                         </div>
@@ -388,7 +388,7 @@ export default function TagsPage() {
                     <div className="flex justify-end pt-4 border-t">
                         <Button size="lg" onClick={handleAssign} disabled={selectedTags.size === 0 || selectedVMs.size === 0 || assigning}>
                             {assigning ? <Loader2 className="animate-spin mr-2" /> : <TagIcon className="mr-2" />}
-                            Tags Zuweisen
+                            Назначить теги
                         </Button>
                     </div>
                 </TabsContent>

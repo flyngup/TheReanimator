@@ -41,7 +41,7 @@ export function ServerHealth({ initialResults, serverId }: ServerHealthProps) {
         try {
             const res = await scanHost(serverId);
             if (res.success && res.result) {
-                toast.success('Host Scan Complete');
+                toast.success('Сканирование хоста завершено');
                 // Optimistic update
                 const newResult: ScanResult = {
                     id: Date.now(),
@@ -53,40 +53,40 @@ export function ServerHealth({ initialResults, serverId }: ServerHealthProps) {
                 };
                 setResults(prev => [newResult, ...prev.filter(r => r.type !== 'host')]);
             } else {
-                toast.error('Scan Failed: ' + res.error);
+                toast.error('Ошибка сканирования: ' + res.error);
             }
-        } catch (e) { toast.error('Scan Error'); }
+        } catch (e) { toast.error('Ошибка сканирования'); }
         finally { setScanningHost(false); }
     }
 
     async function handleScanVMs() {
         setScanningVMs(true);
-        toast.message('Scanning all VMs... This may take a moment.');
+        toast.message('Сканирование всех ВМ... Это может занять время.');
         try {
             const res = await scanAllVMs(serverId);
             if (res.success) {
-                toast.success(`Scanned ${res.count} VMs`);
+                toast.success(`Просканировано ВМ: ${res.count}`);
                 // We'd ideally reload data here, but for now prompt refresh or fetch again
                 window.location.reload();
             } else {
-                toast.error('Scan Failed: ' + res.error);
+                toast.error('Ошибка сканирования: ' + res.error);
             }
-        } catch { toast.error('Scan Error'); }
+        } catch { toast.error('Ошибка сканирования'); }
 
         finally { setScanningVMs(false); }
     }
 
     async function handleAutomate() {
-        if (!confirm('Soll ein täglicher Scan (03:00 Uhr) eingeplant werden? Sie können dies im Task Manager verwalten.')) return;
+        if (!confirm('Запланировать ежедневное сканирование (03:00)? Управляйте задачами в менеджере задач.')) return;
         try {
             const res = await createScanSchedule(serverId, '0 3 * * *');
             if (res.success) {
-                toast.success('Hintergrund-Task erstellt!');
+                toast.success('Фоновая задача создана!');
             } else {
-                toast.error(res.error || 'Fehler beim Erstellen');
+                toast.error(res.error || 'Ошибка при создании');
             }
         } catch (e) {
-            toast.error('Fehler: ' + e);
+            toast.error('Ошибка: ' + e);
         }
     }
 
@@ -95,38 +95,38 @@ export function ServerHealth({ initialResults, serverId }: ServerHealthProps) {
             {/* Overview Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Card>
-                    <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Gesamt Score</CardTitle></CardHeader>
+                    <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Общий рейтинг</CardTitle></CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold flex items-center gap-2">
                             <ShieldCheck className={`h-6 w-6 ${avgScore >= 90 ? 'text-green-500' : avgScore >= 70 ? 'text-amber-500' : 'text-red-500'}`} />
                             {avgScore}/100
                         </div>
-                        <p className="text-xs text-muted-foreground">Sicherheitslevel</p>
+                        <p className="text-xs text-muted-foreground">Уровень безопасности</p>
                     </CardContent>
                 </Card>
                 <Card>
-                    <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Offene Probleme</CardTitle></CardHeader>
+                    <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Текущие проблемы</CardTitle></CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{totalIssues}</div>
-                        <p className="text-xs text-muted-foreground">Optimierungspotenzial</p>
+                        <p className="text-xs text-muted-foreground">Возможности оптимизации</p>
                     </CardContent>
                 </Card>
                 <Card className="flex flex-col justify-center p-4 gap-2">
                     <Button onClick={handleScanHost} disabled={scanningHost || scanningVMs} variant="outline" className="w-full justify-start">
                         {scanningHost ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Server className="mr-2 h-4 w-4" />}
-                        Host Scannen
+                        Сканировать хост
                     </Button>
                     <Button onClick={handleScanVMs} disabled={scanningHost || scanningVMs} variant="outline" className="w-full justify-start">
                         {scanningVMs ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-                        Alle VMs Scannen
+                        Сканировать все ВМ
                     </Button>
                 </Card>
             </div>
 
             <Tabs defaultValue="host">
                 <TabsList>
-                    <TabsTrigger value="host">Host System</TabsTrigger>
-                    <TabsTrigger value="vms">Virtual Machines ({vmResults.length})</TabsTrigger>
+                    <TabsTrigger value="host">Система хоста</TabsTrigger>
+                    <TabsTrigger value="vms">Виртуальные машины ({vmResults.length})</TabsTrigger>
                 </TabsList>
 
                 {/* HOST TAB */}
@@ -135,16 +135,16 @@ export function ServerHealth({ initialResults, serverId }: ServerHealthProps) {
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <Server className="h-5 w-5" />
-                                Host Konfiguration
+                                Конфигурация хоста
                                 {hostResult && <Badge variant="outline" className="ml-2">{hostResult.result.score}/100</Badge>}
                             </CardTitle>
                             <CardDescription>
-                                {hostResult ? new Date(hostResult.created_at).toLocaleString() : 'Noch nie gescannt'}
+                                {hostResult ? new Date(hostResult.created_at).toLocaleString() : 'Ещё не сканировалось'}
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
                             {!hostResult ? (
-                                <div className="text-center py-10 text-muted-foreground">Keine Scan-Daten. Starten Sie einen Scan.</div>
+                                <div className="text-center py-10 text-muted-foreground">Нет данных сканирования. Запустите сканирование.</div>
                             ) : (
                                 <ResultList issues={hostResult.result.issues} summary={hostResult.result.summary} />
                             )}
@@ -176,7 +176,7 @@ export function ServerHealth({ initialResults, serverId }: ServerHealthProps) {
                                                     </DialogTrigger>
                                                     <DialogContent className="max-w-4xl h-[80vh] flex flex-col">
                                                         <DialogHeader>
-                                                            <DialogTitle>Detaillierter System-Bericht</DialogTitle>
+                                                            <DialogTitle>Подробный системный отчет</DialogTitle>
                                                         </DialogHeader>
                                                         <ScrollArea className="flex-1 border rounded-md p-4 bg-background/50">
                                                             <div className="prose dark:prose-invert prose-sm max-w-none">
@@ -195,7 +195,7 @@ export function ServerHealth({ initialResults, serverId }: ServerHealthProps) {
                                     <ScrollArea className="h-[200px] p-4">
                                         {vm.result.issues.length === 0 ? (
                                             <div className="flex items-center gap-2 text-green-500 text-sm">
-                                                <CheckCircle className="h-4 w-4" /> Alles in Ordnung
+                                                <CheckCircle className="h-4 w-4" /> Всё в порядке
                                             </div>
                                         ) : (
                                             <div className="space-y-3">
@@ -209,7 +209,7 @@ export function ServerHealth({ initialResults, serverId }: ServerHealthProps) {
                             </Card>
                         ))}
                         {vmResults.length === 0 && (
-                            <div className="col-span-full text-center py-10 text-muted-foreground">Keine VM Scans gefunden.</div>
+                            <div className="col-span-full text-center py-10 text-muted-foreground">Сканы ВМ не найдены.</div>
                         )}
                     </div>
                 </TabsContent>

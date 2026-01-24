@@ -85,11 +85,11 @@ function formatBytes(bytes: number): string {
 }
 
 function formatBackupAge(hours: number | null): string {
-    if (hours === null) return 'Nie';
-    if (hours < 1) return 'Gerade eben';
-    if (hours < 24) return `vor ${hours}h`;
+    if (hours === null) return 'Никогда';
+    if (hours < 1) return 'Только что';
+    if (hours < 24) return `${hours}ч назад`;
     const days = Math.floor(hours / 24);
-    return `vor ${days}d`;
+    return `${days}д назад`;
 }
 
 function UsageGauge({ value, label, color, icon: Icon }: { value: number; label: string; color: string; icon: any }) {
@@ -165,7 +165,7 @@ export function MonitoringPanel() {
         return (
             <Card className="border-muted/60">
                 <CardContent className="p-8 text-center text-muted-foreground">
-                    <p>Monitoring-Daten konnten nicht geladen werden.</p>
+                    <p>Не удалось загрузить данные мониторинга.</p>
                 </CardContent>
             </Card>
         );
@@ -186,13 +186,13 @@ export function MonitoringPanel() {
                         <div className="flex items-start gap-3">
                             <AlertTriangle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
                             <div className="flex-1">
-                                <p className="font-medium text-red-500">Kritische Probleme ({criticalAlerts.length})</p>
+                                <p className="font-medium text-red-500">Критические проблемы ({criticalAlerts.length})</p>
                                 <ul className="text-sm text-red-400/80 mt-1 space-y-1">
                                     {criticalAlerts.slice(0, 3).map((alert, i) => (
                                         <li key={i}>• {alert.message}</li>
                                     ))}
                                     {criticalAlerts.length > 3 && (
-                                        <li className="text-red-400/60">... und {criticalAlerts.length - 3} weitere</li>
+                                        <li className="text-red-400/60">... и ещё {criticalAlerts.length - 3}</li>
                                     )}
                                 </ul>
                             </div>
@@ -209,13 +209,13 @@ export function MonitoringPanel() {
                     <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-muted-foreground">Server Status</p>
+                                <p className="text-sm text-muted-foreground">Состояние серверов</p>
                                 <p className="text-2xl font-bold">
                                     {summary.onlineServers}
                                     <span className="text-muted-foreground text-lg font-normal">/{summary.totalServers}</span>
                                 </p>
                                 <p className={`text-xs mt-1 ${summary.offlineServers === 0 ? 'text-green-500' : 'text-red-500'}`}>
-                                    {summary.offlineServers === 0 ? 'Alle online' : `${summary.offlineServers} offline`}
+                                    {summary.offlineServers === 0 ? 'Все онлайн' : `${summary.offlineServers} offline`}
                                 </p>
                             </div>
                             <div className={`w-12 h-12 rounded-full flex items-center justify-center ${summary.offlineServers === 0 ? 'bg-green-500/10' : 'bg-red-500/10'
@@ -231,7 +231,7 @@ export function MonitoringPanel() {
                 <Card className="overflow-hidden">
                     <div className="h-1 bg-gradient-to-r from-blue-500 to-cyan-500" />
                     <CardContent className="p-4">
-                        <p className="text-sm text-muted-foreground mb-3">Durchschnittliche Auslastung</p>
+                        <p className="text-sm text-muted-foreground mb-3">Средняя нагрузка</p>
                         <div className="flex justify-around">
                             <UsageGauge
                                 value={summary.avgCpuUsage}
@@ -261,7 +261,7 @@ export function MonitoringPanel() {
                     <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-muted-foreground">Backup-Status</p>
+                                <p className="text-sm text-muted-foreground">Статус бэкапов</p>
                                 <div className="flex items-center gap-4 mt-2">
                                     <div className="flex items-center gap-1.5">
                                         <div className="w-3 h-3 rounded-full bg-green-500" />
@@ -277,7 +277,7 @@ export function MonitoringPanel() {
                                     </div>
                                 </div>
                                 <p className="text-xs text-muted-foreground mt-2">
-                                    {summary.healthCounts.none > 0 && `${summary.healthCounts.none} ohne Backup`}
+                                    {summary.healthCounts.none > 0 && `${summary.healthCounts.none} без бэкапа`}
                                 </p>
                             </div>
                             <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center">
@@ -293,10 +293,10 @@ export function MonitoringPanel() {
                     <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-muted-foreground">Backup-Speicher</p>
+                                <p className="text-sm text-muted-foreground">Хранилище бэкапов</p>
                                 <p className="text-2xl font-bold">{formatBytes(summary.totalSize)}</p>
                                 <p className="text-xs text-muted-foreground mt-1">
-                                    {summary.totalBackups} Backups gesamt
+                                    {summary.totalBackups} всего бэкапов
                                 </p>
                             </div>
                             <div className="w-12 h-12 rounded-full bg-orange-500/10 flex items-center justify-center">
@@ -314,7 +314,7 @@ export function MonitoringPanel() {
                         <div className="flex items-start gap-3">
                             <Bell className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
                             <div className="flex-1">
-                                <p className="font-medium text-amber-500">Warnungen ({warningAlerts.length})</p>
+                                <p className="font-medium text-amber-500">Предупреждения ({warningAlerts.length})</p>
                                 <div className="flex flex-wrap gap-2 mt-2">
                                     {warningAlerts.slice(0, 5).map((alert, i) => (
                                         <span key={i} className="text-xs px-2 py-1 rounded bg-amber-500/10 text-amber-500">
@@ -334,11 +334,11 @@ export function MonitoringPanel() {
             {/* Server Grid */}
             <Card className="overflow-hidden border-muted/60">
                 <CardHeader className="py-3 px-4 bg-muted/10 flex flex-row items-center justify-between">
-                    <CardTitle className="text-base">Server-Übersicht</CardTitle>
+                    <CardTitle className="text-base">Обзор серверов</CardTitle>
                     <div className="flex items-center gap-2">
                         {lastUpdate && (
                             <span className="text-xs text-muted-foreground">
-                                {lastUpdate.toLocaleTimeString('de-DE')}
+                                {lastUpdate.toLocaleTimeString('ru-RU')}
                             </span>
                         )}
                         <Button variant="ghost" size="sm" onClick={fetchData} disabled={loading}>
@@ -422,7 +422,7 @@ export function MonitoringPanel() {
                                         </span>
                                     </div>
                                     <span className="text-muted-foreground">
-                                        {server.totalBackups} Backups
+                                        {server.totalBackups} бэкапов
                                     </span>
                                 </div>
                             </Link>
@@ -436,7 +436,7 @@ export function MonitoringPanel() {
                                 size="sm"
                                 onClick={() => setShowAllServers(!showAllServers)}
                             >
-                                {showAllServers ? 'Weniger anzeigen' : `Alle ${servers.length} Server anzeigen`}
+                                {showAllServers ? 'Показать меньше' : `Показать все ${servers.length} серверов`}
                             </Button>
                         </div>
                     )}
@@ -449,7 +449,7 @@ export function MonitoringPanel() {
                     <CardHeader className="py-3 px-4 bg-muted/10">
                         <CardTitle className="text-base flex items-center gap-2">
                             <TrendingUp className="h-4 w-4" />
-                            Letzte Backups
+                            Последние бэкапы
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="p-0">
@@ -468,14 +468,14 @@ export function MonitoringPanel() {
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-medium truncate">{backup.serverName}</p>
                                         <p className="text-xs text-muted-foreground">
-                                            {new Date(backup.backup_date).toLocaleString('de-DE', {
+                                            {new Date(backup.backup_date).toLocaleString('ru-RU', {
                                                 dateStyle: 'medium',
                                                 timeStyle: 'short'
                                             })}
                                         </p>
                                     </div>
                                     <div className="text-right text-xs text-muted-foreground">
-                                        <p>{backup.file_count} Dateien</p>
+                                        <p>{backup.file_count} файлов</p>
                                         <p>{formatBytes(backup.total_size)}</p>
                                     </div>
                                 </Link>

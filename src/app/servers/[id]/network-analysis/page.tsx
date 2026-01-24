@@ -260,7 +260,7 @@ export default function NetworkAnalysisPage() {
                                     <span>•</span>
                                     <span className="flex items-center gap-1">
                                         <Clock className="h-3 w-3" />
-                                        {new Date(lastUpdate).toLocaleString('de-DE')}
+                                        {new Date(lastUpdate).toLocaleString('ru-RU')}
                                     </span>
                                 </>
                             )}

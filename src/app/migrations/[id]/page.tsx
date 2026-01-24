@@ -42,7 +42,7 @@ export default function MigrationDetailPage({ params }: { params: Promise<{ id: 
     }
 
     async function handleCancel() {
-        if (!confirm('Migration wirklich abbrechen und Task löschen?')) return;
+        if (!confirm('Отменить миграцию и удалить задачу?')) return;
         try {
             await fetch(`/api/migrations/${id}`, { method: 'DELETE' });
             router.push('/migrations');
@@ -50,7 +50,7 @@ export default function MigrationDetailPage({ params }: { params: Promise<{ id: 
     }
 
     async function handleDelete() {
-        if (!confirm('Diesen Eintrag unwiderruflich aus dem Verlauf löschen?')) return;
+        if (!confirm('Удалить эту запись из истории без возможности восстановления?')) return;
         try {
             await fetch(`/api/migrations/${id}`, { method: 'DELETE' });
             router.push('/migrations');
@@ -58,18 +58,18 @@ export default function MigrationDetailPage({ params }: { params: Promise<{ id: 
     }
 
     const statusConfig = {
-        pending: { icon: Clock, color: 'text-gray-500', bg: 'bg-gray-500/10', label: 'Wartend', animate: false },
-        running: { icon: Loader2, color: 'text-blue-500', bg: 'bg-blue-500/10', label: 'Läuft', animate: true },
-        completed: { icon: CheckCircle, color: 'text-green-500', bg: 'bg-green-500/10', label: 'Abgeschlossen', animate: false },
-        failed: { icon: XCircle, color: 'text-red-500', bg: 'bg-red-500/10', label: 'Fehlgeschlagen', animate: false },
-        cancelled: { icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-500/10', label: 'Abgebrochen', animate: false },
+        pending: { icon: Clock, color: 'text-gray-500', bg: 'bg-gray-500/10', label: 'Ожидает', animate: false },
+        running: { icon: Loader2, color: 'text-blue-500', bg: 'bg-blue-500/10', label: 'Выполняется', animate: true },
+        completed: { icon: CheckCircle, color: 'text-green-500', bg: 'bg-green-500/10', label: 'Завершена', animate: false },
+        failed: { icon: XCircle, color: 'text-red-500', bg: 'bg-red-500/10', label: 'Сбой', animate: false },
+        cancelled: { icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-500/10', label: 'Отменена', animate: false },
     };
 
     if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
     if (!task) return (
         <div className="text-center py-20">
             <h1 className="text-2xl font-bold">Nicht gefunden</h1>
-            <Link href="/migrations"><Button className="mt-4">Zurück</Button></Link>
+            <Link href="/migrations"><Button className="mt-4">Назад</Button></Link>
         </div>
     );
 
@@ -103,7 +103,7 @@ export default function MigrationDetailPage({ params }: { params: Promise<{ id: 
                     </Button>
                 ) : (
                     <Button variant="outline" onClick={handleDelete} className="gap-2 text-red-500 hover:text-red-700 hover:bg-red-50 border-red-200">
-                        <Trash2 className="h-4 w-4" /> Löschen
+                        <Trash2 className="h-4 w-4" /> Удалить
                     </Button>
                 )}
             </div>
@@ -212,7 +212,7 @@ export default function MigrationDetailPage({ params }: { params: Promise<{ id: 
                                     {task.status === 'running' && <span className="animate-pulse inline-block w-2 h-4 bg-zinc-500 align-middle ml-1" />}
                                 </>
                             ) : (
-                                <span className="text-zinc-500 italic">Noch keine Log-Einträge...</span>
+                                <span className="text-zinc-500 italic">Ещё нет записей лога...</span>
                             )}
                         </div>
                     </ScrollArea>

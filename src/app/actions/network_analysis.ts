@@ -49,7 +49,7 @@ export async function runNetworkAnalysis(serverId: number): Promise<string> {
             analysisResult = await explainNetworkConfig(config.interfaces);
         } catch (aiError: any) {
             console.error(`[AI Analysis] AI processing failed:`, aiError);
-            throw new Error(`KI-Analyse fehlgeschlagen: ${aiError.message}`);
+            throw new Error(`AI-анализ не удался: ${aiError.message}`);
         }
 
         // Serialize for DB/Frontend

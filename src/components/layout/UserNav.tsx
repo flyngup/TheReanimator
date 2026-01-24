@@ -43,7 +43,7 @@ export function UserNav({ user }: UserNavProps) {
                     <div className="flex flex-col items-start text-left space-y-1 overflow-hidden">
                         <span className="text-sm font-semibold leading-none truncate w-full">{user.username}</span>
                         <span className="text-xs text-muted-foreground truncate w-full">
-                            {user.is_admin ? 'Administrator' : 'Benutzer'}
+                            {user.is_admin ? 'Администратор' : 'Пользователь'}
                         </span>
                     </div>
                     {/* Visual indicator for dropdown */}
@@ -57,7 +57,7 @@ export function UserNav({ user }: UserNavProps) {
                     <div className="flex flex-col space-y-1">
                         <p className="text-sm font-medium leading-none">{user.username}</p>
                         <p className="text-xs leading-none text-muted-foreground">
-                            {user.is_admin ? 'Admin Rechte' : 'Eingeschränkt'}
+                            {user.is_admin ? 'Права администратора' : 'Ограниченный доступ'}
                         </p>
                     </div>
                 </DropdownMenuLabel>
@@ -66,14 +66,14 @@ export function UserNav({ user }: UserNavProps) {
                     <DropdownMenuItem asChild>
                         <Link href="/settings" className="cursor-pointer w-full">
                             <Settings className="mr-2 h-4 w-4" />
-                            Einstellungen
+                            Настройки
                         </Link>
                     </DropdownMenuItem>
                     {user.is_admin && (
                         <DropdownMenuItem asChild>
                             <Link href="/settings/trust" className="cursor-pointer w-full">
                                 <Shield className="mr-2 h-4 w-4" />
-                                Cluster Trust
+                                Доверие кластера
                             </Link>
                         </DropdownMenuItem>
                     )}
@@ -81,7 +81,7 @@ export function UserNav({ user }: UserNavProps) {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:bg-red-500/10 focus:text-red-600 cursor-pointer">
                     <LogOut className="mr-2 h-4 w-4" />
-                    Abmelden
+                    Выйти
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

@@ -25,8 +25,8 @@ export default function Dashboard() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">Übersicht über Ihre Proxmox-Backups</p>
+        <h1 className="text-3xl font-bold">Дашборд</h1>
+        <p className="text-muted-foreground">Обзор резервных копий Proxmox</p>
       </div>
 
       {/* Stats */}
@@ -34,7 +34,7 @@ export default function Dashboard() {
         <Card className="overflow-hidden">
           <div className="h-1 bg-gradient-to-r from-orange-500 to-red-500" />
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Server</CardTitle>
+            <CardTitle className="text-sm font-medium">Серверы</CardTitle>
             <Server className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -44,7 +44,7 @@ export default function Dashboard() {
         <Card className="overflow-hidden">
           <div className="h-1 bg-gradient-to-r from-blue-500 to-cyan-500" />
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Jobs</CardTitle>
+            <CardTitle className="text-sm font-medium">Задачи</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -54,7 +54,7 @@ export default function Dashboard() {
         <Card className="overflow-hidden">
           <div className="h-1 bg-gradient-to-r from-purple-500 to-pink-500" />
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Backups</CardTitle>
+            <CardTitle className="text-sm font-medium">Бэкапы</CardTitle>
             <FolderCog className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -66,19 +66,19 @@ export default function Dashboard() {
       {/* Quick Actions */}
       <Card className="overflow-hidden border-muted/60">
         <CardHeader>
-          <CardTitle>Schnellaktionen</CardTitle>
+          <CardTitle>Быстрые действия</CardTitle>
         </CardHeader>
         <CardContent className="flex gap-4">
           <Link href="/servers/new">
             <Button variant="outline">
               <Server className="mr-2 h-4 w-4" />
-              Server hinzufügen
+              Добавить сервер
             </Button>
           </Link>
           <Link href="/configs">
             <Button>
               <Download className="mr-2 h-4 w-4" />
-              Backup erstellen
+              Создать бэкап
             </Button>
           </Link>
           <GlobalScanButton />
@@ -89,7 +89,7 @@ export default function Dashboard() {
       <div>
         <div className="flex items-center gap-2 mb-4">
           <Activity className="h-5 w-5 text-primary" />
-          <h2 className="text-xl font-semibold">Monitoring</h2>
+          <h2 className="text-xl font-semibold">Мониторинг</h2>
         </div>
         <MonitoringPanel />
       </div>
@@ -98,7 +98,7 @@ export default function Dashboard() {
       <div>
         <div className="flex items-center gap-2 mb-4">
           <Database className="h-5 w-5 text-primary" />
-          <h2 className="text-xl font-semibold">Storage</h2>
+          <h2 className="text-xl font-semibold">Хранилище</h2>
         </div>
         <StorageDashboard />
       </div>
@@ -106,11 +106,11 @@ export default function Dashboard() {
       {/* Recent Backups */}
       <Card className="overflow-hidden border-muted/60">
         <CardHeader>
-          <CardTitle>Letzte Backups</CardTitle>
+          <CardTitle>Последние бэкапы</CardTitle>
         </CardHeader>
         <CardContent>
           {recentBackups.length === 0 ? (
-            <p className="text-muted-foreground">Noch keine Backups vorhanden</p>
+            <p className="text-muted-foreground">Бэкапов пока нет</p>
           ) : (
             <div className="space-y-2">
               {recentBackups.map((backup) => (
@@ -118,11 +118,11 @@ export default function Dashboard() {
                   <div>
                     <p className="font-medium">{backup.server_name}</p>
                     <p className="text-sm text-muted-foreground">
-                      {new Date(backup.backup_date).toLocaleString('de-DE')} · {backup.file_count} Dateien
+                      {new Date(backup.backup_date).toLocaleString('ru-RU')} · {backup.file_count} файлов
                     </p>
                   </div>
                   <Link href={`/configs/${backup.id}`}>
-                    <Button variant="ghost" size="sm">Anzeigen</Button>
+                    <Button variant="ghost" size="sm">Показать</Button>
                   </Link>
                 </div>
               ))}

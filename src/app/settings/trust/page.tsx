@@ -41,8 +41,8 @@ export default function TrustPage() {
     const clearTargets = () => setTargets([]);
 
     const handleExecute = async () => {
-        // if (!password) return alert('Bitte Root-Passwort eingeben'); // Removed to allow fallback
-        if (sources.length === 0 || targets.length === 0) return alert('Bitte Quellen und Ziele wählen');
+        // if (!password) return alert('Введите root-пароль'); // Removed to allow fallback
+        if (sources.length === 0 || targets.length === 0) return alert('Выберите источники и назначения');
 
         setProcessing(true);
         setLogs([]);
@@ -52,7 +52,7 @@ export default function TrustPage() {
             const results = await establishClusterTrust(sources, targets, password);
             setLogs(results);
         } catch (e: any) {
-            alert('Fehler: ' + e.message);
+            alert('Ошибка: ' + e.message);
         } finally {
             setProcessing(false);
         }
@@ -68,10 +68,10 @@ export default function TrustPage() {
             <div>
                 <h1 className="text-3xl font-bold flex items-center gap-2">
                     <ShieldCheck className="h-8 w-8 text-primary" />
-                    SSH Cluster Trust
+                    SSH доверие в кластере
                 </h1>
                 <p className="text-muted-foreground">
-                    Verbinden Sie mehrere Server automatisch miteinander (SSH Key Exchange).
+                    Соедините несколько серверов автоматически (обмен SSH ключами).
                 </p>
             </div>
 
@@ -79,18 +79,18 @@ export default function TrustPage() {
                 {/* Configuration */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Konfiguration</CardTitle>
-                        <CardDescription>Wählen Sie Quell- und Zielserver</CardDescription>
+                        <CardTitle>Конфигурация</CardTitle>
+                        <CardDescription>Выберите серверы источники и назначения</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
 
                         {/* Sources */}
                         <div className="space-y-3">
                             <div className="flex items-center justify-between">
-                                <Label className="text-base font-medium">Quell-Server (Von wo?)</Label>
+                                <Label className="text-base font-medium">Серверы-источники (Откуда?)</Label>
                                 <div className="text-xs space-x-2">
-                                    <Button variant="ghost" size="sm" onClick={selectAllSources}>Alle</Button>
-                                    <Button variant="ghost" size="sm" onClick={clearSources}>Keine</Button>
+                                    <Button variant="ghost" size="sm" onClick={selectAllSources}>Все</Button>
+                                    <Button variant="ghost" size="sm" onClick={clearSources}>Никого</Button>
                                 </div>
                             </div>
                             <ScrollArea className="h-[200px] border rounded-md p-4">
@@ -115,10 +115,10 @@ export default function TrustPage() {
                         {/* Targets */}
                         <div className="space-y-3">
                             <div className="flex items-center justify-between">
-                                <Label className="text-base font-medium">Ziel-Server (Wohin?)</Label>
+                                <Label className="text-base font-medium">Серверы назначения (Куда?)</Label>
                                 <div className="text-xs space-x-2">
-                                    <Button variant="ghost" size="sm" onClick={selectAllTargets}>Alle</Button>
-                                    <Button variant="ghost" size="sm" onClick={clearTargets}>Keine</Button>
+                                    <Button variant="ghost" size="sm" onClick={selectAllTargets}>Все</Button>
+                                    <Button variant="ghost" size="sm" onClick={clearTargets}>Никого</Button>
                                 </div>
                             </div>
                             <ScrollArea className="h-[200px] border rounded-md p-4">
@@ -142,21 +142,21 @@ export default function TrustPage() {
 
                         {/* Password */}
                         <div className="space-y-3 pt-4 border-t">
-                            <Label>Root Passwort (Optional - überschreibt gespeicherte Credentials)</Label>
+                            <Label>Root пароль (опционально - перезаписывает сохранённые учётные данные)</Label>
                             <div className="flex gap-2">
                                 <Input
                                     type="password"
-                                    placeholder="Gemeinsames Root Passwort (leer lassen für gespeicherte)"
+                                    placeholder="Общий root пароль (оставьте пустым для сохранённых)"
                                     value={password}
                                     onChange={e => setPassword(e.target.value)}
                                 />
                                 <Button onClick={handleExecute} disabled={processing}>
                                     {processing ? <Loader2 className="animate-spin mr-2" /> : <Key className="mr-2 h-4 w-4" />}
-                                    Trust Einrichten
+                                    Настроить доверие
                                 </Button>
                             </div>
                             <p className="text-xs text-muted-foreground">
-                                Wenn leer, werden die gespeicherten Credentials (aus Server-Verwaltung) genutzt.
+                                Если пусто, используются сохранённые учётные данные (из управления серверами).
                             </p>
                         </div>
 
@@ -166,11 +166,11 @@ export default function TrustPage() {
                 {/* Log / Status */}
                 <Card className="h-full flex flex-col">
                     <CardHeader>
-                        <CardTitle>Verlauf & Status</CardTitle>
+                        <CardTitle>Ход выполнения и статус</CardTitle>
                         <CardDescription>
                             {logs.length > 0
-                                ? `${successCount} Erfolgreich, ${errorCount} Fehler`
-                                : "Ergebnisse erscheinen hier..."}
+                                ? `${successCount} успешно, ${errorCount} ошибок`
+                                : "Результаты появятся здесь..."}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="flex-1 min-h-[400px]">
@@ -178,7 +178,7 @@ export default function TrustPage() {
                             {logs.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center h-full text-muted-foreground opacity-50 py-20">
                                     <ShieldCheck className="h-16 w-16 mb-4" />
-                                    <p>Starten Sie den Prozess</p>
+                                    <p>Запустите процесс</p>
                                 </div>
                             ) : (
                                 <div className="space-y-2">

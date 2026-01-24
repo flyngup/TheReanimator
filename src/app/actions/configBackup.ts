@@ -38,11 +38,11 @@ export async function createConfigBackup(serverId: number): Promise<{ success: b
     const server = db.prepare('SELECT * FROM servers WHERE id = ?').get(serverId) as Server | undefined;
 
     if (!server) {
-        return { success: false, message: 'Server nicht gefunden' };
+        return { success: false, message: 'Сервер не найден' };
     }
 
     if (!server.ssh_key) {
-        return { success: false, message: 'SSH-Credentials fehlen' };
+        return { success: false, message: 'SSH данные отсутствуют' };
     }
 
     try {
@@ -54,7 +54,7 @@ export async function createConfigBackup(serverId: number): Promise<{ success: b
         console.error('[ConfigBackup] Backup failed:', err);
         return {
             success: false,
-            message: `Backup fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`
+            message: `Ошибка бэкапа: ${err instanceof Error ? err.message : String(err)}`
         };
     }
 }
@@ -133,9 +133,9 @@ export async function deleteConfigBackup(backupId: number) {
             fs.rmSync(backup.backup_path, { recursive: true });
         }
         db.prepare('DELETE FROM config_backups WHERE id = ?').run(backupId);
-        return { success: true, message: 'Gelöscht' };
+        return { success: true, message: 'Удалено' };
     } catch (e) {
-        return { success: false, message: 'Fehler beim Löschen' };
+        return { success: false, message: 'Ошибка при удалении' };
     }
 }
 export async function restoreFile(backupId: number, filePath: string, serverId: number) {

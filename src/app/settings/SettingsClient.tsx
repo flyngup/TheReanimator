@@ -45,7 +45,7 @@ export default function SettingsClient() {
     }
 
     async function performUpdate() {
-        if (!confirm('Möchten Sie das Update jetzt durchführen? Die Anwendung wird danach neu gestartet.')) return;
+        if (!confirm('Выполнить обновление сейчас? Приложение будет перезапущено.')) return;
 
         setUpdating(true);
         setUpdateLog([]);
@@ -91,13 +91,13 @@ export default function SettingsClient() {
     }
 
     async function handleRestart() {
-        if (!confirm('Möchten Sie die Anwendung neu starten?')) return;
+        if (!confirm('Перезапустить приложение?')) return;
         try {
             await fetch('/api/update', {
                 method: 'POST',
                 headers: { 'X-Restart-Only': 'true' }
             });
-            toast.success("Neustart initiiert");
+            toast.success("Перезапуск инициирован");
         } catch {
             // Expected to fail as server restarts
         }
@@ -107,7 +107,7 @@ export default function SettingsClient() {
 
     const copyCommand = () => {
         navigator.clipboard.writeText(manualCommand);
-        toast.success("Befehl kopiert!");
+        toast.success("Команда скопирована!");
     };
 
     return (
@@ -118,10 +118,10 @@ export default function SettingsClient() {
                 </div>
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-                        System Einstellungen
+                        Системные настройки
                         <span className="text-xs bg-amber-500/10 text-amber-500 px-2.5 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-wide font-bold">Beta</span>
                     </h1>
-                    <p className="text-muted-foreground">Verwaltung und Wartung der Reanimator-Instanz</p>
+                    <p className="text-muted-foreground">Управление и обслуживание экземпляра Reanimator</p>
                 </div>
             </div>
 
@@ -134,16 +134,16 @@ export default function SettingsClient() {
                             <div className="flex items-center justify-between">
                                 <CardTitle className="flex items-center gap-2">
                                     <Download className="h-5 w-5 text-primary" />
-                                    Software & Updates
+                                    Программное обеспечение и обновления
                                 </CardTitle>
                                 {versionInfo && (
                                     <span className={`text-xs px-2 py-1 rounded-full font-medium border ${versionInfo.updateAvailable ? 'bg-green-500/10 text-green-600 border-green-200' : 'bg-muted text-muted-foreground border-border'}`}>
-                                        {versionInfo.updateAvailable ? 'Update verfügbar' : 'Aktuell'}
+                                        {versionInfo.updateAvailable ? 'Доступно обновление' : 'Актуально'}
                                     </span>
                                 )}
                             </div>
                             <CardDescription>
-                                Versionsverwaltung und automatisches Update
+                                Управление версиями и автоматическое обновление
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="p-6 space-y-6">
@@ -154,7 +154,7 @@ export default function SettingsClient() {
                                         <GitBranch className="h-6 w-6 text-primary" />
                                     </div>
                                     <div>
-                                        <p className="font-medium text-sm text-muted-foreground">Installierte Version</p>
+                                        <p className="font-medium text-sm text-muted-foreground">Установленная версия</p>
                                         <div className="flex items-center gap-2">
                                             <span className="text-xl font-bold tracking-tight">
                                                 v{versionInfo?.currentVersion || '...'}
@@ -172,7 +172,7 @@ export default function SettingsClient() {
                                         variant="outline"
                                         size="sm"
                                         className="flex-1 sm:flex-none"
-                                        onClick={() => window.open('https://github.com/jahartmann/Reanimator', '_blank')}
+                                        onClick={() => window.open('https://github.com/jahartmann/TheReanimator', '_blank')}
                                     >
                                         GitHub
                                     </Button>
@@ -184,7 +184,7 @@ export default function SettingsClient() {
                                         disabled={checking || updating}
                                     >
                                         {checking ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
-                                        Prüfen
+                                        Проверить
                                     </Button>
                                 </div>
                             </div>
@@ -197,9 +197,9 @@ export default function SettingsClient() {
                                             <CheckCircle2 className="h-5 w-5" />
                                         </div>
                                         <div>
-                                            <p className="font-medium text-green-700 dark:text-green-400">Neue Version verfügbar</p>
+                                            <p className="font-medium text-green-700 dark:text-green-400">Доступна новая версия</p>
                                             <p className="text-sm text-green-600/80 dark:text-green-500/80">
-                                                {versionInfo.commitsBehind} neue Commit{versionInfo.commitsBehind > 1 ? 's' : ''} bereit zur Installation.
+                                                {versionInfo.commitsBehind} новых коммитов готово к установке.
                                                 <span className="font-mono text-xs ml-2 opacity-75">
                                                     ({versionInfo.currentCommit} → {versionInfo.remoteCommit})
                                                 </span>
@@ -208,7 +208,7 @@ export default function SettingsClient() {
                                     </div>
                                     <Button onClick={performUpdate} className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto">
                                         <Download className="h-4 w-4 mr-2" />
-                                        Jetzt aktualisieren
+                                        Обновить сейчас
                                     </Button>
                                 </div>
                             )}
@@ -218,8 +218,8 @@ export default function SettingsClient() {
                                 <div className="space-y-3 pt-2">
                                     <div className="flex items-center gap-2 px-1">
                                         <Terminal className="h-4 w-4 text-muted-foreground" />
-                                        <span className="text-sm font-medium">Update Protokoll</span>
-                                        {updating && <span className="text-xs text-muted-foreground animate-pulse ml-auto">Installation läuft...</span>}
+                                        <span className="text-sm font-medium">Журнал обновления</span>
+                                        {updating && <span className="text-xs text-muted-foreground animate-pulse ml-auto">Установка...</span>}
                                     </div>
                                     <div className="rounded-xl border bg-[#0f0f0f] shadow-inner overflow-hidden">
                                         <div className="flex items-center gap-1.5 px-4 py-2 bg-[#1a1a1a] border-b border-[#333]">
@@ -230,7 +230,7 @@ export default function SettingsClient() {
                                         </div>
                                         <ScrollArea className="h-[250px] w-full p-4">
                                             <pre className="text-xs font-mono text-zinc-400 whitespace-pre-wrap leading-relaxed">
-                                                {updateLog.length === 0 && <span className="opacity-50">Warte auf Start...</span>}
+                                                {updateLog.length === 0 && <span className="opacity-50">Ожидание запуска...</span>}
                                                 {updateLog.map((line, i) => (
                                                     <div key={i} className="py-0.5 border-l-2 border-transparent hover:border-zinc-700 pl-2 -ml-2 transition-colors">
                                                         {line.startsWith('✅') ? <span className="text-green-400">{line}</span> :
@@ -239,7 +239,7 @@ export default function SettingsClient() {
                                                                     <span className="text-zinc-300">{line}</span>}
                                                     </div>
                                                 ))}
-                                                {updateComplete && <div className="mt-4 pt-2 border-t border-zinc-800 text-green-500 font-bold">✨ Vorgang abgeschlossen.</div>}
+                                                {updateComplete && <div className="mt-4 pt-2 border-t border-zinc-800 text-green-500 font-bold">✨ Операция завершена.</div>}
                                             </pre>
                                         </ScrollArea>
                                     </div>
@@ -259,24 +259,24 @@ export default function SettingsClient() {
                         <CardHeader className="pb-3">
                             <CardTitle className="flex items-center gap-2 text-base">
                                 <Power className="h-5 w-5 text-orange-500" />
-                                Systemsteuerung
+                                Управление системой
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border">
                                 <div>
-                                    <h4 className="font-medium text-sm">Dienst Neustart</h4>
-                                    <p className="text-xs text-muted-foreground">Startet die Node.js App neu</p>
+                                    <h4 className="font-medium text-sm">Перезапуск сервиса</h4>
+                                    <p className="text-xs text-muted-foreground">Перезапускает Node.js приложение</p>
                                 </div>
                                 <Button variant="secondary" size="sm" onClick={handleRestart} className="hover:bg-orange-500/10 hover:text-orange-600 border shadow-sm">
                                     <RefreshCw className="mr-2 h-3.5 w-3.5" />
-                                    Restart
+                                    Перезапустить
                                 </Button>
                             </div>
 
                             <div className="pt-2">
                                 <p className="text-xs font-medium mb-2 flex items-center gap-2">
-                                    <Terminal className="h-3 w-3" /> Manuelles CLI Update
+                                    <Terminal className="h-3 w-3" /> Ручное обновление через CLI
                                 </p>
                                 <div className="relative group">
                                     <code className="block p-3 bg-muted rounded-lg text-[10px] font-mono text-muted-foreground break-all border group-hover:border-foreground/20 transition-colors">
@@ -292,7 +292,7 @@ export default function SettingsClient() {
                                     </Button>
                                 </div>
                                 <p className="text-[10px] text-muted-foreground mt-1.5 flex items-center gap-1">
-                                    <Info className="h-3 w-3" /> Befehl als <strong>root</strong> ausführen.
+                                    <Info className="h-3 w-3" /> Выполнить как <strong>root</strong>.
                                 </p>
                             </div>
                         </CardContent>
@@ -303,14 +303,14 @@ export default function SettingsClient() {
                         <CardHeader className="pb-3">
                             <CardTitle className="flex items-center gap-2 text-base">
                                 <Info className="h-5 w-5 text-blue-500" />
-                                Information
+                                Информация
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3">
                             <div className="flex items-center gap-3 text-sm p-2 hover:bg-muted/50 rounded transition-colors">
                                 <Database className="h-4 w-4 text-muted-foreground" />
                                 <div className="flex-1">
-                                    <p className="font-medium">Datenbank</p>
+                                    <p className="font-medium">База данных</p>
                                     <p className="text-xs text-muted-foreground">SQLite (WAL Mode)</p>
                                 </div>
                                 <span className="text-xs bg-muted px-1.5 py-0.5 rounded">data/proxhost.db</span>
@@ -318,16 +318,16 @@ export default function SettingsClient() {
                             <div className="flex items-center gap-3 text-sm p-2 hover:bg-muted/50 rounded transition-colors">
                                 <HardDrive className="h-4 w-4 text-muted-foreground" />
                                 <div className="flex-1">
-                                    <p className="font-medium">Backup Pfad</p>
-                                    <p className="text-xs text-muted-foreground">Automatische Konfig-Sicherung</p>
+                                    <p className="font-medium">Путь бэкапов</p>
+                                    <p className="text-xs text-muted-foreground">Автоматическое сохранение конфигураций</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-3 text-sm p-2 hover:bg-muted/50 rounded transition-colors">
                                 <Server className="h-4 w-4 text-muted-foreground" />
                                 <div className="flex-1">
-                                    <p className="font-medium">Umgebung</p>
+                                    <p className="font-medium">Окружение</p>
                                     <p className="text-xs text-muted-foreground transition-all hover:text-foreground">
-                                        Server: {process.env.NODE_ENV}
+                                        Сервер: {process.env.NODE_ENV}
                                     </p>
                                 </div>
                             </div>
@@ -366,11 +366,11 @@ function AICard() {
         if (res.success && res.models) {
             setConnected(true);
             setModels(res.models);
-            if (showToast) toast.success(`Verbunden! ${res.models.length} Modelle gefunden.`);
+            if (showToast) toast.success(`Подключено! Найдено моделей: ${res.models.length}.`);
         } else {
             setConnected(false);
             setModels([]);
-            if (showToast) toast.error(`Verbindung fehlgeschlagen: ${res.message}`);
+            if (showToast) toast.error(`Ошибка подключения: ${res.message}`);
         }
     }
 
@@ -388,7 +388,7 @@ function AICard() {
 
         await saveAISettings(newUrl, newModel, newEnabled);
         setSaving(false);
-        toast.success(newEnabled ? 'KI-Funktionen aktiviert' : 'KI-Funktionen deaktiviert');
+        toast.success(newEnabled ? 'AI функции активированы' : 'AI функции деактивированы');
 
         // Improve local state consistency
         if (!newEnabled) {
@@ -409,12 +409,12 @@ function AICard() {
                 <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-2">
                         <Sparkles className="h-5 w-5 text-purple-500" />
-                        AI Assistent (Ollama)
+                        AI Ассистент (Ollama)
                     </CardTitle>
                     <div className="flex items-center gap-3">
                         {connected && enabled && (
                             <span className="text-xs px-2 py-1 rounded-full font-medium border bg-green-500/10 text-green-600 border-green-200">
-                                Verbunden
+                                Подключено
                             </span>
                         )}
                         <Switch
@@ -425,15 +425,15 @@ function AICard() {
                     </div>
                 </div>
                 <CardDescription>
-                    Schließen Sie ein lokales KI-Modell (Ollama) an, um erweiterte Features wie Netzwerk-Analysen, Log-Erklärungen und Smart-Tagging zu aktivieren.
+                    Подключите локальную AI модель (Ollama) для расширенных функций: анализ сети, объяснение логов, умные теги.
                 </CardDescription>
             </CardHeader>
             <CardContent className="p-6 space-y-4">
                 {!enabled ? (
                     <div className="text-center py-8 text-muted-foreground bg-muted/20 rounded-xl border border-dashed">
                         <Sparkles className="h-8 w-8 mx-auto mb-3 opacity-20" />
-                        <p className="text-sm font-medium">KI-Funktionen sind deaktiviert</p>
-                        <p className="text-xs opacity-70 mt-1">Aktivieren Sie den Schalter oben rechts, um KI-Features zu nutzen.</p>
+                        <p className="text-sm font-medium">AI функции деактивированы</p>
+                        <p className="text-xs opacity-70 mt-1">Включите переключатель справа вверху для использования AI функций.</p>
                     </div>
                 ) : (
                     <>
@@ -454,14 +454,14 @@ function AICard() {
                                     {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                                 </Button>
                             </div>
-                            <p className="text-[10px] text-muted-foreground">Standard Port ist 11434. Stellen Sie sicher, dass Ollama läuft.</p>
+                            <p className="text-[10px] text-muted-foreground">Стандартный порт 11434. Убедитесь, что Ollama запущен.</p>
                         </div>
 
                         <div className="space-y-2">
-                            <Label>Modell wählen</Label>
+                            <Label>Выбрать модель</Label>
                             <Select value={model} onValueChange={setModel} disabled={!connected || models.length === 0}>
                                 <SelectTrigger>
-                                    <SelectValue placeholder={connected ? "Modell wählen..." : "Erst verbinden..."} />
+                                    <SelectValue placeholder={connected ? "Выберите модель..." : "Сначала подключитесь..."} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {models.map(m => (
@@ -481,7 +481,7 @@ function AICard() {
                         <div className="pt-2 flex justify-end">
                             <Button onClick={() => handleSave(url, model, true)} disabled={saving || !connected || !model} className="bg-purple-600 hover:bg-purple-700 text-white">
                                 <BrainCircuit className="h-4 w-4 mr-2" />
-                                Einstellungen Speichern
+                                Сохранить настройки
                             </Button>
                         </div>
                     </>

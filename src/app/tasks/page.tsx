@@ -72,13 +72,13 @@ export default function TasksPage() {
     }, [tasks, filterStatus, filterType, searchQuery]);
 
     async function handleStopTask(task: TaskItem) {
-        if (!confirm(`Task "${task.description}" wirklich abbrechen?`)) return;
+        if (!confirm(`Действительно остановить задачу "${task.description}"?`)) return;
         try {
             await cancelTask(task.id);
-            toast.success('Stop-Signal gesendet');
+            toast.success('Сигнал остановки отправлен');
             loadTasks();
         } catch (e) {
-            toast.error('Fehler beim Stoppen');
+            toast.error('Ошибка при остановке');
         }
     }
 
@@ -94,6 +94,18 @@ export default function TasksPage() {
         }
     };
 
+    const getStatusText = (status: string): string => {
+        const statusMap: Record<string, string> = {
+            'running': 'Выполняется',
+            'completed': 'Завершено',
+            'success': 'Успешно',
+            'failed': 'Ошибка',
+            'cancelled': 'Отменено',
+            'pending': 'Ожидает'
+        };
+        return statusMap[status] || status;
+    };
+
     const getTypeIcon = (type: string) => {
         switch (type) {
             case 'scan': return <ScanLine className="h-3 w-3" />;
@@ -101,6 +113,16 @@ export default function TasksPage() {
             case 'background': return <Copy className="h-3 w-3" />;
             default: return <Activity className="h-3 w-3" />;
         }
+    };
+
+    const getTypeText = (type: string): string => {
+        const typeMap: Record<string, string> = {
+            'scan': 'Сканирование',
+            'migration': 'Миграция',
+            'background': 'Синхронизация',
+            'config': 'Бэкап'
+        };
+        return typeMap[type] || type;
     };
 
     const runningCount = tasks.filter(t => t.status === 'running').length;
@@ -112,18 +134,18 @@ export default function TasksPage() {
                 <div>
                     <h1 className="text-3xl font-bold flex items-center gap-3">
                         <ListTodo className="h-8 w-8" />
-                        Task Center
+                        Центр задач
                         {runningCount > 0 && (
                             <Badge variant="default" className="ml-2 bg-blue-600 animate-pulse">
-                                {runningCount} aktiv
+                                {runningCount} активно
                             </Badge>
                         )}
                     </h1>
-                    <p className="text-muted-foreground mt-1">Übersicht aller Hintergrundprozesse</p>
+                    <p className="text-muted-foreground mt-1">Обзор всех фоновых процессов</p>
                 </div>
                 <Button variant="outline" onClick={() => loadTasks()} disabled={loading}>
                     <RefreshCw className={cn("mr-2 h-4 w-4", loading && "animate-spin")} />
-                    Aktualisieren
+                    Обновить
                 </Button>
             </div>
 
@@ -132,7 +154,7 @@ export default function TasksPage() {
                 <div className="relative flex-1 min-w-[200px] max-w-[400px]">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                        placeholder="Suche nach Beschreibung, Node, ID..."
+                        placeholder="Поиск по описанию, ноде, ID..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="pl-10"
@@ -140,26 +162,26 @@ export default function TasksPage() {
                 </div>
                 <Select value={filterType} onValueChange={setFilterType}>
                     <SelectTrigger className="w-[160px]">
-                        <SelectValue placeholder="Job Typ" />
+                        <SelectValue placeholder="Тип задачи" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="all">Alle Typen</SelectItem>
-                        <SelectItem value="scan">🔍 Scan</SelectItem>
-                        <SelectItem value="migration">🚀 Migration</SelectItem>
-                        <SelectItem value="background">📦 Sync/Copy</SelectItem>
-                        <SelectItem value="config">💾 Backup</SelectItem>
+                        <SelectItem value="all">Все типы</SelectItem>
+                        <SelectItem value="scan">🔍 Сканирование</SelectItem>
+                        <SelectItem value="migration">🚀 Миграция</SelectItem>
+                        <SelectItem value="background">📦 Синхронизация</SelectItem>
+                        <SelectItem value="config">💾 Бэкап</SelectItem>
                     </SelectContent>
                 </Select>
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
                     <SelectTrigger className="w-[160px]">
-                        <SelectValue placeholder="Status" />
+                        <SelectValue placeholder="Статус" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="all">Alle Status</SelectItem>
-                        <SelectItem value="running">⏳ Running</SelectItem>
-                        <SelectItem value="completed">✅ Completed</SelectItem>
-                        <SelectItem value="failed">❌ Failed</SelectItem>
-                        <SelectItem value="cancelled">🛑 Cancelled</SelectItem>
+                        <SelectItem value="all">Все статусы</SelectItem>
+                        <SelectItem value="running">⏳ Выполняется</SelectItem>
+                        <SelectItem value="completed">✅ Завершено</SelectItem>
+                        <SelectItem value="failed">❌ Ошибка</SelectItem>
+                        <SelectItem value="cancelled">🛑 Отменено</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
@@ -170,9 +192,9 @@ export default function TasksPage() {
                 <Card className={cn("flex flex-col transition-all duration-300", selectedTask ? "w-[55%]" : "w-full")}>
                     <CardHeader className="py-3 px-4 border-b">
                         <CardTitle className="text-sm font-medium flex items-center justify-between">
-                            <span>Tasks ({filteredTasks.length})</span>
+                            <span>Задачи ({filteredTasks.length})</span>
                             <span className="text-xs text-muted-foreground font-normal">
-                                Live-Update alle 2s
+                                Обновление каждые 2с
                             </span>
                         </CardTitle>
                     </CardHeader>
@@ -182,11 +204,11 @@ export default function TasksPage() {
                                 <TableHeader className="sticky top-0 bg-card z-10">
                                     <TableRow>
                                         <TableHead className="w-[40px]"></TableHead>
-                                        <TableHead className="w-[140px]">Zeit</TableHead>
-                                        <TableHead className="w-[100px]">Node</TableHead>
-                                        <TableHead>Beschreibung</TableHead>
-                                        <TableHead className="w-[90px]">Dauer</TableHead>
-                                        <TableHead className="w-[100px]">Status</TableHead>
+                                        <TableHead className="w-[140px]">Время</TableHead>
+                                        <TableHead className="w-[100px]">Нода</TableHead>
+                                        <TableHead>Описание</TableHead>
+                                        <TableHead className="w-[90px]">Длительность</TableHead>
+                                        <TableHead className="w-[100px]">Статус</TableHead>
                                         <TableHead className="w-[60px]"></TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -194,7 +216,7 @@ export default function TasksPage() {
                                     {filteredTasks.length === 0 ? (
                                         <TableRow>
                                             <TableCell colSpan={7} className="text-center h-32 text-muted-foreground">
-                                                {loading ? <Loader2 className="h-6 w-6 animate-spin mx-auto" /> : 'Keine Tasks gefunden'}
+                                                {loading ? <Loader2 className="h-6 w-6 animate-spin mx-auto" /> : 'Задач не найдено'}
                                             </TableCell>
                                         </TableRow>
                                     ) : (
@@ -211,7 +233,7 @@ export default function TasksPage() {
                                             >
                                                 <TableCell>{getStatusIcon(task.status)}</TableCell>
                                                 <TableCell className="text-xs text-muted-foreground font-mono">
-                                                    {new Date(task.startTime).toLocaleString('de-DE', {
+                                                    {new Date(task.startTime).toLocaleString('ru-RU', {
                                                         day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
                                                     })}
                                                 </TableCell>
@@ -220,7 +242,7 @@ export default function TasksPage() {
                                                     <div className="flex items-center gap-2">
                                                         <Badge variant="outline" className="text-[9px] uppercase px-1.5 py-0 gap-1">
                                                             {getTypeIcon(task.type)}
-                                                            {task.type}
+                                                            {getTypeText(task.type)}
                                                         </Badge>
                                                         <span className="truncate max-w-[250px] text-sm" title={task.description}>
                                                             {task.description}
@@ -234,7 +256,7 @@ export default function TasksPage() {
                                                             task.status === 'running' ? 'default' :
                                                                 task.status === 'cancelled' ? 'secondary' : 'outline'
                                                     }>
-                                                        {task.status}
+                                                        {getStatusText(task.status)}
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell>
@@ -275,7 +297,7 @@ export default function TasksPage() {
                                         onClick={() => handleStopTask(selectedTask)}
                                     >
                                         <StopCircle className="mr-1 h-3 w-3" />
-                                        Stop
+                                        Остановить
                                     </Button>
                                 )}
                                 <Button
@@ -284,7 +306,7 @@ export default function TasksPage() {
                                     className="h-7 text-xs"
                                     onClick={() => setSelectedTask(null)}
                                 >
-                                    Schließen
+                                    Закрыть
                                 </Button>
                             </div>
                         </CardHeader>
@@ -296,23 +318,23 @@ export default function TasksPage() {
                                 <p className="font-mono text-xs truncate" title={selectedTask.id}>{selectedTask.id}</p>
                             </div>
                             <div>
-                                <p className="text-xs text-muted-foreground">Typ</p>
-                                <p className="capitalize">{selectedTask.type}</p>
+                                <p className="text-xs text-muted-foreground">Тип</p>
+                                <p>{getTypeText(selectedTask.type)}</p>
                             </div>
                             <div>
-                                <p className="text-xs text-muted-foreground">Node</p>
+                                <p className="text-xs text-muted-foreground">Узел</p>
                                 <p>{selectedTask.node || '-'}</p>
                             </div>
                             <div>
-                                <p className="text-xs text-muted-foreground">Start</p>
-                                <p>{new Date(selectedTask.startTime).toLocaleString('de-DE')}</p>
+                                <p className="text-xs text-muted-foreground">Начало</p>
+                                <p>{new Date(selectedTask.startTime).toLocaleString('ru-RU')}</p>
                             </div>
                             <div>
-                                <p className="text-xs text-muted-foreground">Ende</p>
-                                <p>{selectedTask.endTime ? new Date(selectedTask.endTime).toLocaleString('de-DE') : '-'}</p>
+                                <p className="text-xs text-muted-foreground">Конец</p>
+                                <p>{selectedTask.endTime ? new Date(selectedTask.endTime).toLocaleString('ru-RU') : '-'}</p>
                             </div>
                             <div>
-                                <p className="text-xs text-muted-foreground">Dauer</p>
+                                <p className="text-xs text-muted-foreground">Длительность</p>
                                 <p>{selectedTask.duration || '-'}</p>
                             </div>
                         </div>
@@ -320,17 +342,17 @@ export default function TasksPage() {
                         {/* Log Output */}
                         <div className="flex-1 bg-black/95 overflow-hidden flex flex-col">
                             <div className="px-3 py-2 border-b border-white/10 text-xs text-white/50 flex items-center justify-between">
-                                <span>Log Output</span>
+                                <span>Вывод логов</span>
                                 {selectedTask.status === 'running' && (
                                     <span className="flex items-center gap-1 text-green-400">
                                         <span className="h-2 w-2 bg-green-400 rounded-full animate-pulse" />
-                                        Live
+                                        Прямой эфир
                                     </span>
                                 )}
                             </div>
                             <ScrollArea className="flex-1 p-4">
                                 <pre className="font-mono text-xs text-green-400 whitespace-pre-wrap leading-relaxed select-text">
-                                    {selectedTask.log || '... Warte auf Log-Output ...'}
+                                    {selectedTask.log || '... Ожидание вывода логов ...'}
                                     {selectedTask.status === 'running' && (
                                         <span className="animate-pulse ml-1 text-primary">▌</span>
                                     )}
@@ -343,7 +365,7 @@ export default function TasksPage() {
                                     selectedTask.status === 'completed' && 'text-green-400',
                                     selectedTask.status === 'failed' && 'text-red-400'
                                 )}>
-                                    {selectedTask.status.toUpperCase()}
+                                    {getStatusText(selectedTask.status).toUpperCase()}
                                 </span>
                             </div>
                         </div>

@@ -50,7 +50,7 @@ export function ServerHeader({ server }: ServerHeaderProps) {
                         <Link href={`?edit=true`}>
                             <Button variant="outline" size="sm">
                                 <Settings className="mr-2 h-4 w-4" />
-                                Einstellungen
+                                Настройки
                             </Button>
                         </Link>
                     </div>
@@ -58,7 +58,7 @@ export function ServerHeader({ server }: ServerHeaderProps) {
                         <DialogTrigger asChild>
                             <Button variant="outline" size="sm">
                                 <Tags className="h-4 w-4 mr-2" />
-                                Tags
+                                Теги
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-2xl">

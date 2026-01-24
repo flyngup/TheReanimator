@@ -130,7 +130,7 @@ export function ServerMonitor({ server, info }: ServerMonitorProps) {
                 {/* Overlay loading indicator for Health if needed, or just let it populate quietly */}
                 {loadingHealth && (
                     <div className="absolute top-4 right-4 text-xs text-muted-foreground animate-pulse">
-                        Scanning Health...
+                        Проверка состояния...
                     </div>
                 )}
             </div>
@@ -143,7 +143,7 @@ export function ServerMonitor({ server, info }: ServerMonitorProps) {
                         <Card className="bg-muted/5 border-none">
                             <CardContent className="p-4 pt-4">
                                 <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
-                                    <Database className="h-4 w-4" /> ZFS Health
+                                    <Database className="h-4 w-4" /> Состояние ZFS
                                 </h3>
                                 <div className="space-y-1">
                                     {health.zfs.map(pool => (
@@ -162,7 +162,7 @@ export function ServerMonitor({ server, info }: ServerMonitorProps) {
                         <Card className="bg-muted/5 border-none md:col-span-2">
                             <CardContent className="p-4 pt-4">
                                 <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
-                                    <Activity className="h-4 w-4" /> System Events (Recent)
+                                    <Activity className="h-4 w-4" /> Системные события (последние)
                                 </h3>
                                 <div className="space-y-1">
                                     {health.events.map((e, i) => (
@@ -181,7 +181,7 @@ export function ServerMonitor({ server, info }: ServerMonitorProps) {
                         <Card className="bg-muted/5 border-none md:col-span-2">
                             <CardContent className="p-4 pt-4">
                                 <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
-                                    <Database className="h-4 w-4" /> Stale Backups
+                                    <Database className="h-4 w-4" /> Устаревшие бэкапы
                                 </h3>
                                 <div className="space-y-1">
                                     {health.backups.filter(b => b.status !== 'OK').sort((a, b) => a.status === 'CRITICAL' ? -1 : 1).map((b) => (
@@ -192,7 +192,7 @@ export function ServerMonitor({ server, info }: ServerMonitorProps) {
                                                 <span className="text-muted-foreground">{b.vmName}</span>
                                             </div>
                                             <div className="flex items-center gap-4">
-                                                <span className="text-muted-foreground">Last: {b.lastBackup}</span>
+                                                <span className="text-muted-foreground">Последний: {b.lastBackup}</span>
                                                 <Badge variant="outline" className={`${b.status === 'CRITICAL' ? 'text-red-500 border-red-500/20 bg-red-500/10' : 'text-amber-500 border-amber-500/20 bg-amber-500/10'}`}>
                                                     {b.status}
                                                 </Badge>

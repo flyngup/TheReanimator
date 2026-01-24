@@ -32,35 +32,35 @@ function formatBytes(bytes: number): string {
 }
 
 function createRecoveryGuide(server: Server, date: Date): string {
-    const dateStr = date.toLocaleString('de-DE', { dateStyle: 'full', timeStyle: 'short' });
-    return `# 🔧 Disaster Recovery Anleitung
+    const dateStr = date.toLocaleString('ru-RU', { dateStyle: 'full', timeStyle: 'short' });
+    return `# 🔧 Инструкция по аварийному восстановлению
 
-## Server-Informationen
-| Eigenschaft | Wert |
-|-------------|------|
-| **Name** | ${server.name} |
-| **Typ** | ${server.type.toUpperCase()} |
-| **Backup-Datum** | ${dateStr} |
-
----
-
-## ⚠️ Wichtiger Hinweis
-Diese Anleitung führt Sie durch die Wiederherstellung des Servers nach einem Totalausfall.
-Alle Befehle mit \`sudo\` ausführen oder als Root anmelden.
+## Информация о сервере
+| Свойство | Значение |
+|----------|----------|
+| **Имя** | ${server.name} |
+| **Тип** | ${server.type.toUpperCase()} |
+| **Дата бэкапа** | ${dateStr} |
 
 ---
 
-## Schritt 1: Betriebssystem installieren
-1. Proxmox VE ISO herunterladen (gleiche oder neuere Version)
-2. Von USB/CD booten und installieren
-3. **Wichtig:** Gleichen Hostnamen verwenden: \`${server.name}\`
-4. Gleiche IP-Adresse und Netzwerkkonfiguration verwenden (siehe SYSTEM_INFO.txt)
+## ⚠️ Важное примечание
+Эта инструкция проведёт вас через восстановление сервера после полного сбоя.
+Все команды выполнять с \`sudo\` или войдя как Root.
 
 ---
 
-## Schritt 2: SSH-Zugang vorbereiten
+## Шаг 1: Установка операционной системы
+1. Скачать Proxmox VE ISO (такая же или более новая версия)
+2. Загрузиться с USB/CD и установить
+3. **Важно:** Использовать то же имя хоста: \`${server.name}\`
+4. Использовать тот же IP-адрес и сетевую конфигурацию (см. SYSTEM_INFO.txt)
+
+---
+
+## Шаг 2: Подготовка SSH-доступа
 \`\`\`bash
-# SSH-Key aus Backup kopieren
+# Скопировать SSH-ключ из бэкапа
 mkdir -p /root/.ssh
 cp <backup>/root/.ssh/authorized_keys /root/.ssh/
 chmod 600 /root/.ssh/authorized_keys
@@ -68,68 +68,68 @@ chmod 600 /root/.ssh/authorized_keys
 
 ---
 
-## Schritt 3: Netzwerk-Konfiguration wiederherstellen
+## Шаг 3: Восстановление сетевой конфигурации
 \`\`\`bash
-# Backup der aktuellen Netzwerk-Konfiguration
+# Резервная копия текущей сетевой конфигурации
 cp /etc/network/interfaces /etc/network/interfaces.bak
 
-# Konfiguration aus Backup kopieren
+# Копировать конфигурацию из бэкапа
 cp <backup>/etc/network/interfaces /etc/network/interfaces
 
-# Netzwerk neu starten
+# Перезапустить сеть
 systemctl restart networking
 \`\`\`
 
 ---
 
-## Schritt 4: Proxmox-Konfiguration wiederherstellen
+## Шаг 4: Восстановление конфигурации Proxmox
 \`\`\`bash
-# VM/CT-Konfigurationen
+# Конфигурации VM/CT
 cp -r <backup>/etc/pve/* /etc/pve/
 
-# Speicher-Konfiguration
+# Конфигурация хранилища
 cp <backup>/etc/pve/storage.cfg /etc/pve/storage.cfg
 \`\`\`
 
 ---
 
-## Schritt 5: Storage wiederherstellen
-1. Prüfen Sie \`SYSTEM_INFO.txt\` für Disk-UUIDs
-2. Neue Disks haben andere UUIDs → \`/etc/fstab\` anpassen!
+## Шаг 5: Восстановление хранилища
+1. Проверьте \`SYSTEM_INFO.txt\` для UUID дисков
+2. Новые диски имеют другие UUID → настроить \`/etc/fstab\`!
 
 \`\`\`bash
-# UUIDs der neuen Disks anzeigen
+# Показать UUID новых дисков
 blkid
 
-# fstab anpassen
+# Настроить fstab
 nano /etc/fstab
 \`\`\`
 
 ---
 
-## Schritt 6: Dienste prüfen
+## Шаг 6: Проверка служб
 \`\`\`bash
-# Proxmox-Dienste neustarten
+# Перезапустить службы Proxmox
 systemctl restart pvedaemon pveproxy pvestatd
 
-# Status prüfen
-pvecm status  # Cluster-Status
-pvesh get /nodes  # Nodes prüfen
+# Проверить статус
+pvecm status  # Статус кластера
+pvesh get /nodes  # Проверить ноды
 \`\`\`
 
 ---
 
-## 📋 Checkliste nach Wiederherstellung
-- [ ] Netzwerk erreichbar (Ping-Test)
-- [ ] Web-Interface unter https://<IP>:8006 erreichbar
-- [ ] Alle VMs/CTs sichtbar
-- [ ] Storage korrekt gemountet
-- [ ] Backups wieder konfiguriert
+## 📋 Контрольный список после восстановления
+- [ ] Сеть доступна (Ping-тест)
+- [ ] Веб-интерфейс доступен по https://<IP>:8006
+- [ ] Все VM/CT видны
+- [ ] Хранилище корректно смонтировано
+- [ ] Бэкапы снова настроены
 
 ---
 
-## 📞 Support
-Bei Problemen: Logs prüfen mit \`journalctl -xe\` oder \`dmesg\`
+## 📞 Поддержка
+При проблемах: проверить логи с помощью \`journalctl -xe\` или \`dmesg\`
 `;
 }
 
@@ -280,7 +280,7 @@ export async function performFullBackup(serverId: number, server: Server) {
 
         return {
             success: true,
-            message: `Backup erfolgreich: ${totalFiles} Dateien (${formatBytes(totalSize)})`,
+            message: `Бэкап успешно создан: ${totalFiles} файлов (${formatBytes(totalSize)})`,
             backupId: result.lastInsertRowid as number
         };
 
@@ -294,14 +294,14 @@ export async function restoreFileToRemote(serverId: number, backupId: number, re
     const backup = db.prepare('SELECT * FROM config_backups WHERE id = ?').get(backupId) as { backup_path: string } | undefined;
     const server = db.prepare('SELECT * FROM servers WHERE id = ?').get(serverId) as Server | undefined;
 
-    if (!backup || !server) throw new Error('Backup oder Server nicht gefunden');
+    if (!backup || !server) throw new Error('Бэкап или сервер не найден');
 
     // Security: Validate path
     const normalized = path.normalize(relativePath).replace(/^(\.\.[\/\\])+/, '');
     const localPath = path.join(backup.backup_path, normalized);
 
-    if (!localPath.startsWith(backup.backup_path)) throw new Error('Ungültiger Pfad');
-    if (!fs.existsSync(localPath)) throw new Error('Datei nicht im Backup gefunden');
+    if (!localPath.startsWith(backup.backup_path)) throw new Error('Недопустимый путь');
+    if (!fs.existsSync(localPath)) throw new Error('Файл не найден в бэкапе');
 
     const ssh = createSSHClient(server);
     await ssh.connect();

@@ -155,17 +155,17 @@ export async function runServerScan(serverId: number) {
     // Looking at previous code, it created a 'Global Scan' job.
     // Let's create/use a "Scan Node: [Name]" job definition to be clean.
 
-    let jobDef = db.prepare("SELECT id FROM jobs WHERE name = ? AND job_type = 'scan'").get(`Scan Node: ${server.name}`) as { id: number };
+    let jobDef = db.prepare("SELECT id FROM jobs WHERE name = ? AND job_type = 'scan'").get(`Сканирование узла: ${server.name}`) as { id: number };
     if (!jobDef) {
         const info = db.prepare(`
-            INSERT INTO jobs (name, job_type, schedule, enabled, source_server_id, target_server_id) 
+            INSERT INTO jobs (name, job_type, schedule, enabled, source_server_id, target_server_id)
             VALUES (?, 'scan', '@manual', 1, ?, ?)
-        `).run(`Scan Node: ${server.name}`, server.id, server.id);
+        `).run(`Сканирование узла: ${server.name}`, server.id, server.id);
         jobDef = { id: Number(info.lastInsertRowid) };
     }
 
     // Start History Log
-    const historyInfo = db.prepare("INSERT INTO history (job_id, start_time, status, log) VALUES (?, ?, 'running', ?)").run(jobDef.id, new Date().toISOString(), `Starting full scan for ${server.name}...`);
+    const historyInfo = db.prepare("INSERT INTO history (job_id, start_time, status, log) VALUES (?, ?, 'running', ?)").run(jobDef.id, new Date().toISOString(), `Запуск полного сканирования для ${server.name}...`);
     const historyId = historyInfo.lastInsertRowid;
 
     const updateLog = (msg: string) => {
@@ -174,28 +174,28 @@ export async function runServerScan(serverId: number) {
 
     try {
         // 1. Scan Host Files
-        updateLog(`[1/3] Fetching system files...`);
+        updateLog(`[1/3] Получение системных файлов...`);
         const hostRes = await scanHost(server.id);
         if (!hostRes.success) throw new Error(hostRes.error);
 
         // 2. Network Analysis
-        updateLog(`[2/3] Analyzing Network (AI)...`);
+        updateLog(`[2/3] Анализ сети (AI)...`);
         try {
             await runNetworkAnalysis(server.id);
-            updateLog(`  -> AI Analysis completed.`);
+            updateLog(`  -> Анализ AI завершён.`);
         } catch (e: any) {
-            updateLog(`  -> AI Analysis warning: ${e.message}`);
+            updateLog(`  -> Предупреждение AI: ${e.message}`);
         }
 
         // 3. Scan VMs
-        updateLog(`[3/3] Scanning VMs & Containers...`);
+        updateLog(`[3/3] Сканирование VM и контейнеров...`);
         const vmRes = await scanAllVMs(server.id);
         if (vmRes.success) {
-            updateLog(`  -> Processed ${vmRes.count} VMs.`);
+            updateLog(`  -> Обработано ${vmRes.count} VM.`);
         }
 
         // Finish
-        db.prepare("UPDATE history SET end_time = ?, status = 'success', log = log || '\n' || ? WHERE id = ?").run(new Date().toISOString(), "Scan completed successfully.", historyId);
+        db.prepare("UPDATE history SET end_time = ?, status = 'success', log = log || '\n' || ? WHERE id = ?").run(new Date().toISOString(), "Сканирование завершено успешно.", historyId);
 
     } catch (e: any) {
         console.error(`Scan failed for ${server.name}:`, e);
@@ -204,15 +204,15 @@ export async function runServerScan(serverId: number) {
 }
 
 export async function scanEntireInfrastructure() {
-    console.log('[Global Scan] Triggered.');
+    console.log('[Глобальное сканирование] Запущено.');
 
     // We create a "Meta" task just to say "Triggered"
-    let globalJob = db.prepare("SELECT id FROM jobs WHERE name = 'Global Scan'").get() as { id: number };
+    let globalJob = db.prepare("SELECT id FROM jobs WHERE name = ?").get('Глобальное сканирование') as { id: number };
     if (!globalJob) {
         // Fallback create if missing (using first server as dummy ID if needed)
         const srv = db.prepare('SELECT id FROM servers LIMIT 1').get() as { id: number };
         if (srv) {
-            const info = db.prepare("INSERT INTO jobs (name, job_type, schedule, enabled, source_server_id, target_server_id) VALUES ('Global Scan', 'scan', '@manual', 1, ?, ?)").run(srv.id, srv.id);
+            const info = db.prepare("INSERT INTO jobs (name, job_type, schedule, enabled, source_server_id, target_server_id) VALUES (?, 'scan', '@manual', 1, ?, ?)").run('Глобальное сканирование', srv.id, srv.id);
             globalJob = { id: Number(info.lastInsertRowid) };
         }
     }
@@ -222,7 +222,7 @@ export async function scanEntireInfrastructure() {
             globalJob.id,
             new Date().toISOString(),
             new Date().toISOString(),
-            'Global Scan Triggered. Check individual "Scan Node: X" tasks for progress.'
+            'Глобальное сканирование запущено. Проверьте отдельные задачи "Сканирование узла: X" для прогресса.'
         );
     }
 
@@ -231,11 +231,11 @@ export async function scanEntireInfrastructure() {
 
         // Dispatch all scans in parallel (fire and forget from this main thread's perspective)
         servers.forEach(server => {
-            console.log(`[Global Scan] Dispatching scan for ${server.name}...`);
-            runServerScan(server.id).catch(e => console.error(`[Background] Scan Task for ${server.name} error:`, e));
+            console.log(`[Глобальное сканирование] Отправка сканирования для ${server.name}...`);
+            runServerScan(server.id).catch(e => console.error(`[Фон] Задача сканирования для ${server.name} ошибка:`, e));
         });
 
-        return { success: true, message: `Triggered ${servers.length} background scans.` };
+        return { success: true, message: `Запущено ${servers.length} фоновых сканирований.` };
     } catch (e: any) {
         return { success: false, error: e.message };
     }

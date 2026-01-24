@@ -8,7 +8,7 @@ export async function setupSSHTrust(sourceId: number, targetId: number, rootPass
     const source = await getServer(sourceId);
     const target = await getServer(targetId);
 
-    if (!source || !target) throw new Error('Server nicht gefunden');
+    if (!source || !target) throw new Error('Сервер не найден');
 
     // 1. Source Key
     const sourceSsh = createSSHClient(source);
@@ -57,9 +57,9 @@ export async function setupSSHTrust(sourceId: number, targetId: number, rootPass
             await targetSsh.exec(`echo "${pubKey.trim()}" >> ~/.ssh/authorized_keys`);
             await targetSsh.exec('chmod 600 ~/.ssh/authorized_keys');
         }
-        return 'SSH Trust erfolgreich eingerichtet!';
+        return 'SSH Trust успешно настроен!';
     } catch (e: any) {
-        throw new Error(`Verbindung zum Zielserver fehlgeschlagen: ${e.message}`);
+        throw new Error(`Подключение к целевому серверу не удалось: ${e.message}`);
     } finally {
         await targetSsh.disconnect();
     }

@@ -18,7 +18,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { formatDistanceToNow } from 'date-fns';
-import { de } from 'date-fns/locale';
+import { ru } from 'date-fns/locale';
 
 interface Job {
     id: number;
@@ -40,6 +40,24 @@ export default function JobsPage() {
     const [historyPage, setHistoryPage] = useState(0);
     const [historyTotal, setHistoryTotal] = useState(0);
     const historyPageSize = 20;
+
+    // Helper function to format schedule display
+    const formatSchedule = (schedule: string): string => {
+        if (schedule === '@manual') return 'Ручное';
+        return schedule;
+    };
+
+    // Helper function to format status display
+    const formatStatus = (status: string): string => {
+        const statusMap: Record<string, string> = {
+            'success': 'Успешно',
+            'failed': 'Ошибка',
+            'running': 'Выполняется',
+            'completed': 'Завершено',
+            'cancelled': 'Отменено'
+        };
+        return statusMap[status] || status;
+    };
 
     useEffect(() => {
         loadData();
@@ -69,28 +87,28 @@ export default function JobsPage() {
     const canHistoryNext = historyPage < historyTotalPages - 1;
 
     async function handleRunNow(id: number) {
-        if (!confirm("Job jetzt sofort ausführen?")) return;
+        if (!confirm("Выполнить задачу сейчас?")) return;
         try {
             const result = await runJob(id);
             if (result.success) {
-                toast.success("Job gestartet");
+                toast.success("Задача запущена");
             } else {
-                toast.error("Fehler: " + (result.error || "Unbekannter Fehler"));
+                toast.error("Ошибка: " + (result.error || "Неизвестная ошибка"));
             }
             loadData();
         } catch (e: any) {
-            toast.error("Fehler: " + e.message);
+            toast.error("Ошибка: " + e.message);
         }
     }
 
     async function handleDelete(id: number) {
-        if (!confirm("Diesen geplanten Job wirklich löschen?")) return;
+        if (!confirm("Действительно удалить эту запланированную задачу?")) return;
         try {
             await deleteJob(id);
-            toast.success("Job gelöscht");
+            toast.success("Задача удалена");
             loadData();
         } catch (e: any) {
-            toast.error("Löschen fehlgeschlagen: " + e.message);
+            toast.error("Ошибка удаления: " + e.message);
         }
     }
 
@@ -98,21 +116,21 @@ export default function JobsPage() {
         <div className="container mx-auto py-8 space-y-8">
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-3xl font-bold">Aufgaben & Zeitplan</h1>
-                    <p className="text-muted-foreground">Verwalte geplante Migrationen und Hintergrund-Jobs.</p>
+                    <h1 className="text-3xl font-bold">Задачи и расписание</h1>
+                    <p className="text-muted-foreground">Управление запланированными миграциями и фоновыми задачами.</p>
                 </div>
             </div>
 
             {/* Scheduled Jobs Section */}
             <Card>
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Calendar className="h-5 w-5" /> Geplante Jobs</CardTitle>
-                    <CardDescription>Aktive Cron-Jobs und geplante Migrationen.</CardDescription>
+                    <CardTitle className="flex items-center gap-2"><Calendar className="h-5 w-5" /> Запланированные задачи</CardTitle>
+                    <CardDescription>Активные Cron-задачи и запланированные миграции.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     {jobs.length === 0 ? (
                         <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
-                            Keine geplanten Jobs.
+                            Нет запланированных задач.
                         </div>
                     ) : (
                         <div className="space-y-4">
@@ -125,14 +143,14 @@ export default function JobsPage() {
                                         <div>
                                             <div className="font-semibold">{job.name}</div>
                                             <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                                                <Badge variant="outline" className="font-mono">{job.schedule}</Badge>
-                                                {job.last_run && <span>Letzter lauf: {new Date(job.last_run).toLocaleString()}</span>}
+                                                <Badge variant="outline" className="font-mono">{formatSchedule(job.schedule)}</Badge>
+                                                {job.last_run && <span>Последний запуск: {new Date(job.last_run).toLocaleString()}</span>}
                                             </div>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3">
                                         <div className="text-right text-sm">
-                                            <div className="font-medium text-green-600">Aktiv</div>
+                                            <div className="font-medium text-green-600">Активна</div>
                                             {/* Future: Show next run calculation */}
                                         </div>
                                         <DropdownMenu>
@@ -140,9 +158,9 @@ export default function JobsPage() {
                                                 <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onClick={() => handleRunNow(job.id)}><Play className="h-4 w-4 mr-2" /> Jetzt ausführen</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleRunNow(job.id)}><Play className="h-4 w-4 mr-2" /> Выполнить сейчас</DropdownMenuItem>
                                                 <DropdownMenuSeparator />
-                                                <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(job.id)}><Trash2 className="h-4 w-4 mr-2" /> Löschen</DropdownMenuItem>
+                                                <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(job.id)}><Trash2 className="h-4 w-4 mr-2" /> Удалить</DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </div>
@@ -156,8 +174,8 @@ export default function JobsPage() {
             {/* History Section */}
             <Card>
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Clock className="h-5 w-5" /> Verlauf</CardTitle>
-                    <CardDescription>Historie der ausgeführten Tasks ({historyTotal} gesamt).</CardDescription>
+                    <CardTitle className="flex items-center gap-2"><Clock className="h-5 w-5" /> История</CardTitle>
+                    <CardDescription>История выполненных задач (всего: {historyTotal}).</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-2">
@@ -169,13 +187,13 @@ export default function JobsPage() {
                                         <div className="font-medium">{task.description}</div>
                                         <div className="text-xs text-muted-foreground flex gap-2">
                                             <span>{new Date(task.startTime).toLocaleString()}</span>
-                                            {task.duration && <span>• Dauer: {task.duration}</span>}
+                                            {task.duration && <span>• Длительность: {task.duration}</span>}
                                             {task.node && <span>• {task.node}</span>}
                                         </div>
                                     </div>
                                 </div>
                                 <Badge variant={task.status === 'completed' ? 'secondary' : (task.status === 'failed' ? 'destructive' : 'default')}>
-                                    {task.status}
+                                    {formatStatus(task.status)}
                                 </Badge>
                             </div>
                         ))}
@@ -185,7 +203,7 @@ export default function JobsPage() {
                     {historyTotal > historyPageSize && (
                         <div className="border-t mt-4 pt-3 flex items-center justify-between">
                             <span className="text-xs text-muted-foreground">
-                                Zeige {historyPage * historyPageSize + 1}-{Math.min((historyPage + 1) * historyPageSize, historyTotal)} von {historyTotal}
+                                Показано {historyPage * historyPageSize + 1}-{Math.min((historyPage + 1) * historyPageSize, historyTotal)} из {historyTotal}
                             </span>
                             <div className="flex items-center gap-2">
                                 <Button
@@ -195,10 +213,10 @@ export default function JobsPage() {
                                     disabled={!canHistoryPrev}
                                 >
                                     <ChevronLeft className="h-4 w-4 mr-1" />
-                                    Zurück
+                                    Назад
                                 </Button>
                                 <span className="text-sm text-muted-foreground">
-                                    Seite {historyPage + 1} / {historyTotalPages}
+                                    Страница {historyPage + 1} / {historyTotalPages}
                                 </span>
                                 <Button
                                     variant="outline"
@@ -206,7 +224,7 @@ export default function JobsPage() {
                                     onClick={() => setHistoryPage(p => p + 1)}
                                     disabled={!canHistoryNext}
                                 >
-                                    Weiter
+                                    Далее
                                     <ChevronRight className="h-4 w-4 ml-1" />
                                 </Button>
                             </div>

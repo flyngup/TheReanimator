@@ -19,7 +19,7 @@ export function ServerHardware({ info }: ServerHardwareProps) {
                         <CardHeader className="bg-gradient-to-r from-cyan-500/5 to-transparent">
                             <CardTitle className="flex items-center gap-2">
                                 <Database className="h-5 w-5 text-cyan-500" />
-                                Storage Pools ({info.pools.length})
+                                Пулы хранилища ({info.pools.length})
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
@@ -48,7 +48,7 @@ export function ServerHardware({ info }: ServerHardwareProps) {
                                                 )}
                                             </div>
                                             <p className="text-sm text-muted-foreground">
-                                                {pool.used} used · {pool.available} available · {pool.size} total
+                                                {pool.used} использовано · {pool.available} свободно · {pool.size} всего
                                             </p>
                                         </div>
                                     </div>
@@ -64,7 +64,7 @@ export function ServerHardware({ info }: ServerHardwareProps) {
                         <CardHeader className="bg-gradient-to-r from-blue-500/5 to-transparent">
                             <CardTitle className="flex items-center gap-2">
                                 <Folder className="h-5 w-5 text-blue-500" />
-                                Filesystems ({info.filesystems.length})
+                                Файловые системы ({info.filesystems.length})
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
@@ -72,9 +72,9 @@ export function ServerHardware({ info }: ServerHardwareProps) {
                                 <table className="w-full text-sm">
                                     <thead>
                                         <tr className="border-b border-border/50 bg-muted/20 text-muted-foreground text-xs uppercase">
-                                            <th className="px-4 py-3 text-left font-medium">Mount</th>
-                                            <th className="px-4 py-3 text-right font-medium">Size</th>
-                                            <th className="px-4 py-3 text-right font-medium">Use</th>
+                                            <th className="px-4 py-3 text-left font-medium">Точка</th>
+                                            <th className="px-4 py-3 text-right font-medium">Размер</th>
+                                            <th className="px-4 py-3 text-right font-medium">Использовано</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-border/50">
@@ -105,7 +105,7 @@ export function ServerHardware({ info }: ServerHardwareProps) {
                 <CardHeader className="bg-gradient-to-r from-emerald-500/5 to-transparent">
                     <CardTitle className="flex items-center gap-2">
                         <HardDrive className="h-5 w-5 text-emerald-500" />
-                        Physical Disks
+                        Физические диски
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="p-4">
@@ -119,7 +119,7 @@ export function ServerHardware({ info }: ServerHardwareProps) {
                                     <HardDrive className={`h-5 w-5 shrink-0 ${disk.transport === 'nvme' ? 'text-purple-500' : 'text-emerald-500'}`} />
                                     <div className="min-w-0">
                                         <p className="font-medium font-mono text-sm">{disk.name}</p>
-                                        <p className="text-xs text-muted-foreground truncate">{disk.model || 'Generic Disk'}</p>
+                                        <p className="text-xs text-muted-foreground truncate">{disk.model || 'Стандартный диск'}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-between text-xs mt-1">

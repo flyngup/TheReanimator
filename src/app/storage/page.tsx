@@ -59,8 +59,8 @@ export default function StoragePage() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-3xl font-bold">Speicher Übersicht</h1>
-                <p className="text-muted-foreground">Status aller Storage-Pools im Cluster</p>
+                <h1 className="text-3xl font-bold">Обзор хранилища</h1>
+                <p className="text-muted-foreground">Состояние всех пулов хранилища в кластере</p>
             </div>
 
             {loading ? (
@@ -71,9 +71,9 @@ export default function StoragePage() {
                 <Card className="border-dashed">
                     <CardContent className="flex flex-col items-center justify-center py-12">
                         <HardDrive className="h-12 w-12 text-muted-foreground mb-4" />
-                        <h3 className="text-lg font-semibold">Keine Speicher gefunden</h3>
+                        <h3 className="text-lg font-semibold">Хранилища не найдены</h3>
                         <p className="text-muted-foreground text-center">
-                            Fügen Sie Server hinzu, um deren Speicher hier zu sehen.
+                            Добавьте серверы, чтобы увидеть их хранилища.
                         </p>
                     </CardContent>
                 </Card>
@@ -104,7 +104,7 @@ export default function StoragePage() {
                                             <div className="space-y-3">
                                                 <div className="space-y-1">
                                                     <div className="flex justify-between text-sm">
-                                                        <span>Belegt</span>
+                                                        <span>Занято</span>
                                                         <span className="text-muted-foreground">
                                                             {formatBytes(storage.used)} / {formatBytes(storage.total)}
                                                         </span>
@@ -122,10 +122,10 @@ export default function StoragePage() {
                                                 </div>
                                                 <div className="flex justify-between text-xs pt-2 border-t">
                                                     <span className={storage.active ? 'text-green-500' : 'text-red-500'}>
-                                                        {storage.active ? '● Aktiv' : '○ Inaktiv'}
+                                                        {storage.active ? '● Активно' : '○ Неактивно'}
                                                     </span>
                                                     {storage.isShared && (
-                                                        <span className="text-purple-500">Shared</span>
+                                                        <span className="text-purple-500">Общее</span>
                                                     )}
                                                 </div>
                                             </div>

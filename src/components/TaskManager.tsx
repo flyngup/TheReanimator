@@ -84,13 +84,13 @@ export default function TaskManager({ className }: TaskManagerProps) {
 
     async function handleCancel(eventId: React.MouseEvent, task: TaskItem) {
         eventId.stopPropagation();
-        if (!confirm('Möchten Sie diesen Task wirklich stoppen?')) return;
+        if (!confirm('Действительно остановить эту задачу?')) return;
         try {
             await cancelTask(task.id);
-            toast.success("Task Stop Signal gesendet");
+            toast.success("Сигнал остановки задачи отправлен");
             fetchTasks();
         } catch (e) {
-            toast.error('Fehler beim Stoppen des Tasks');
+            toast.error('Ошибка остановки задачи');
         }
     }
 
@@ -107,7 +107,7 @@ export default function TaskManager({ className }: TaskManagerProps) {
                 )}
             >
                 <ListTodo className="h-4 w-4" />
-                <span className="flex-1">Tasks</span>
+                <span className="flex-1">Задачи</span>
                 {runningCount > 0 && (
                     <Badge variant="default" className="text-[10px] h-5 px-1.5 bg-blue-600 animate-pulse">
                         {runningCount}
@@ -122,15 +122,15 @@ export default function TaskManager({ className }: TaskManagerProps) {
                         <DialogTitle className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <ListTodo className="h-5 w-5" />
-                                <span>Task Center</span>
+                                <span>Центр задач</span>
                             </div>
                             <Button variant="ghost" size="sm" onClick={() => fetchTasks()} disabled={loading}>
                                 <Clock className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                                Refresh
+                                Обновить
                             </Button>
                         </DialogTitle>
                         <DialogDescription>
-                            Verwaltung aller Hintergrundprozesse (Migrationen, Scans, Syncs).
+                            Управление всеми фоновыми процессами (миграции, сканирование, синхронизация).
                         </DialogDescription>
                     </DialogHeader>
 
@@ -141,9 +141,9 @@ export default function TaskManager({ className }: TaskManagerProps) {
                                 <Table>
                                     <TableHeader className="sticky top-0 bg-background z-10 transition-none">
                                         <TableRow>
-                                            <TableHead className="w-[140px]">Zeit</TableHead>
-                                            <TableHead>Activity</TableHead>
-                                            <TableHead className="w-[80px]">Status</TableHead>
+                                            <TableHead className="w-[140px]">Время</TableHead>
+                                            <TableHead>Активность</TableHead>
+                                            <TableHead className="w-[80px]">Статус</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -179,7 +179,7 @@ export default function TaskManager({ className }: TaskManagerProps) {
                                         ))}
                                         {tasks.length === 0 && (
                                             <TableRow>
-                                                <TableCell colSpan={3} className="text-center py-12 text-muted-foreground">Keine Tasks aktiv.</TableCell>
+                                                <TableCell colSpan={3} className="text-center py-12 text-muted-foreground">Нет активных задач.</TableCell>
                                             </TableRow>
                                         )}
                                     </TableBody>
@@ -190,7 +190,7 @@ export default function TaskManager({ className }: TaskManagerProps) {
                             {total > pageSize && (
                                 <div className="border-t p-2 flex items-center justify-between bg-muted/30">
                                     <span className="text-xs text-muted-foreground">
-                                        {total} Tasks gesamt
+                                        {total} всего задач
                                     </span>
                                     <div className="flex items-center gap-2">
                                         <Button
@@ -201,10 +201,10 @@ export default function TaskManager({ className }: TaskManagerProps) {
                                             className="h-7"
                                         >
                                             <ChevronLeft className="h-4 w-4" />
-                                            Zurück
+                                            Назад
                                         </Button>
                                         <span className="text-xs text-muted-foreground px-2">
-                                            Seite {page + 1} von {totalPages}
+                                            Страница {page + 1} из {totalPages}
                                         </span>
                                         <Button
                                             variant="ghost"
@@ -213,7 +213,7 @@ export default function TaskManager({ className }: TaskManagerProps) {
                                             disabled={!canNext}
                                             className="h-7"
                                         >
-                                            Weiter
+                                            Далее
                                             <ChevronRight className="h-4 w-4" />
                                         </Button>
                                     </div>
@@ -232,7 +232,7 @@ export default function TaskManager({ className }: TaskManagerProps) {
                                     <div className="flex items-center gap-1">
                                         {selectedTask.status === 'running' && (
                                             <Button variant="destructive" size="sm" className="h-7 px-2 text-[10px] uppercase tracking-wider" onClick={(e) => handleCancel(e, selectedTask)}>
-                                                <StopCircle className="mr-1 h-3 w-3" /> Stop
+                                                <StopCircle className="mr-1 h-3 w-3" /> Остановить
                                             </Button>
                                         )}
                                         <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-white/10" onClick={() => setSelectedTask(null)}>
@@ -241,7 +241,7 @@ export default function TaskManager({ className }: TaskManagerProps) {
                                     </div>
                                 </div>
                                 <ScrollArea className="flex-1 p-4 whitespace-pre-wrap select-text font-mono leading-relaxed">
-                                    {selectedTask.log || <span className="opacity-50 italic">... Initialisiere Log ...</span>}
+                                    {selectedTask.log || <span className="opacity-50 italic">... Инициализация лога ...</span>}
                                     {selectedTask.status === 'running' && (
                                         <div className="mt-2 animate-pulse text-primary">_</div>
                                     )}

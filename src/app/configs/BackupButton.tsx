@@ -13,12 +13,12 @@ export function BackupButton({ serverId }: { serverId: number }) {
         try {
             const result = await createConfigBackup(serverId);
             if (result.success) {
-                alert(`Backup erfolgreich!\n${result.message}`);
+                alert(`Бэкап создан успешно!\n${result.message}`);
             } else {
-                alert(`Backup fehlgeschlagen:\n${result.message}`);
+                alert(`Ошибка бэкапа:\n${result.message}`);
             }
         } catch (err) {
-            alert('Ein unerwarteter Fehler ist aufgetreten.');
+            alert('Произошла неожиданная ошибка.');
             console.error(err);
         } finally {
             setLoading(false);
@@ -30,7 +30,7 @@ export function BackupButton({ serverId }: { serverId: number }) {
     return (
         <Button onClick={handleClick} disabled={loading}>
             {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-            {loading ? 'Sichere...' : 'Jetzt sichern'}
+            {loading ? 'Сохранение...' : 'Создать бэкап'}
         </Button>
     );
 }

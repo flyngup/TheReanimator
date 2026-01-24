@@ -38,7 +38,7 @@ export function ServerJobsDialog({ serverId, serverName }: ServerJobsDialogProps
             const res = await getJobsForServer(serverId);
             setJobs(res);
         } catch (e) {
-            toast.error("Failed to load jobs");
+            toast.error("Ошибка загрузки задач");
         } finally {
             setLoading(false);
         }
@@ -48,16 +48,16 @@ export function ServerJobsDialog({ serverId, serverName }: ServerJobsDialogProps
         const res = await toggleJob(id);
         if (res.success) {
             setJobs(jobs.map(j => j.id === id ? { ...j, enabled: res.enabled } : j));
-            toast.success(res.enabled ? "Job aktiviert" : "Job deaktiviert");
+            toast.success(res.enabled ? "Задача активирована" : "Задача деактивирована");
         }
     }
 
     async function handleDelete(id: number) {
-        if (!confirm("Job wirklich löschen?")) return;
+        if (!confirm("Действительно удалить задачу?")) return;
         const res = await deleteScheduledJob(id);
         if (res.success) {
             setJobs(jobs.filter(j => j.id !== id));
-            toast.success("Job gelöscht");
+            toast.success("Задача удалена");
         }
     }
 
@@ -71,14 +71,14 @@ export function ServerJobsDialog({ serverId, serverName }: ServerJobsDialogProps
             }
 
             if (res.success) {
-                toast.success("Job erstellt!");
+                toast.success("Задача создана!");
                 setCreateMode(false);
                 loadJobs();
             } else {
-                toast.error(res.error || "Fehler beim Erstellen");
+                toast.error(res.error || "Ошибка при создании");
             }
         } catch (e) {
-            toast.error("Fehler: " + e);
+            toast.error("Ошибка: " + e);
         }
     }
 
@@ -87,16 +87,16 @@ export function ServerJobsDialog({ serverId, serverName }: ServerJobsDialogProps
             <DialogTrigger asChild>
                 <Button variant="outline" size="sm">
                     <Clock className="mr-2 h-4 w-4" />
-                    Jobs
+                    Задачи
                 </Button>
             </DialogTrigger>
             <DialogContent className="max-w-3xl">
                 <DialogHeader>
                     <DialogTitle className="flex justify-between items-center">
-                        <span>Background Jobs: {serverName}</span>
+                        <span>Фоновые задачи: {serverName}</span>
                         {!createMode && (
                             <Button size="sm" onClick={() => setCreateMode(true)}>
-                                <Plus className="mr-2 h-4 w-4" /> Neuen Job planen
+                                <Plus className="mr-2 h-4 w-4" /> Запланировать задачу
                             </Button>
                         )}
                     </DialogTitle>
@@ -104,54 +104,54 @@ export function ServerJobsDialog({ serverId, serverName }: ServerJobsDialogProps
 
                 {createMode ? (
                     <div className="space-y-4 py-4 border rounded-lg p-4 bg-muted/20">
-                        <h3 className="font-semibold">Neuen Job erstellen</h3>
+                        <h3 className="font-semibold">Создать новую задачу</h3>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label>Job Typ</Label>
+                                <Label>Тип задачи</Label>
                                 <Select value={newJobType} onValueChange={(v: any) => setNewJobType(v)}>
                                     <SelectTrigger>
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="scan">🛡️ Security & Health Scan (AI)</SelectItem>
-                                        <SelectItem value="config">💾 Config Backup (/etc, pve config)</SelectItem>
+                                        <SelectItem value="scan">🛡️ Сканирование безопасности и состояния (AI)</SelectItem>
+                                        <SelectItem value="config">💾 Резервное копирование конфигурации (/etc, pve config)</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
 
                             <div className="space-y-2">
-                                <Label>Intervall</Label>
+                                <Label>Интервал</Label>
                                 <Select onValueChange={(val) => {
                                     if (val === 'daily') setScheduleStr('0 3 * * *');
                                     if (val === 'weekly') setScheduleStr('0 3 * * 1'); // Monday 3AM
                                     if (val === 'hourly') setScheduleStr('0 * * * *');
                                 }}>
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Wähle Intervall" />
+                                        <SelectValue placeholder="Выберите интервал" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="daily">Täglich (03:00)</SelectItem>
-                                        <SelectItem value="weekly">Wöchentlich (Mo 03:00)</SelectItem>
-                                        <SelectItem value="hourly">Stündlich</SelectItem>
+                                        <SelectItem value="daily">Ежедневно (03:00)</SelectItem>
+                                        <SelectItem value="weekly">Еженедельно (Пн 03:00)</SelectItem>
+                                        <SelectItem value="hourly">Ежечасно</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                         </div>
 
                         <div className="space-y-2">
-                            <Label>Cron Ausdruck (Manuell)</Label>
+                            <Label>Cron выражение (вручную)</Label>
                             <Input value={scheduleStr} onChange={e => setScheduleStr(e.target.value)} placeholder="* * * * *" className="font-mono" />
                         </div>
 
                         <div className="space-y-2">
-                            <Label>Name (Optional)</Label>
-                            <Input value={customName} onChange={e => setCustomName(e.target.value)} placeholder={`Auto-${newJobType === 'scan' ? 'Scan' : 'Backup'}`} />
+                            <Label>Название (необязательно)</Label>
+                            <Input value={customName} onChange={e => setCustomName(e.target.value)} placeholder={`Авто-${newJobType === 'scan' ? 'Сканирование' : 'Бэкап'}`} />
                         </div>
 
                         <div className="flex justify-end gap-2 pt-2">
-                            <Button variant="ghost" onClick={() => setCreateMode(false)}>Abbrechen</Button>
-                            <Button onClick={handleCreate}>Erstellen</Button>
+                            <Button variant="ghost" onClick={() => setCreateMode(false)}>Отмена</Button>
+                            <Button onClick={handleCreate}>Создать</Button>
                         </div>
                     </div>
                 ) : (
@@ -159,16 +159,16 @@ export function ServerJobsDialog({ serverId, serverName }: ServerJobsDialogProps
                         {loading ? (
                             <div className="text-center py-10"><RefreshCw className="animate-spin h-6 w-6 mx-auto" /></div>
                         ) : jobs.length === 0 ? (
-                            <div className="text-center py-10 text-muted-foreground">Keine Jobs geplant.</div>
+                            <div className="text-center py-10 text-muted-foreground">Нет запланированных задач.</div>
                         ) : (
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Typ</TableHead>
-                                        <TableHead>Name</TableHead>
-                                        <TableHead>Zeitplan</TableHead>
-                                        <TableHead>Aktiv</TableHead>
-                                        <TableHead className="text-right">Aktionen</TableHead>
+                                        <TableHead>Тип</TableHead>
+                                        <TableHead>Название</TableHead>
+                                        <TableHead>Расписание</TableHead>
+                                        <TableHead>Активна</TableHead>
+                                        <TableHead className="text-right">Действия</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -176,9 +176,9 @@ export function ServerJobsDialog({ serverId, serverName }: ServerJobsDialogProps
                                         <TableRow key={job.id}>
                                             <TableCell>
                                                 {job.job_type === 'scan' ? (
-                                                    <span className="flex items-center gap-2"><AlertCircle className="h-4 w-4 text-amber-500" /> Scan</span>
+                                                    <span className="flex items-center gap-2"><AlertCircle className="h-4 w-4 text-amber-500" /> Сканирование</span>
                                                 ) : (
-                                                    <span className="flex items-center gap-2"><RefreshCw className="h-4 w-4 text-blue-500" /> Backup</span>
+                                                    <span className="flex items-center gap-2"><RefreshCw className="h-4 w-4 text-blue-500" /> Бэкап</span>
                                                 )}
                                             </TableCell>
                                             <TableCell className="font-medium">{job.name}</TableCell>

@@ -41,7 +41,7 @@ function formatBytes(bytes: number): string {
 }
 
 async function handleDelete(itemId: number) {
-    if (confirm('Möchten Sie dieses Backup wirklich löschen?')) {
+    if (confirm('Действительно удалить этот бэкап?')) {
         await deleteConfigBackup(itemId);
     }
 }
@@ -64,7 +64,7 @@ export default function ConfigList({ servers, backupsByServer, groups }: ConfigL
             const matchesUrl = server.url.toLowerCase().includes(term);
             const matchesGroup = server.group_name?.toLowerCase().includes(term);
             const hasMatchingBackup = backupsByServer[server.id]?.some(backup =>
-                new Date(backup.backup_date).toLocaleString('de-DE').toLowerCase().includes(term)
+                new Date(backup.backup_date).toLocaleString('ru-RU').toLowerCase().includes(term)
             );
             return matchesName || matchesType || matchesUrl || matchesGroup || hasMatchingBackup;
         });
@@ -134,7 +134,7 @@ export default function ConfigList({ servers, backupsByServer, groups }: ConfigL
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                         type="search"
-                        placeholder="Server, Typ, Gruppe oder Backup-Datum suchen..."
+                        placeholder="Поиск сервера, типа, группы или даты бэкапа..."
                         className="pl-10"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -143,17 +143,17 @@ export default function ConfigList({ servers, backupsByServer, groups }: ConfigL
                 <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={expandAll}>
                         <Layers className="h-4 w-4 mr-2" />
-                        Alle aufklappen
+                        Развернуть всё
                     </Button>
                     <Button variant="outline" size="sm" onClick={collapseAll}>
-                        Alle zuklappen
+                        Свернуть всё
                     </Button>
                 </div>
             </div>
 
             {filteredServers.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground">
-                    <p>Keine Server gefunden, die der Suche entsprechen.</p>
+                    <p>Серверы не найдены.</p>
                 </div>
             ) : (
                 <div className="space-y-4">
@@ -182,9 +182,9 @@ export default function ConfigList({ servers, backupsByServer, groups }: ConfigL
                                             <CardTitle className="text-base">{groupName}</CardTitle>
                                         </div>
                                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                            <span>{groupServers.length} Server</span>
+                                            <span>{groupServers.length} серверов</span>
                                             <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 text-xs font-medium">
-                                                {stats.totalBackups} Backups
+                                                {stats.totalBackups} бэкапов
                                             </span>
                                             <span className="text-xs">{formatBytes(stats.totalSize)}</span>
                                         </div>
@@ -194,7 +194,7 @@ export default function ConfigList({ servers, backupsByServer, groups }: ConfigL
                                     <CardContent className="p-0 divide-y divide-border/30">
                                         {groupServers.length === 0 ? (
                                             <div className="p-4 text-center text-muted-foreground text-sm">
-                                                Keine Server in dieser Gruppe
+                                                Нет серверов в этой группе
                                             </div>
                                         ) : (
                                             groupServers.map((server) => (
@@ -228,12 +228,12 @@ export default function ConfigList({ servers, backupsByServer, groups }: ConfigL
                                             <ChevronRight className="h-5 w-5 text-muted-foreground" />
                                         )}
                                         <Server className="h-5 w-5 text-muted-foreground" />
-                                        <CardTitle className="text-base text-muted-foreground">Ohne Gruppe</CardTitle>
+                                        <CardTitle className="text-base text-muted-foreground">Без группы</CardTitle>
                                     </div>
                                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                        <span>{groupedServers['ungrouped'].length} Server</span>
+                                        <span>{groupedServers['ungrouped'].length} серверов</span>
                                         <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs">
-                                            {getGroupStats(groupedServers['ungrouped']).totalBackups} Backups
+                                            {getGroupStats(groupedServers['ungrouped']).totalBackups} бэкапов
                                         </span>
                                     </div>
                                 </div>
@@ -299,7 +299,7 @@ function ServerBackupCard({
                 </div>
                 <div className="flex items-center gap-4" onClick={e => e.stopPropagation()}>
                     <span className="text-sm text-muted-foreground">
-                        {backups.length} Backups
+                        {backups.length} бэкапов
                     </span>
                     <BackupButton serverId={server.id} />
                 </div>
@@ -310,7 +310,7 @@ function ServerBackupCard({
                     {backups.length === 0 ? (
                         <div className="p-6 text-center text-muted-foreground">
                             <Clock className="h-8 w-8 mx-auto mb-2 opacity-20" />
-                            <p>Noch keine Backups vorhanden</p>
+                            <p>Бэкапов пока нет</p>
                         </div>
                     ) : (
                         <div className="divide-y divide-border/30">
@@ -321,13 +321,13 @@ function ServerBackupCard({
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="font-medium text-sm">
-                                            {new Date(backup.backup_date).toLocaleString('de-DE', {
+                                            {new Date(backup.backup_date).toLocaleString('ru-RU', {
                                                 dateStyle: 'medium',
                                                 timeStyle: 'short'
                                             })}
                                         </p>
                                         <p className="text-xs text-muted-foreground flex items-center gap-2">
-                                            <span>{backup.file_count} Dateien</span>
+                                            <span>{backup.file_count} файлов</span>
                                             <span>•</span>
                                             <span>{formatBytes(backup.total_size)}</span>
                                         </p>
@@ -336,7 +336,7 @@ function ServerBackupCard({
                                         <Link href={`/configs/${backup.id}`}>
                                             <Button variant="secondary" size="sm" className="h-8">
                                                 <FileText className="mr-2 h-3.5 w-3.5" />
-                                                Details
+                                                Подробнее
                                             </Button>
                                         </Link>
                                         <Button
@@ -353,7 +353,7 @@ function ServerBackupCard({
                             {backups.length > 5 && (
                                 <div className="p-3 pl-16 text-center">
                                     <span className="text-xs text-muted-foreground">
-                                        und {backups.length - 5} weitere Backups...
+                                        и ещё {backups.length - 5} бэкапов...
                                     </span>
                                 </div>
                             )}

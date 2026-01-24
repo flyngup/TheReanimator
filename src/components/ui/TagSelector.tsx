@@ -74,7 +74,7 @@ export function TagSelector({
                     {isLoading ? (
                         <span className="flex items-center">
                             <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                            Laden...
+                            Загрузка...
                         </span>
                     ) : selectedTags.length > 0 ? (
                         <div className="flex items-center gap-1 min-w-0 flex-1 overflow-hidden">
@@ -96,7 +96,7 @@ export function TagSelector({
                         </div>
                     ) : (
                         <span className="text-muted-foreground">
-                            {compact ? "Tags..." : "Tags auswählen..."}
+                            {compact ? "Теги..." : "Выбрать теги..."}
                         </span>
                     )}
                     <ChevronsUpDown className="ml-1 h-3 w-3 shrink-0 opacity-50" />
@@ -106,10 +106,10 @@ export function TagSelector({
                 <Command>
                     <div className="flex items-center border-b px-3">
                         <Search className="h-4 w-4 shrink-0 opacity-50" />
-                        <CommandInput placeholder="Tags suchen..." className="border-0" />
+                        <CommandInput placeholder="Поиск тегов..." className="border-0" />
                     </div>
                     <CommandList className="max-h-[200px]">
-                        <CommandEmpty>Keine Tags gefunden.</CommandEmpty>
+                        <CommandEmpty>Теги не найдены.</CommandEmpty>
                         <CommandGroup>
                             {availableTags.map((tag) => (
                                 <CommandItem
@@ -145,7 +145,7 @@ export function TagSelector({
                                 }}
                             >
                                 <X className="h-3 w-3 mr-1" />
-                                Alle entfernen ({selectedTags.length})
+                                Удалить все ({selectedTags.length})
                             </Button>
                         </div>
                     )}

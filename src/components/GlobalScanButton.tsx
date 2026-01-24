@@ -22,23 +22,23 @@ export function GlobalScanButton() {
     if (!checking && !aiEnabled) return null;
 
     async function handleScan() {
-        if (!confirm('Gesamte Infrastruktur scannen? Dies kann einige Zeit dauern.')) return;
+        if (!confirm('Сканировать всю инфраструктуру? Это может занять время.')) return;
 
         setScanning(true);
-        const toastId = toast.loading('Starte globalen Scan...');
+        const toastId = toast.loading('Запуск глобального сканирования...');
 
         try {
             const res = await scanEntireInfrastructure();
             if (res.success) {
-                toast.success(`Scan gestartet!`, {
+                toast.success(`Сканирование запущено!`, {
                     id: toastId,
-                    description: `Der Scan läuft jetzt im Hintergrund. Überprüfen Sie die Tasks für Details.`
+                    description: `Сканирование выполняется в фоне. Проверьте задачи для деталей.`
                 });
             } else {
-                toast.error('Scan fehlgeschlagen: ' + res.error, { id: toastId });
+                toast.error('Ошибка сканирования: ' + res.error, { id: toastId });
             }
         } catch (e: any) {
-            toast.error('Fehler: ' + e.message, { id: toastId });
+            toast.error('Ошибка: ' + e.message, { id: toastId });
         } finally {
             setScanning(false);
         }
@@ -47,7 +47,7 @@ export function GlobalScanButton() {
     return (
         <Button onClick={handleScan} disabled={scanning} variant="default" className="bg-indigo-600 hover:bg-indigo-700 text-white">
             {scanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Activity className="mr-2 h-4 w-4" />}
-            Global Scan
+            Глобальное сканирование
         </Button>
     );
 }

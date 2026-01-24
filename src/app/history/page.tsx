@@ -4,6 +4,15 @@ import { CheckCircle2, XCircle, Clock } from "lucide-react";
 
 export const dynamic = 'force-dynamic';
 
+function getStatusText(status: string): string {
+    const statusMap: Record<string, string> = {
+        'success': 'Успешно',
+        'failed': 'Ошибка',
+        'running': 'Выполняется'
+    };
+    return statusMap[status] || status;
+}
+
 export default function HistoryPage() {
     const history = db.prepare(`
     SELECT h.*, j.name as job_name 
@@ -16,19 +25,19 @@ export default function HistoryPage() {
     return (
         <div className="space-y-8">
             <div>
-                <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">Execution History</h2>
-                <p className="text-muted-foreground mt-1">Audit log of all backup and sync operations.</p>
+                <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">История выполнения</h2>
+                <p className="text-muted-foreground mt-1">Журнал всех операций бэкапа и синхронизации.</p>
             </div>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Job Log</CardTitle>
-                    <CardDescription>Viewing last 100 executions.</CardDescription>
+                    <CardTitle>Журнал задач</CardTitle>
+                    <CardDescription>Просмотр последних 100 выполнений.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
                         {history.length === 0 ? (
-                            <div className="text-center py-8 text-muted-foreground">No history available yet.</div>
+                            <div className="text-center py-8 text-muted-foreground">История пока недоступна.</div>
                         ) : (
                             history.map((item) => (
                                 <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
@@ -40,12 +49,12 @@ export default function HistoryPage() {
                                         <div>
                                             <p className="font-medium">{item.job_name}</p>
                                             <p className="text-xs text-muted-foreground">
-                                                Started: {new Date(item.start_time).toLocaleString()}
-                                                {item.end_time && ` • Duration: ${Math.round((new Date(item.end_time).getTime() - new Date(item.start_time).getTime()) / 1000)}s`}
+                                                Начало: {new Date(item.start_time).toLocaleString()}
+                                                {item.end_time && ` • Длительность: ${Math.round((new Date(item.end_time).getTime() - new Date(item.start_time).getTime()) / 1000)}с`}
                                             </p>
                                             {item.log && (
                                                 <p className="text-xs text-destructive mt-1 font-mono bg-destructive/10 p-1 rounded max-w-xl truncate">
-                                                    Error: {item.log}
+                                                    Ошибка: {item.log}
                                                 </p>
                                             )}
                                         </div>
@@ -55,7 +64,7 @@ export default function HistoryPage() {
                                                 item.status === 'failed' ? 'bg-destructive/10 text-destructive' :
                                                     'bg-blue-500/10 text-blue-500'
                                             }`}>
-                                            {item.status}
+                                            {getStatusText(item.status)}
                                         </span>
                                     </div>
                                 </div>

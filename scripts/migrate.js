@@ -301,9 +301,9 @@ for (const [name, desc] of defaultPermissions) {
 
 // Insert default roles if not exists
 const defaultRoles = [
-  ['Administrator', 'Full access to all features'],
-  ['Operator', 'VM and Backup operations'],
-  ['Viewer', 'Read-only access'],
+  ['Administrator', 'Полный доступ ко всем функциям'],
+  ['Operator', 'Операции с VM и бэкапами'],
+  ['Viewer', 'Только чтение'],
 ];
 
 const insertRole = db.prepare('INSERT OR IGNORE INTO roles (name, description) VALUES (?, ?)');

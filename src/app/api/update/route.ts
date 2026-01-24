@@ -106,7 +106,14 @@ export async function POST(request: NextRequest) {
                 const dbPath = path.join(projectRoot, 'data/proxhost.db');
                 const dbBackupPath = path.join(os.tmpdir(), `proxhost-backup-${Date.now()}.db`);
 
-                send('🔄 Starting update process (Robust Mode)...');
+                // Check if this is just a restart
+                const restartOnly = request.headers.get('X-Restart-Only') === 'true';
+
+                if (restartOnly) {
+                    send('🔄 Restart only mode (no update)...');
+                } else {
+                    send('🔄 Starting update process (Robust Mode)...');
+                }
 
                 // 1. Backup Database
                 if (fs.existsSync(dbPath)) {
@@ -115,19 +122,38 @@ export async function POST(request: NextRequest) {
                     send(`✅ Database backed up to ${dbBackupPath}`);
                 }
 
-                // 2. Git Stash
-                send('📥 Stashing local changes...');
-                try {
-                    await runStep('git', ['stash'], projectRoot);
-                } catch {
-                    send('ℹ️ Stash skipped or failed (ignoring)');
+                let hadLocalChanges = false;
+
+                // 2. Git Stash (only if not restart-only)
+                if (!restartOnly) {
+                    send('📥 Stashing local changes...');
+                    try {
+                        await runStep('git', ['stash'], projectRoot);
+                        hadLocalChanges = true;
+                    } catch {
+                        send('ℹ️ Stash skipped or failed (ignoring)');
+                    }
                 }
 
-                // 3. Git Pull
-                send('⬇️ Pulling latest changes...');
-                await runStep('git', ['pull', 'origin', 'main'], projectRoot);
+                // 3. Git Pull (only if not restart-only)
+                if (!restartOnly) {
+                    send('⬇️ Pulling latest changes...');
+                    await runStep('git', ['pull', 'origin', 'main'], projectRoot);
+                }
 
-                // 4. Restore Data
+                // 4. Restore Stash
+                if (!restartOnly && hadLocalChanges) {
+                    send('♻️ Restoring local changes...');
+                    try {
+                        await runStep('git', ['stash', 'pop'], projectRoot);
+                        send('✅ Local changes restored');
+                    } catch (e: any) {
+                        send(`⚠️ Failed to restore stash: ${e.message}`);
+                        console.error('Stash restore failed:', e);
+                    }
+                }
+
+                // 5. Restore Data
                 if (fs.existsSync(dbBackupPath)) {
                     send('♻️ Restoring database...');
                     if (fs.existsSync(dbPath)) fs.unlinkSync(dbPath);
@@ -135,21 +161,23 @@ export async function POST(request: NextRequest) {
                     send('✅ Database restored');
                 }
 
-                // 5. Build
-                send('📦 Installing dependencies...');
-                try {
-                    await runStep('npm', ['install', '--include=dev'], projectRoot);
-                } catch (e: any) {
-                    send('⚠️ npm install failed (Build Tools missing?). trying to proceed...');
-                    console.error('Update: npm install failed', e);
+                // 6. Build (only if not restart-only)
+                if (!restartOnly) {
+                    send('📦 Installing dependencies...');
+                    try {
+                        await runStep('npm', ['install', '--include=dev'], projectRoot);
+                    } catch (e: any) {
+                        send('⚠️ npm install failed (Build Tools missing?). trying to proceed...');
+                        console.error('Update: npm install failed', e);
+                    }
+
+                    send('🔨 Building application...');
+                    await runStep('npm', ['run', 'build'], projectRoot);
+
+                    send('✅ Build complete!');
                 }
 
-                send('🔨 Building application...');
-                await runStep('npm', ['run', 'build'], projectRoot);
-
-                send('✅ Build complete!');
-
-                // 6. Restart
+                // 7. Restart
                 send('🔄 Scheduling service restart...');
 
                 // Detached restart

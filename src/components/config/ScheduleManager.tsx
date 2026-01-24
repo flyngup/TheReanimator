@@ -18,12 +18,12 @@ import {
 
 // Define locally to avoid 'use server' export issues
 const schedulePresets = [
-    { label: 'Täglich um 02:00', value: '0 2 * * *' },
-    { label: 'Täglich um 04:00', value: '0 4 * * *' },
-    { label: 'Wöchentlich (Sonntag 03:00)', value: '0 3 * * 0' },
-    { label: 'Monatlich (1. um 03:00)', value: '0 3 1 * *' },
-    { label: 'Alle 6 Stunden', value: '0 */6 * * *' },
-    { label: 'Alle 12 Stunden', value: '0 */12 * * *' },
+    { label: 'Ежедневно в 02:00', value: '0 2 * * *' },
+    { label: 'Ежедневно в 04:00', value: '0 4 * * *' },
+    { label: 'Еженедельно (воскресенье 03:00)', value: '0 3 * * 0' },
+    { label: 'Ежемесячно (1-го в 03:00)', value: '0 3 1 * *' },
+    { label: 'Каждые 6 часов', value: '0 */6 * * *' },
+    { label: 'Каждые 12 часов', value: '0 */12 * * *' },
 ];
 
 interface ScheduleManagerProps {
@@ -79,7 +79,7 @@ export function ScheduleManager({ servers }: ScheduleManagerProps) {
     }
 
     async function handleDelete(jobId: number) {
-        if (!confirm('Job wirklich löschen?')) return;
+        if (!confirm('Действительно удалить расписание?')) return;
         await deleteScheduledJob(jobId);
         fetchJobs();
     }
@@ -97,11 +97,11 @@ export function ScheduleManager({ servers }: ScheduleManagerProps) {
             <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                     <Calendar className="h-5 w-5" />
-                    Automatische Backups
+                    Автоматические бэкапы
                 </CardTitle>
                 <Button size="sm" onClick={() => setShowDialog(true)} disabled={availableServers.length === 0}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Zeitplan hinzufügen
+                    Добавить расписание
                 </Button>
             </CardHeader>
             <CardContent>
@@ -112,8 +112,8 @@ export function ScheduleManager({ servers }: ScheduleManagerProps) {
                 ) : jobs.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
                         <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        <p>Keine automatischen Backups konfiguriert</p>
-                        <p className="text-sm mt-1">Erstellen Sie einen Zeitplan für regelmäßige Backups</p>
+                        <p>Автоматические бэкапы не настроены</p>
+                        <p className="text-sm mt-1">Создайте расписание для регулярных бэкапов</p>
                     </div>
                 ) : (
                     <div className="space-y-3">
@@ -133,7 +133,7 @@ export function ScheduleManager({ servers }: ScheduleManagerProps) {
                                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                             <span>{getScheduleLabel(job.schedule)}</span>
                                             <Badge variant={job.enabled ? 'default' : 'secondary'} className="text-xs">
-                                                {job.enabled ? 'Aktiv' : 'Pausiert'}
+                                                {job.enabled ? 'Активно' : 'Пауза'}
                                             </Badge>
                                         </div>
                                     </div>
@@ -143,7 +143,7 @@ export function ScheduleManager({ servers }: ScheduleManagerProps) {
                                         variant="ghost"
                                         size="icon"
                                         onClick={() => handleToggle(job.id)}
-                                        title={job.enabled ? 'Deaktivieren' : 'Aktivieren'}
+                                        title={job.enabled ? 'Деактивировать' : 'Активировать'}
                                     >
                                         {job.enabled ? (
                                             <ToggleRight className="h-5 w-5 text-green-500" />
@@ -170,14 +170,14 @@ export function ScheduleManager({ servers }: ScheduleManagerProps) {
             <Dialog open={showDialog} onOpenChange={setShowDialog}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Automatisches Backup einrichten</DialogTitle>
+                        <DialogTitle>Настроить автоматический бэкап</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                         <div>
-                            <Label>Server</Label>
+                            <Label>Сервер</Label>
                             <Select value={selectedServer} onValueChange={setSelectedServer}>
                                 <SelectTrigger className="mt-2">
-                                    <SelectValue placeholder="Server auswählen..." />
+                                    <SelectValue placeholder="Выберите сервер..." />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {availableServers.map(s => (
@@ -189,7 +189,7 @@ export function ScheduleManager({ servers }: ScheduleManagerProps) {
                             </Select>
                         </div>
                         <div>
-                            <Label>Zeitplan</Label>
+                            <Label>Расписание</Label>
                             <Select value={selectedSchedule} onValueChange={setSelectedSchedule}>
                                 <SelectTrigger className="mt-2">
                                     <SelectValue />
@@ -205,10 +205,10 @@ export function ScheduleManager({ servers }: ScheduleManagerProps) {
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowDialog(false)}>Abbrechen</Button>
+                        <Button variant="outline" onClick={() => setShowDialog(false)}>Отмена</Button>
                         <Button onClick={handleCreate} disabled={!selectedServer || creating}>
                             {creating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                            Erstellen
+                            Создать
                         </Button>
                     </DialogFooter>
                 </DialogContent>

@@ -39,7 +39,7 @@ export default function TagManagement({ serverId }: { serverId: number }) {
             const fetchedTags = await getTags();
             setTags(fetchedTags);
         } catch (e) {
-            toast.error('Fehler beim Laden der Tags');
+            toast.error('Ошибка загрузки тегов');
         } finally {
             setLoading(false);
         }
@@ -69,23 +69,23 @@ export default function TagManagement({ serverId }: { serverId: number }) {
             if (res.success && res.tag) {
                 setTags([...tags, res.tag]);
                 setNewTagName('');
-                toast.success('Tag erstellt');
+                toast.success('Тег создан');
             } else {
-                toast.error(res.error || 'Fehler beim Erstellen');
+                toast.error(res.error || 'Ошибка при создании');
             }
         } catch (e) {
-            toast.error('Fehler beim Erstellen');
+            toast.error('Ошибка при создании');
         }
     }
 
     async function handleDeleteTag(id: number) {
-        if (!confirm('Tag löschen? Dies entfernt nur den lokalen Eintrag.')) return;
+        if (!confirm('Удалить тег? Это удалит только локальную запись.')) return;
         try {
             await deleteTag(id);
             setTags(tags.filter(t => t.id !== id));
-            toast.success('Tag gelöscht');
+            toast.success('Тег удалён');
         } catch (e) {
-            toast.error('Fehler beim Löschen');
+            toast.error('Ошибка при удалении');
         }
     }
 
@@ -126,7 +126,7 @@ export default function TagManagement({ serverId }: { serverId: number }) {
         <Card className="w-full">
             <CardHeader className="pb-3">
                 <CardTitle className="flex justify-between items-center">
-                    <span>Tag Management</span>
+                    <span>Управление тегами</span>
                     <div className="flex gap-2">
                         <Button variant="outline" size="sm" onClick={handleSync} disabled={syncing}>
                             {syncing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
@@ -139,15 +139,15 @@ export default function TagManagement({ serverId }: { serverId: number }) {
                     </div>
                 </CardTitle>
                 <CardDescription>
-                    Tags lokal verwalten und mit Proxmox synchronisieren
+                    Управляйте тегами локально и синхронизируйте с Proxmox
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                {/* Create New Tag */}
+                {/* Создать тег */}
                 <div className="flex gap-2 items-end">
                     <div className="flex-1">
                         <Input
-                            placeholder="Neuer Tag (z.B. production)"
+                            placeholder="Новый тег (например, production)"
                             value={newTagName}
                             onChange={(e) => setNewTagName(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleCreateTag()}
@@ -168,7 +168,7 @@ export default function TagManagement({ serverId }: { serverId: number }) {
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                        placeholder="Tags suchen..."
+                        placeholder="Поиск тегов..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="pl-9"

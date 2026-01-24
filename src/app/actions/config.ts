@@ -217,7 +217,7 @@ export async function cloneServerConfig(
                     await targetSsh.exec(`pvesh set /cluster/options --tag-style "${tagStyle}"`);
                     logs.push('Tags synced successfully.');
                 } else {
-                    logs.push('No tags found on source.');
+                    logs.push('Теги не найдены на источнике.');
                 }
             } catch (tagErr) {
                 logs.push(`Error syncing tags: ${tagErr}`);

@@ -188,7 +188,7 @@ export default function NewMigrationPage() {
             });
 
             if (collisions.length > 0 && !options.autoVmid) { // Only block if explicit ID is used
-                if (!confirm(`Warnung: ${collisions.length} Ziel-IDs sind bereits vergeben (z.B. ${collisions[0].vmid}). Fortfahren? (Dies kann fehlschlagen)`)) {
+                if (!confirm(`Внимание: ${collisions.length} целевых ID уже заняты (например, ${collisions[0].vmid}). Продолжить? (Это может завершиться ошибкой)`)) {
                     setStarting(false);
                     return;
                 }
@@ -221,7 +221,7 @@ export default function NewMigrationPage() {
                     }
                 }
 
-                alert(`Geplant: ${successCount} von ${selectedVMs.length} Migrationen wurden erfolgreich eingeplant für ${scheduledDate.toLocaleString()}.`);
+                alert(`Запланировано: ${successCount} из ${selectedVMs.length} миграций успешно запланировано на ${scheduledDate.toLocaleString()}.`);
                 router.push('/jobs');
                 setStarting(false);
                 return;
@@ -257,7 +257,7 @@ export default function NewMigrationPage() {
                 if (res.message && (res.message.includes('SSH') || res.message.includes('Permission denied'))) {
                     setShowSshFix(true);
                 } else {
-                    alert('Fehler: ' + res.message);
+                    alert('Ошибка: ' + res.message);
                 }
                 setStarting(false);
             }
@@ -266,7 +266,7 @@ export default function NewMigrationPage() {
             if (msg.includes('SSH') || msg.includes('Permission denied')) {
                 setShowSshFix(true);
             } else {
-                alert('Error: ' + msg);
+                alert('Ошибка: ' + msg);
             }
             setStarting(false);
         }
@@ -277,11 +277,11 @@ export default function NewMigrationPage() {
         setFixingSsh(true);
         try {
             await setupSSHTrust(parseInt(sourceId), parseInt(targetId), sshPassword);
-            alert('SSH Trust repariert. Bitte versuchen Sie es erneut.');
+            alert('SSH Trust исправлен. Попробуйте снова.');
             setShowSshFix(false);
             setSshPassword('');
         } catch (e: any) {
-            alert('Fehler: ' + e.message);
+            alert('Ошибка: ' + e.message);
         } finally {
             setFixingSsh(false);
         }
@@ -291,17 +291,17 @@ export default function NewMigrationPage() {
     return (
         <TooltipProvider>
             <div className="max-w-6xl mx-auto py-8">
-                <h1 className="text-3xl font-bold mb-8">Neue Migration</h1>
+                <h1 className="text-3xl font-bold mb-8">Создать миграцию</h1>
 
                 <div className="grid md:grid-cols-4 gap-8">
                     {/* Steps Sidebar */}
                     <div className="md:col-span-1 space-y-2">
                         {[
-                            { t: 'Quelle & Ziel', d: 'Server wählen' },
-                            { t: 'VM Auswahl', d: `${selectedVmIds.length} gewählt` },
-                            { t: 'Mapping', d: 'Ressourcen & IDs' },
-                            { t: 'Optionen', d: 'Global Settings' },
-                            { t: 'Bestätigung', d: 'Starten' }
+                            { t: 'Источник и назначение', d: 'Выбрать сервер' },
+                            { t: 'Выбор VM', d: `${selectedVmIds.length} выбрано` },
+                            { t: 'Маппинг', d: 'Ресурсы и ID' },
+                            { t: 'Опции', d: 'Общие настройки' },
+                            { t: 'Подтверждение', d: 'Запустить' }
                         ].map((s, idx) => (
                             <div key={idx} className={`flex items-center p-3 rounded-lg border transition-colors ${step === idx ? 'bg-primary/10 border-primary' : (step > idx ? 'bg-muted border-transparent opacity-50' : 'border-transparent opacity-50')}`}>
                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center border font-bold text-sm mr-3 ${step === idx ? 'bg-primary text-primary-foreground' : 'bg-background'}`}>
@@ -323,21 +323,21 @@ export default function NewMigrationPage() {
                                 {/* STEP 0: Servers */}
                                 {step === 0 && (
                                     <div className="space-y-8 animate-in fade-in">
-                                        <h2 className="text-xl font-semibold flex items-center gap-2"><ArrowRightLeft className="h-5 w-5" /> Welcher Weg?</h2>
+                                        <h2 className="text-xl font-semibold flex items-center gap-2"><ArrowRightLeft className="h-5 w-5" /> Выберите путь</h2>
 
                                         {servers.length === 0 ? (
                                             <div className="p-8 border-2 border-dashed rounded-lg text-center space-y-4">
                                                 <div className="flex justify-center"><ServerIcon className="h-10 w-10 text-muted-foreground/50" /></div>
-                                                <h3 className="font-semibold text-lg">Keine Server gefunden</h3>
-                                                <p className="text-muted-foreground">Bitte fügen Sie erst Proxmox Server hinzu.</p>
-                                                <Button variant="outline" onClick={() => router.push('/servers')}>Zu den Servern</Button>
+                                                <h3 className="font-semibold text-lg">Серверы не найдены</h3>
+                                                <p className="text-muted-foreground">Сначала добавьте серверы Proxmox.</p>
+                                                <Button variant="outline" onClick={() => router.push('/servers')}>К серверам</Button>
                                             </div>
                                         ) : (
                                             <div className="grid gap-8 md:grid-cols-2">
                                                 {/* Source Server */}
                                                 <div className="space-y-4">
                                                     <div className="flex items-center justify-between">
-                                                        <Label className="text-base font-semibold uppercase tracking-wider text-muted-foreground">Von (Quelle)</Label>
+                                                        <Label className="text-base font-semibold uppercase tracking-wider text-muted-foreground">Откуда (источник)</Label>
                                                         {sourceId && <Badge variant="outline" className="font-mono">{servers.find(s => s.id.toString() === sourceId)?.host}</Badge>}
                                                     </div>
                                                     <Select value={sourceId} onValueChange={(v) => {
@@ -347,11 +347,11 @@ export default function NewMigrationPage() {
                                                         <SelectTrigger className="h-14 font-medium text-lg w-full bg-background border-2 focus:ring-0 focus:border-primary">
                                                             <div className="flex items-center gap-3">
                                                                 <ServerIcon className="h-5 w-5 text-muted-foreground" />
-                                                                <SelectValue placeholder="Quell-Server wählen..." />
+                                                                <SelectValue placeholder="Выберите исходный сервер..." />
                                                             </div>
                                                         </SelectTrigger>
                                                         <SelectContent className="z-[100] max-h-[300px]">
-                                                            <SelectItem value="placeholder-disabled-source" disabled className="hidden">Select...</SelectItem>
+                                                            <SelectItem value="placeholder-disabled-source" disabled className="hidden">Выбрать...</SelectItem>
                                                             {servers.map(s => (
                                                                 <SelectItem key={s.id} value={s.id.toString()} disabled={s.id.toString() === targetId} className="cursor-pointer py-3">
                                                                     <span className="font-semibold text-base">{s.name}</span>
@@ -365,18 +365,18 @@ export default function NewMigrationPage() {
                                                 {/* Target Server */}
                                                 <div className="space-y-4">
                                                     <div className="flex items-center justify-between">
-                                                        <Label className="text-base font-semibold uppercase tracking-wider text-muted-foreground">Nach (Ziel)</Label>
+                                                        <Label className="text-base font-semibold uppercase tracking-wider text-muted-foreground">Куда (назначение)</Label>
                                                         {targetId && <Badge variant="outline" className="font-mono">{servers.find(s => s.id.toString() === targetId)?.host}</Badge>}
                                                     </div>
                                                     <Select value={targetId} onValueChange={setTargetId}>
                                                         <SelectTrigger className="h-14 font-medium text-lg w-full bg-background border-2 focus:ring-0 focus:border-primary">
                                                             <div className="flex items-center gap-3">
                                                                 <ServerIcon className="h-5 w-5 text-muted-foreground" />
-                                                                <SelectValue placeholder="Ziel-Server wählen..." />
+                                                                <SelectValue placeholder="Выберите целевой сервер..." />
                                                             </div>
                                                         </SelectTrigger>
                                                         <SelectContent className="z-[100] max-h-[300px]">
-                                                            <SelectItem value="placeholder-disabled-target" disabled className="hidden">Select...</SelectItem>
+                                                            <SelectItem value="placeholder-disabled-target" disabled className="hidden">Выбрать...</SelectItem>
                                                             {servers.map(s => (
                                                                 <SelectItem key={s.id} value={s.id.toString()} disabled={s.id.toString() === sourceId} className="cursor-pointer py-3">
                                                                     <span className="font-semibold text-base">{s.name}</span>
@@ -394,8 +394,8 @@ export default function NewMigrationPage() {
                                             <div className="flex items-center justify-between">
                                                 <div className="text-sm text-muted-foreground">
                                                     {sourceId && targetId ? (
-                                                        loadingVms ? <span className="flex items-center gap-2"><Loader2 className="h-3 w-3 animate-spin" /> Lade Objekte...</span> : <span>{vms.length} Objekte gefunden.</span>
-                                                    ) : <span>Wähle Server um fortzufahren.</span>}
+                                                        loadingVms ? <span className="flex items-center gap-2"><Loader2 className="h-3 w-3 animate-spin" /> Загрузка объектов...</span> : <span>{vms.length} объектов найдено.</span>
+                                                    ) : <span>Выберите сервер для продолжения.</span>}
                                                 </div>
 
                                                 <div className="flex gap-4">
@@ -409,7 +409,7 @@ export default function NewMigrationPage() {
                                                         }}
                                                     >
                                                         <Database className="h-4 w-4" />
-                                                        Alles Migrieren
+                                                        Мигрировать все
                                                     </Button>
 
                                                     <Button
@@ -417,13 +417,13 @@ export default function NewMigrationPage() {
                                                         className="font-medium"
                                                         onClick={() => setStep(1)}
                                                     >
-                                                        Auswahl Treffen <ArrowRight className="ml-2 h-4 w-4" />
+                                                        Выбрать вручную <ArrowRight className="ml-2 h-4 w-4" />
                                                     </Button>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        {loadingResources && <div className="text-sm text-muted-foreground animate-pulse text-center">Lade Ziel-Ressourcen... (VMs & Network)</div>}
+                                        {loadingResources && <div className="text-sm text-muted-foreground animate-pulse text-center">Загрузка целевых ресурсов... (VM & Сеть)</div>}
                                     </div>
                                 )}
 
@@ -431,16 +431,16 @@ export default function NewMigrationPage() {
                                 {step === 1 && (
                                     <div className="space-y-4 animate-in fade-in flex-1 flex flex-col">
                                         <div className="flex justify-between items-center">
-                                            <h2 className="text-xl font-semibold">VMs Auswählen</h2>
+                                            <h2 className="text-xl font-semibold">Выбрать VM</h2>
                                             <div className="flex items-center gap-2 bg-muted/50 p-1.5 rounded-md">
                                                 <Checkbox id="selectAll" checked={selectedVmIds.length === vms.length && vms.length > 0} onCheckedChange={(c) => handleSelectAll(!!c)} />
-                                                <Label htmlFor="selectAll" className="text-sm cursor-pointer whitespace-nowrap">Alle wählen</Label>
+                                                <Label htmlFor="selectAll" className="text-sm cursor-pointer whitespace-nowrap">Выбрать все</Label>
                                             </div>
                                         </div>
 
                                         {vms.length === 0 && !loadingVms && (
                                             <div className="text-center py-10 border-2 border-dashed rounded-lg text-muted-foreground">
-                                                Keine VMs oder Container auf dem Quellserver gefunden.
+                                                VM или контейнеры на исходном сервере не найдены.
                                             </div>
                                         )}
 
@@ -453,9 +453,9 @@ export default function NewMigrationPage() {
                                                         <tr className="text-left border-b">
                                                             <th className="p-3 w-10"></th>
                                                             <th className="p-3">ID</th>
-                                                            <th className="p-3">Name</th>
-                                                            <th className="p-3">Type</th>
-                                                            <th className="p-3">Status</th>
+                                                            <th className="p-3">Имя</th>
+                                                            <th className="p-3">Тип</th>
+                                                            <th className="p-3">Статус</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody className="divide-y">
@@ -482,8 +482,8 @@ export default function NewMigrationPage() {
                                             </div>
                                         )}
                                         <div className="flex justify-between items-center text-xs text-muted-foreground border-t pt-2">
-                                            <span>{vms.length} Objekte total</span>
-                                            <span className="font-semibold text-primary">{selectedVmIds.length} für Migration markiert</span>
+                                            <span>{vms.length} всего объектов</span>
+                                            <span className="font-semibold text-primary">{selectedVmIds.length} отмечено для миграции</span>
                                         </div>
                                     </div>
                                 )}
@@ -492,19 +492,19 @@ export default function NewMigrationPage() {
                                 {step === 2 && (
                                     <div className="space-y-4 animate-in fade-in flex-1 flex flex-col">
                                         <div className="flex justify-between items-center">
-                                            <h2 className="text-xl font-semibold">Zuweisung & IDs</h2>
+                                            <h2 className="text-xl font-semibold">Отображение и ID</h2>
                                             <div className="flex gap-2">
                                                 <Select onValueChange={(v) => handleBulkMap('targetStorage', v)}>
-                                                    <SelectTrigger className="w-[150px] h-8 text-xs"><SelectValue placeholder="Bulk Storage" /></SelectTrigger>
+                                                    <SelectTrigger className="w-[150px] h-8 text-xs"><SelectValue placeholder="Масс. хранил." /></SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem value="auto">Auto (Keep)</SelectItem>
+                                                        <SelectItem value="auto">Авто (Сохранить)</SelectItem>
                                                         {targetResources.storages.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                                                     </SelectContent>
                                                 </Select>
                                                 <Select onValueChange={(v) => handleBulkMap('network', v)}>
-                                                    <SelectTrigger className="w-[150px] h-8 text-xs"><SelectValue placeholder="Bulk Net" /></SelectTrigger>
+                                                    <SelectTrigger className="w-[150px] h-8 text-xs"><SelectValue placeholder="Масс. сеть" /></SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem value="auto">Auto</SelectItem>
+                                                        <SelectItem value="auto">Авто</SelectItem>
                                                         {targetResources.bridges.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
                                                     </SelectContent>
                                                 </Select>
@@ -515,10 +515,10 @@ export default function NewMigrationPage() {
                                             <table className="w-full text-sm">
                                                 <thead className="bg-muted sticky top-0 z-10 shadow-sm">
                                                     <tr className="text-left">
-                                                        <th className="p-3 w-[20%]">Source VM</th>
-                                                        <th className="p-3 w-[20%]">Target ID</th>
-                                                        <th className="p-3 w-[25%]">Target Storage</th>
-                                                        <th className="p-3 w-[35%]">Network Mapping</th>
+                                                        <th className="p-3 w-[20%]">Исходная VM</th>
+                                                        <th className="p-3 w-[20%]">Целевой ID</th>
+                                                        <th className="p-3 w-[25%]">Целевое хранилище</th>
+                                                        <th className="p-3 w-[35%]">Отображение сети</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y">
@@ -550,7 +550,7 @@ export default function NewMigrationPage() {
                                                                                     <AlertTriangle className="h-4 w-4 text-red-500 animate-pulse" />
                                                                                 </TooltipTrigger>
                                                                                 <TooltipContent className="bg-red-500 text-white">
-                                                                                    ID {map.targetVmid} existiert bereits auf dem Ziel!
+                                                                                    ID {map.targetVmid} уже существует на целевом сервере!
                                                                                 </TooltipContent>
                                                                             </Tooltip>
                                                                         )}
@@ -565,7 +565,7 @@ export default function NewMigrationPage() {
                                                                     }}>
                                                                         <SelectTrigger className="h-8 text-xs w-full"><SelectValue /></SelectTrigger>
                                                                         <SelectContent>
-                                                                            <SelectItem value="auto"><span className="text-muted-foreground italic">Auto (Keep)</span></SelectItem>
+                                                                            <SelectItem value="auto"><span className="text-muted-foreground italic">Авто (Сохранить)</span></SelectItem>
                                                                             {targetResources.storages.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                                                                         </SelectContent>
                                                                     </Select>
@@ -573,7 +573,7 @@ export default function NewMigrationPage() {
                                                                 <td className="p-2 align-top">
                                                                     <div className="grid gap-2">
                                                                         {Object.keys(map.networkMapping).length === 0 ? (
-                                                                            <div className="text-xs text-muted-foreground italic p-1">Lade Netzwerk...</div>
+                                                                            <div className="text-xs text-muted-foreground italic p-1">Загрузка сети...</div>
                                                                         ) : (
                                                                             Object.entries(map.networkMapping).map(([net, currentBridge]) => (
                                                                                 <div key={net} className="flex items-center gap-2">
@@ -588,9 +588,9 @@ export default function NewMigrationPage() {
                                                                                             setMappings(m);
                                                                                         }}
                                                                                     >
-                                                                                        <SelectTrigger className="h-7 text-xs flex-1"><SelectValue placeholder="Bridge" /></SelectTrigger>
+                                                                                        <SelectTrigger className="h-7 text-xs flex-1"><SelectValue placeholder="Мост" /></SelectTrigger>
                                                                                         <SelectContent>
-                                                                                            <SelectItem value="auto"><span className="text-muted-foreground italic">Auto</span></SelectItem>
+                                                                                            <SelectItem value="auto"><span className="text-muted-foreground italic">Авто</span></SelectItem>
                                                                                             {targetResources.bridges.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
                                                                                         </SelectContent>
                                                                                     </Select>
@@ -608,7 +608,7 @@ export default function NewMigrationPage() {
                                         <div className="flex items-center justify-between text-xs text-muted-foreground bg-blue-50/50 p-2 rounded border border-blue-100 dark:border-blue-900/30">
                                             <div className="flex items-center gap-2">
                                                 <HelpCircle className="h-4 w-4" />
-                                                <span>IDs in <strong>Rot</strong> sind Konflikte. Ändern Sie die ID oder nutzen Sie "Auto VMID".</span>
+                                                <span>ID в <strong>красном</strong> - это конфликты. Измените ID или используйте "Авто VMID".</span>
                                             </div>
                                         </div>
                                     </div>
@@ -617,35 +617,35 @@ export default function NewMigrationPage() {
                                 {/* STEP 3: Options */}
                                 {step === 3 && (
                                     <div className="space-y-6 animate-in fade-in">
-                                        <h2 className="text-xl font-semibold">Optionen</h2>
+                                        <h2 className="text-xl font-semibold">Опции</h2>
 
                                         <div className="grid md:grid-cols-2 gap-6">
                                             <div className="p-4 border rounded-lg space-y-4">
-                                                <h3 className="font-medium flex items-center gap-2"><ServerIcon className="h-4 w-4" /> Migration Strategie</h3>
+                                                <h3 className="font-medium flex items-center gap-2"><ServerIcon className="h-4 w-4" /> Стратегия миграции</h3>
                                                 <div className="space-y-3">
                                                     <div className="flex items-start gap-3">
                                                         <Checkbox id="autoVmid" checked={options.autoVmid} onCheckedChange={(c) => setOptions(o => ({ ...o, autoVmid: !!c }))} />
                                                         <div className="grid gap-1.5 leading-none">
-                                                            <Label htmlFor="autoVmid">Auto VMID (Override)</Label>
-                                                            <p className="text-xs text-muted-foreground">Ignoriert manuelle IDs und weist automatisch die nächste freie ID zu.</p>
+                                                            <Label htmlFor="autoVmid">Авто VMID (Переопределить)</Label>
+                                                            <p className="text-xs text-muted-foreground">Игнорирует ручные ID и автоматически назначает следующую свободную ID.</p>
                                                         </div>
                                                     </div>
                                                     <div className="flex items-start gap-3">
                                                         <Checkbox id="online" checked={options.online} onCheckedChange={(c) => setOptions(o => ({ ...o, online: !!c }))} />
                                                         <div className="grid gap-1.5 leading-none">
-                                                            <Label htmlFor="online">Online Mode</Label>
-                                                            <p className="text-xs text-muted-foreground">Snapshot Migration ohne Downtime (Experimentell).</p>
+                                                            <Label htmlFor="online">Онлайн режим</Label>
+                                                            <p className="text-xs text-muted-foreground">Снапшот миграция без простоя (экспериментально).</p>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
 
                                             <div className="p-4 border rounded-lg space-y-4 bg-yellow-500/5 border-yellow-200 dark:border-yellow-900">
-                                                <h3 className="font-medium flex items-center gap-2 text-yellow-700 dark:text-yellow-500"><Calendar className="h-4 w-4" /> Zeitplan</h3>
-                                                <p className="text-xs text-muted-foreground mb-2">Erledige die Migration zu einem späteren Zeitpunkt (z.B. Nachts).</p>
+                                                <h3 className="font-medium flex items-center gap-2 text-yellow-700 dark:text-yellow-500"><Calendar className="h-4 w-4" /> Расписание</h3>
+                                                <p className="text-xs text-muted-foreground mb-2">Выполнить миграцию в более позднее время (например, ночью).</p>
 
                                                 <div className="grid gap-2">
-                                                    <Label htmlFor="schedule">Startzeitpunkt (Optional)</Label>
+                                                    <Label htmlFor="schedule">Время начала (Опционально)</Label>
                                                     <Input
                                                         type="datetime-local"
                                                         id="schedule"
@@ -655,7 +655,7 @@ export default function NewMigrationPage() {
                                                     {options.schedule && (
                                                         <div className="flex items-center gap-2 text-xs text-green-600 animate-in fade-in">
                                                             <CheckCircle2 className="h-3 w-3" />
-                                                            <span>Migration wird eingeplant und nicht sofort ausgeführt.</span>
+                                                            <span>Миграция будет запланирована и не выполнится немедленно.</span>
                                                         </div>
                                                     )}
                                                 </div>
@@ -670,30 +670,30 @@ export default function NewMigrationPage() {
                                         <div className="inline-flex items-center justify-center p-6 bg-blue-100 dark:bg-blue-900/20 rounded-full mb-4 animate-pulse">
                                             <ArrowRightLeft className="h-12 w-12 text-blue-600" />
                                         </div>
-                                        <h2 className="text-3xl font-bold">Bereit zur Migration</h2>
+                                        <h2 className="text-3xl font-bold">Готово к миграции</h2>
                                         <p className="text-muted-foreground max-w-md mx-auto">
-                                            Sie sind dabei, <strong>{selectedVmIds.length} VMs</strong> von
-                                            <em> {servers.find(s => s.id.toString() === sourceId)?.name}</em> nach
+                                            Вы выбрали <strong>{selectedVmIds.length} VM</strong> с
+                                            <em> {servers.find(s => s.id.toString() === sourceId)?.name}</em> на
                                             <em> {servers.find(s => s.id.toString() === targetId)?.name}</em>
-                                            {options.schedule ? ' einzuplanen' : ' zu verschieben'}.
+                                            {options.schedule ? ' запланировать' : ' перенести'}.
                                         </p>
 
                                         <div className="flex justify-center gap-8 py-4 text-sm">
                                             <div className="text-center">
                                                 <div className="font-bold text-xl">{selectedVmIds.length}</div>
-                                                <div className="text-muted-foreground">VMs</div>
+                                                <div className="text-muted-foreground">ВМ</div>
                                             </div>
                                             <div className="text-center">
-                                                <div className="font-bold text-xl">{options.autoVmid ? 'Neu (Auto)' : 'Manuell/Erhalten'}</div>
-                                                <div className="text-muted-foreground">IDs</div>
+                                                <div className="font-bold text-xl">{options.autoVmid ? 'Новые (Авто)' : 'Вручную/Сохранить'}</div>
+                                                <div className="text-muted-foreground">ID</div>
                                             </div>
                                             <div className="text-center">
-                                                <div className="font-bold text-xl">{options.online ? 'Online' : 'Offline'}</div>
-                                                <div className="text-muted-foreground">Modus</div>
+                                                <div className="font-bold text-xl">{options.online ? 'Онлайн' : 'Офлайн'}</div>
+                                                <div className="text-muted-foreground">Режим</div>
                                             </div>
                                             {options.schedule && (
                                                 <div className="text-center">
-                                                    <div className="font-bold text-xl text-yellow-600">Geplant</div>
+                                                    <div className="font-bold text-xl text-yellow-600">Запланировано</div>
                                                     <div className="text-muted-foreground">
                                                         {new Date(options.schedule).toLocaleDateString()} {new Date(options.schedule).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                     </div>
@@ -703,7 +703,7 @@ export default function NewMigrationPage() {
 
                                         <Button size="lg" className="w-full max-w-sm mx-auto" onClick={handleStart} disabled={starting}>
                                             {starting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : (options.schedule ? <Calendar className="mr-2 h-5 w-5" /> : <ArrowRight className="mr-2 h-5 w-5" />)}
-                                            {options.schedule ? 'Migration Einplanen' : 'Migration Starten'}
+                                            {options.schedule ? 'Запланировать миграцию' : 'Запустить миграцию'}
                                         </Button>
                                     </div>
                                 )}
@@ -712,7 +712,7 @@ export default function NewMigrationPage() {
                                 {/* Navigation Buttons (Bottom) */}
                                 <div className="mt-auto pt-6 flex justify-between border-t">
                                     <Button variant="ghost" onClick={() => step > 0 ? setStep(step - 1) : router.back()} disabled={starting}>
-                                        <ArrowLeft className="mr-2 h-4 w-4" /> Zurück
+                                        <ArrowLeft className="mr-2 h-4 w-4" /> Назад
                                     </Button>
 
                                     {step < 4 && (
@@ -720,7 +720,7 @@ export default function NewMigrationPage() {
                                             (step === 0 && (!sourceId || !targetId)) ||
                                             (step === 1 && selectedVmIds.length === 0)
                                         }>
-                                            Weiter <ArrowRight className="ml-2 h-4 w-4" />
+                                            Далее <ArrowRight className="ml-2 h-4 w-4" />
                                         </Button>
                                     )}
                                 </div>
@@ -733,13 +733,13 @@ export default function NewMigrationPage() {
                 <Dialog open={showSshFix} onOpenChange={setShowSshFix}>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>SSH Verbindung Reparieren</DialogTitle>
-                            <DialogDescription>Geben Sie das Root-Passwort des Zielservers ein.</DialogDescription>
+                            <DialogTitle>Исправить SSH соединение</DialogTitle>
+                            <DialogDescription>Введите root-пароль целевого сервера.</DialogDescription>
                         </DialogHeader>
-                        <Input type="password" value={sshPassword} onChange={(e) => setSshPassword(e.target.value)} placeholder="Root Passwort" />
+                        <Input type="password" value={sshPassword} onChange={(e) => setSshPassword(e.target.value)} placeholder="Root пароль" />
                         <DialogFooter>
-                            <Button variant="outline" onClick={() => setShowSshFix(false)}>Abbrechen</Button>
-                            <Button onClick={handleFixSsh} disabled={fixingSsh}>{fixingSsh && <Loader2 className="mr-2 animate-spin" />} Reparieren</Button>
+                            <Button variant="outline" onClick={() => setShowSshFix(false)}>Отмена</Button>
+                            <Button onClick={handleFixSsh} disabled={fixingSsh}>{fixingSsh && <Loader2 className="mr-2 animate-spin" />} Исправить</Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>

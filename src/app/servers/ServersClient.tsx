@@ -69,12 +69,12 @@ export default function ServersClient({ servers, groups, onDeleteServer }: Serve
     };
 
     const handleDelete = async (id: number) => {
-        if (!confirm('Möchten Sie diesen Server wirklich löschen? Alle zugehörigen Backups und Jobs werden ebenfalls gelöscht.')) return;
+        if (!confirm('Удалить этот сервер? Все бэкапы и задачи также будут удалены.')) return;
         setDeletingId(id);
         try {
             await onDeleteServer(id);
         } catch (e) {
-            alert('Fehler beim Löschen: ' + (e instanceof Error ? e.message : String(e)));
+            alert('Ошибка удаления: ' + (e instanceof Error ? e.message : String(e)));
         }
         setDeletingId(null);
     };
@@ -95,16 +95,16 @@ export default function ServersClient({ servers, groups, onDeleteServer }: Serve
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold">Server</h1>
+                    <h1 className="text-3xl font-bold">Серверы</h1>
                     <p className="text-muted-foreground">
-                        Proxmox VE und PBS Server verwalten
-                        {searchTerm && ` (${displayedServers} von ${totalServers})`}
+                        Управление серверами Proxmox VE и PBS
+                        {searchTerm && ` (${displayedServers} из ${totalServers})`}
                     </p>
                 </div>
                 <Link href="/servers/new">
                     <Button>
                         <Plus className="mr-2 h-4 w-4" />
-                        Server hinzufügen
+                        Добавить сервер
                     </Button>
                 </Link>
             </div>
@@ -115,7 +115,7 @@ export default function ServersClient({ servers, groups, onDeleteServer }: Serve
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                         type="search"
-                        placeholder="Server, Typ oder Gruppe suchen..."
+                        placeholder="Поиск сервера, типа или группы..."
                         className="pl-10"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -124,10 +124,10 @@ export default function ServersClient({ servers, groups, onDeleteServer }: Serve
                 <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={expandAll}>
                         <Layers className="h-4 w-4 mr-2" />
-                        Alle aufklappen
+                        Развернуть все
                     </Button>
                     <Button variant="outline" size="sm" onClick={collapseAll}>
-                        Alle zuklappen
+                        Свернуть все
                     </Button>
                 </div>
             </div>
@@ -136,12 +136,12 @@ export default function ServersClient({ servers, groups, onDeleteServer }: Serve
                 <Card className="border-dashed">
                     <CardContent className="flex flex-col items-center justify-center py-12">
                         <Server className="h-12 w-12 text-muted-foreground mb-4" />
-                        <h3 className="text-lg font-semibold mb-2">Keine Server</h3>
+                        <h3 className="text-lg font-semibold mb-2">Нет серверов</h3>
                         <p className="text-muted-foreground text-center mb-4">
-                            Fügen Sie Ihren ersten Proxmox-Server hinzu.
+                            Добавьте первый сервер Proxmox.
                         </p>
                         <Link href="/servers/new">
-                            <Button>Server hinzufügen</Button>
+                            <Button>Добавить сервер</Button>
                         </Link>
                     </CardContent>
                 </Card>
@@ -183,7 +183,7 @@ export default function ServersClient({ servers, groups, onDeleteServer }: Serve
                                                     {pbsCount} PBS
                                                 </span>
                                             )}
-                                            <span className="ml-2">{groupServers.length} Server</span>
+                                            <span className="ml-2">{groupServers.length} серверов</span>
                                         </div>
                                     </div>
                                 </CardHeader>
@@ -191,7 +191,7 @@ export default function ServersClient({ servers, groups, onDeleteServer }: Serve
                                     <CardContent className="p-0 divide-y divide-border/50">
                                         {groupServers.length === 0 ? (
                                             <div className="p-4 text-center text-muted-foreground text-sm">
-                                                Keine Server in dieser Gruppe
+                                                Нет серверов в группе
                                             </div>
                                         ) : (
                                             groupServers.map((server) => (
@@ -224,10 +224,10 @@ export default function ServersClient({ servers, groups, onDeleteServer }: Serve
                                             <ChevronRight className="h-5 w-5 text-muted-foreground" />
                                         )}
                                         <Server className="h-5 w-5 text-muted-foreground" />
-                                        <CardTitle className="text-base text-muted-foreground">Ohne Gruppe</CardTitle>
+                                        <CardTitle className="text-base text-muted-foreground">Без группы</CardTitle>
                                     </div>
                                     <span className="text-sm text-muted-foreground">
-                                        {groupedServers['ungrouped'].length} Server
+                                        {groupedServers['ungrouped'].length} серверов
                                     </span>
                                 </div>
                             </CardHeader>
@@ -280,7 +280,7 @@ function ServerRow({
                 <Link href={`/servers/${server.id}`}>
                     <Button variant="outline" size="sm">
                         <ExternalLink className="mr-2 h-4 w-4" />
-                        Details
+                        Подробнее
                     </Button>
                 </Link>
                 <Button

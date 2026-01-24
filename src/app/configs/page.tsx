@@ -51,20 +51,20 @@ export default function ConfigsPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-3xl font-bold">Konfigurationen</h1>
-                <p className="text-muted-foreground">Server-Konfigurationen sichern und wiederherstellen</p>
+                <h1 className="text-3xl font-bold">Конфигурации</h1>
+                <p className="text-muted-foreground">Резервное копирование и восстановление конфигураций серверов</p>
             </div>
 
             {servers.length === 0 ? (
                 <Card className="border-dashed">
                     <CardContent className="flex flex-col items-center justify-center py-12">
                         <Server className="h-12 w-12 text-muted-foreground mb-4" />
-                        <h3 className="text-lg font-semibold mb-2">Keine Server</h3>
+                        <h3 className="text-lg font-semibold mb-2">Нет серверов</h3>
                         <p className="text-muted-foreground text-center mb-4">
-                            Fügen Sie einen Server hinzu, um Konfigurationen zu sichern.
+                            Добавьте сервер для резервного копирования конфигураций.
                         </p>
                         <Link href="/servers/new">
-                            <Button>Server hinzufügen</Button>
+                            <Button>Добавить сервер</Button>
                         </Link>
                     </CardContent>
                 </Card>

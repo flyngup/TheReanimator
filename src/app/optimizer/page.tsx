@@ -36,7 +36,7 @@ export default function OptimizerPage() {
             setStats(s);
             setSuggestions(sug);
         } catch (e) {
-            toast.error('Failed to load optimizer data');
+            toast.error('Не удалось загрузить данные оптимизатора');
             console.error(e);
         } finally {
             setLoading(false);
@@ -66,13 +66,13 @@ export default function OptimizerPage() {
                     <TrendingUp className="h-12 w-12 text-muted-foreground opacity-50" />
                 </div>
                 <div className="space-y-2 max-w-md">
-                    <h1 className="text-2xl font-bold">Optimizer Deaktiviert</h1>
+                    <h1 className="text-2xl font-bold">Оптимизатор отключён</h1>
                     <p className="text-muted-foreground">
-                        Diese Funktion benötigt den AI-Assistenten. Bitte aktivieren Sie die KI in den Systemeinstellungen.
+                        Эта функция требует AI-ассистента. Пожалуйста, активируйте AI в системных настройках.
                     </p>
                 </div>
                 <Button onClick={() => router.push('/settings')} variant="outline">
-                    Zu den Einstellungen
+                    К настройкам
                 </Button>
             </div>
         );
@@ -85,15 +85,15 @@ export default function OptimizerPage() {
                 <div>
                     <h1 className="text-3xl font-bold flex items-center gap-2">
                         <TrendingUp className="h-8 w-8 text-primary" />
-                        Resource Optimizer
+                        Оптимизатор ресурсов
                     </h1>
                     <p className="text-muted-foreground mt-1">
-                        AI-driven load balancing and resource allocation insights.
+                        AI-балансировка нагрузки и анализ распределения ресурсов.
                     </p>
                 </div>
                 <Button onClick={() => loadData(true)} disabled={loading} variant="outline">
                     <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                    Refresh Analysis
+                    Обновить анализ
                 </Button>
             </div>
 
@@ -121,14 +121,14 @@ export default function OptimizerPage() {
                             <CardContent className="space-y-4">
                                 <div>
                                     <div className="flex justify-between text-sm mb-1">
-                                        <span className="text-muted-foreground flex items-center gap-1"><Cpu className="h-3 w-3" /> CPU Load</span>
+                                        <span className="text-muted-foreground flex items-center gap-1"><Cpu className="h-3 w-3" /> Нагрузка CPU</span>
                                         <span className="font-mono font-bold">{node.cpu.toFixed(1)}%</span>
                                     </div>
                                     <Progress value={node.cpu} className="h-2" indicatorColor={getCpuColor(node.cpu)} />
                                 </div>
                                 <div>
                                     <div className="flex justify-between text-sm mb-1">
-                                        <span className="text-muted-foreground flex items-center gap-1"><BarChart3 className="h-3 w-3" /> RAM Usage</span>
+                                        <span className="text-muted-foreground flex items-center gap-1"><BarChart3 className="h-3 w-3" /> Использование RAM</span>
                                         <span className="font-mono font-bold">{node.ram.toFixed(1)}%</span>
                                     </div>
                                     <Progress value={node.ram} className="h-2" indicatorColor={getRamColor(node.ram)} />
@@ -147,21 +147,21 @@ export default function OptimizerPage() {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <AlertTriangle className="h-5 w-5 text-orange-500" />
-                        Optimization Suggestions
+                        Предложения по оптимизации
                     </CardTitle>
                     <CardDescription>
-                        Based on current load distribution across your cluster.
+                        Основано на текущем распределении нагрузки в вашем кластере.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     {loading ? (
                         <div className="h-20 flex items-center justify-center text-muted-foreground text-sm">
-                            Analyzing cluster metrics...
+                            Анализ метрик кластера...
                         </div>
                     ) : suggestions.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-6 text-muted-foreground">
                             <CheckCircle2 className="h-8 w-8 text-green-500 mb-2" />
-                            <p>Cluster is well balanced. No actions required.</p>
+                            <p>Кластер хорошо сбалансирован. Действия не требуются.</p>
                         </div>
                     ) : (
                         <div className="space-y-3">
@@ -175,7 +175,7 @@ export default function OptimizerPage() {
                                         </div>
                                     </div>
                                     <Button size="sm" variant="secondary" onClick={() => router.push(`/servers/${sug.sourceNodeId}`)}>
-                                        View Source Node <ArrowRight className="ml-2 h-3 w-3" />
+                                        Исходный узел <ArrowRight className="ml-2 h-3 w-3" />
                                     </Button>
                                 </div>
                             ))}

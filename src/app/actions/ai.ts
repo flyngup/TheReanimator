@@ -71,8 +71,8 @@ export async function generateAIResponse(
     onProgress?: (partialResponse: string, tokenCount: number) => void
 ): Promise<string> {
     const settings = await getAISettings();
-    if (!settings.enabled) throw new Error('KI-Funktionen sind deaktiviert.');
-    if (!settings.model) throw new Error('Kein AI Model ausgewählt. Bitte in den Einstellungen konfigurieren.');
+    if (!settings.enabled) throw new Error('AI функции отключены.');
+    if (!settings.model) throw new Error('AI модель не выбрана. Настройте в настройках.');
 
     // Create abort controller with 300 second timeout (5 minutes for large models)
     const controller = new AbortController();
@@ -164,15 +164,15 @@ export async function analyzeLogWithAI(logContent: string): Promise<string> {
     const truncatedLog = logContent.length > 8000 ? logContent.slice(-8000) : logContent;
 
     const context = `
-Du bist ein Linux/Proxmox Experte. 
-Analysiere den folgenden Log-Auszug eines fehlgeschlagenen Tasks (Migration oder Backup).
-Identifiziere das Kernproblem.
-Antworte kurz und prägnant (max 2 Sätze) in Deutsch.
-Gib dem User eine konkrete Handlungsanweisung.
-Ignoriere den Stacktrace, fokussiere dich auf die Fehlermeldung.
+Ты эксперт по Linux/Proxmox.
+Проанализируй следующий лог-файл неудачной задачи (миграция или бэкап).
+Определи основную проблему.
+Отвечай коротко и ясно (макс 2 предложения) на русском языке.
+Дай пользователю конкретные инструкции по решению.
+Игнорируй stack trace, сосредоточься на сообщении об ошибке.
     `.trim();
 
-    return generateAIResponse(`Hier ist der Log:\n\n${truncatedLog}`, context);
+    return generateAIResponse(`Вот лог:\n\n${truncatedLog}`, context);
 }
 
 // Helper to separate JSON from text
@@ -264,35 +264,35 @@ ${config}
     const result = parseAIJSON(response);
 
     if (!result) {
-        return { score: 100, issues: [], summary: 'KI-Parsing fehlgeschlagen (Ungültiges JSON)' };
+        return { score: 100, issues: [], summary: 'AI-синтаксический анализ не удался (недействительный JSON)' };
     }
     return result;
 }
 
 export async function analyzeHostWithAI(files: { filename: string, content: string }[]): Promise<HealthResult> {
     const context = `
-Du bist ein Linux System Engineer (Debian/Proxmox).
-Analysiere diese System-Dumps auf Sicherheit, Performance und Stabilität.
+Ты системный инженер Linux (Debian/Proxmox).
+Проанализируй эти дампы системы на безопасность, производительность и стабильность.
 
-Antworte AUSSCHLIESSLICH mit validem JSON:
+Отвечай ТОЛЬКО валидным JSON:
 {
-  "score": number, 
+  "score": number,
   "summary": "string",
-  "markdown_report": "string", // HIER: Ausführlicher Bericht in Markdown.
+  "markdown_report": "string", // ЗДЕСЬ: Подробный отчёт в Markdown.
   "issues": [{ "severity": "...", "title": "...", "description": "...", "fix": "...", "reasoning": "..." }]
 }
 
-Anforderungen für 'markdown_report':
-- Sektionen: System-Status, Netzwerk-Topologie, Storage-Health, Sicherheit.
-- Erkläre Auffälligkeiten in den Logs/Configs.
-- Gib konkrete Terminal-Befehle zur Behebung von Problemen.
+Требования к 'markdown_report':
+- Секции: Статус системы, Сетевая топология, Состояние хранилища, Безопасность.
+- Объясни аномалии в логах/конфигах.
+- Дай конкретные команды терминала для исправления проблем.
 
-Dateien:
+Файлы:
 ${files.map(f => `=== ${f.filename} ===\n${f.content}\n`).join('\n')}
     `.trim();
 
     const response = await generateAIResponse(context, '');
-    return parseAIJSON(response) || { score: 100, issues: [], summary: 'KI-Parsing fehlgeschlagen' };
+    return parseAIJSON(response) || { score: 100, issues: [], summary: 'AI-синтаксический анализ не удался' };
 }
 
 // --- Network Analysis Types ---
@@ -328,31 +328,31 @@ export interface NetworkAnalysisResult {
 
 export async function explainNetworkConfig(interfaces: any[]): Promise<NetworkAnalysisResult> {
     const context = `
-Du bist ein erfahrener Netzwerk-Architect und Security-Consultant.
-Analysiere die folgende Linux Netzwerk-Konfiguration (/etc/network/interfaces Struktur).
+Ты опытный сетевой архитектор и консультант по безопасности.
+Проанализируй следующую сетевую конфигурацию Linux (/etc/network/interfaces структура).
 
-Antworte AUSSCHLIESSLICH mit validem JSON.
-Struktur:
+Отвечай ТОЛЬКО валидным JSON.
+Структура:
 {
-  "summary": "Kurze, prägnante Zusammenfassung (max 2 Sätze)",
+  "summary": "Краткое ёмкое резюме (макс 2 предложения)",
   "topology": [
     { "interface": "eth0", "type": "Physical", "status": "Up", "ip_connect": "192.168.1.1/24", "usage": "Uplink" }
   ],
   "security_analysis": [
-    { "severity": "warning", "title": "Promiscuous Mode", "description": "Interface in promiscuous mode", "recommendation": "Deaktivieren wenn nicht benötigt" }
+    { "severity": "warning", "title": "Promiscuous Mode", "description": "Интерфейс в promiscuous mode", "recommendation": "Отключить если не нужен" }
   ],
   "performance_analysis": [
-     { "severity": "info", "title": "MTU Standard", "description": "MTU 1500 ist Standard", "recommendation": "Jumbo Frames für Storage prüfen" }
+     { "severity": "info", "title": "MTU Стандарт", "description": "MTU 1500 - это стандарт", "recommendation": "Проверить Jumbo Frames для хранилища" }
   ],
   "recommendations": [
-    { "action": "Bonding Mode ändern", "command": "iface bond0 inet manual ...", "reason": "LACP (802.3ad) bietet bessere Lastverteilung" }
+    { "action": "Изменить режим bonding", "command": "iface bond0 inet manual ...", "reason": "LACP (802.3ad) обеспечивает лучшую балансировку нагрузки" }
   ]
 }
 
-Sei streng bei Security-Risiken.
+Будь строг к рискам безопасности.
     `.trim();
 
-    const response = await generateAIResponse(`Hier die Config:\n${JSON.stringify(interfaces, null, 2)}`, context);
+    const response = await generateAIResponse(`Вот конфиг:\n${JSON.stringify(interfaces, null, 2)}`, context);
 
     // Use parseAIJSON helper to extract JSON from markdown block if needed
     const result = parseAIJSON(response);
@@ -360,9 +360,9 @@ Sei streng bei Security-Risiken.
     if (!result) {
         // Fallback structure if parsing fails entirely
         return {
-            summary: "KI-Analyse fehlgeschlagen (Parsing Error).",
+            summary: "AI-анализ не удался (ошибка синтаксического анализа).",
             topology: [],
-            security_analysis: [{ severity: 'critical', title: 'Parse Error', description: 'Die KI-Antwort konnte nicht gelesen werden.', recommendation: 'Erneut versuchen.' }],
+            security_analysis: [{ severity: 'critical', title: 'Ошибка синтаксического анализа', description: 'AI-ответ не удалось прочитать.', recommendation: 'Попробуйте снова.' }],
             performance_analysis: [],
             recommendations: []
         };

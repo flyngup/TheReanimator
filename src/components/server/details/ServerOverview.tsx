@@ -29,7 +29,7 @@ export function ServerOverview({ server, info }: ServerOverviewProps) {
                 <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent">
                     <CardTitle className="flex items-center gap-2">
                         <Cpu className="h-5 w-5 text-primary" />
-                        System Status
+                        Системный статус
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
@@ -39,9 +39,9 @@ export function ServerOverview({ server, info }: ServerOverviewProps) {
                             <div className="flex justify-between mb-2">
                                 <span className="text-sm text-muted-foreground flex items-center gap-2">
                                     <Cpu className="h-4 w-4" />
-                                    CPU Load
+                                    Загрузка CPU
                                 </span>
-                                <span className="text-sm font-medium">{info.system.cpuCores} Cores · {info.system.cpuUsage.toFixed(1)}%</span>
+                                <span className="text-sm font-medium">{info.system.cpuCores} ядер · {info.system.cpuUsage.toFixed(1)}%</span>
                             </div>
                             <div className="w-full bg-muted rounded-full h-1.5 mb-2">
                                 <div className="bg-primary h-1.5 rounded-full transition-all duration-500" style={{ width: `${info.system.cpuUsage}%` }}></div>
@@ -54,7 +54,7 @@ export function ServerOverview({ server, info }: ServerOverviewProps) {
                             <div className="flex justify-between mb-2">
                                 <span className="text-sm text-muted-foreground flex items-center gap-2">
                                     <Gauge className="h-4 w-4" />
-                                    Memory
+                                    Память
                                 </span>
                                 <span className="text-sm font-medium">{info.system.memoryUsage.toFixed(1)}%</span>
                             </div>
@@ -69,12 +69,12 @@ export function ServerOverview({ server, info }: ServerOverviewProps) {
                             <div className="flex justify-between items-center">
                                 <span className="text-sm text-muted-foreground flex items-center gap-2">
                                     <Clock className="h-4 w-4" />
-                                    Uptime
+                                    Время работы
                                 </span>
                                 <span className="text-sm font-medium text-green-500">{info.system.uptime}</span>
                             </div>
                             <div className="flex justify-between items-center">
-                                <span className="text-sm text-muted-foreground">Kernel</span>
+                                <span className="text-sm text-muted-foreground">Ядро</span>
                                 <span className="font-mono text-xs">{info.system.kernel}</span>
                             </div>
                         </div>

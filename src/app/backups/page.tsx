@@ -23,7 +23,7 @@ function formatBytes(bytes: number): string {
 }
 
 function formatDate(date: Date): string {
-    return new Intl.DateTimeFormat('de-DE', {
+    return new Intl.DateTimeFormat('ru-RU', {
         dateStyle: 'medium',
         timeStyle: 'short'
     }).format(date);
@@ -37,15 +37,15 @@ export default async function BackupsPage() {
             <div className="flex items-center justify-between">
                 <div>
                     <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
-                        Backups
+                        Бэкапы
                     </h2>
                     <p className="text-muted-foreground mt-1">
-                        Backup-Übersicht und Wiederherstellung
+                        Обзор бэкапов и восстановление
                     </p>
                 </div>
                 <Button variant="outline">
                     <RefreshCw className="mr-2 h-4 w-4" />
-                    Aktualisieren
+                    Обновить
                 </Button>
             </div>
 
@@ -53,14 +53,14 @@ export default async function BackupsPage() {
                 <Card className="border-dashed">
                     <CardContent className="flex flex-col items-center justify-center py-12">
                         <FolderArchive className="h-12 w-12 text-muted-foreground mb-4" />
-                        <h3 className="text-lg font-semibold mb-2">Kein PBS Server konfiguriert</h3>
+                        <h3 className="text-lg font-semibold mb-2">PBS сервер не настроен</h3>
                         <p className="text-muted-foreground text-center mb-4">
-                            Fügen Sie einen Proxmox Backup Server hinzu, um Backups zu verwalten.
+                            Добавьте Proxmox Backup Server для управления бэкапами.
                         </p>
                         <Link href="/servers/new">
                             <Button>
                                 <Server className="mr-2 h-4 w-4" />
-                                Server hinzufügen
+                                Добавить сервер
                             </Button>
                         </Link>
                     </CardContent>
@@ -82,7 +82,7 @@ export default async function BackupsPage() {
                                     </div>
                                     <Link href={`/backups/${server.id}`}>
                                         <Button variant="ghost" size="sm" className="group-hover:bg-primary/10">
-                                            Öffnen
+                                            Открыть
                                             <ChevronRight className="ml-2 h-4 w-4" />
                                         </Button>
                                     </Link>
@@ -93,28 +93,28 @@ export default async function BackupsPage() {
                                     <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
                                         <HardDrive className="h-5 w-5 text-blue-500" />
                                         <div>
-                                            <p className="text-sm text-muted-foreground">Datastores</p>
+                                            <p className="text-sm text-muted-foreground">Хранилища</p>
                                             <p className="font-semibold">-</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
                                         <Archive className="h-5 w-5 text-green-500" />
                                         <div>
-                                            <p className="text-sm text-muted-foreground">Backups</p>
+                                            <p className="text-sm text-muted-foreground">Бэкапы</p>
                                             <p className="font-semibold">-</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
                                         <Calendar className="h-5 w-5 text-amber-500" />
                                         <div>
-                                            <p className="text-sm text-muted-foreground">Letztes Backup</p>
+                                            <p className="text-sm text-muted-foreground">Последний бэкап</p>
                                             <p className="font-semibold">-</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
                                         <Shield className="h-5 w-5 text-emerald-500" />
                                         <div>
-                                            <p className="text-sm text-muted-foreground">Verifiziert</p>
+                                            <p className="text-sm text-muted-foreground">Проверено</p>
                                             <p className="font-semibold">-</p>
                                         </div>
                                     </div>
@@ -130,27 +130,27 @@ export default async function BackupsPage() {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Shield className="h-5 w-5" />
-                        Backup-Funktionen
+                        Функции бэкапов
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="grid md:grid-cols-3 gap-4">
                         <div className="p-4 rounded-lg border border-border/50 bg-gradient-to-br from-blue-500/5 to-transparent">
-                            <h4 className="font-semibold mb-2">📂 Dateien durchsuchen</h4>
+                            <h4 className="font-semibold mb-2">📂 Просматривать файлы</h4>
                             <p className="text-sm text-muted-foreground">
-                                Navigieren Sie durch Backup-Inhalte und sehen Sie einzelne Dateien.
+                                Просматривайте содержимое бэкапов и отдельные файлы.
                             </p>
                         </div>
                         <div className="p-4 rounded-lg border border-border/50 bg-gradient-to-br from-green-500/5 to-transparent">
-                            <h4 className="font-semibold mb-2">🔄 Wiederherstellung</h4>
+                            <h4 className="font-semibold mb-2">🔄 Восстановление</h4>
                             <p className="text-sm text-muted-foreground">
-                                Stellen Sie komplette VMs oder einzelne Dateien wieder her.
+                                Восстанавливайте целые VM или отдельные файлы.
                             </p>
                         </div>
                         <div className="p-4 rounded-lg border border-border/50 bg-gradient-to-br from-amber-500/5 to-transparent">
-                            <h4 className="font-semibold mb-2">✅ Verifizierung</h4>
+                            <h4 className="font-semibold mb-2">✅ Проверка</h4>
                             <p className="text-sm text-muted-foreground">
-                                Überprüfen Sie die Integrität Ihrer Backups.
+                                Проверяйте целостность ваших бэкапов.
                             </p>
                         </div>
                     </div>

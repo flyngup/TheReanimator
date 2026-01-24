@@ -138,7 +138,7 @@ export function MigrationDialog({ vm, sourceId, otherServers, open, onOpenChange
         };
 
         if (scheduled) {
-            setLogs(prev => [...prev, `Scheduling migration...`]);
+            setLogs(prev => [...prev, `Планирование миграции...`]);
             try {
                 const d = new Date(scheduleDate);
                 // ONE-TIME SCHEDULING: Pass ISO string directly
@@ -147,13 +147,13 @@ export function MigrationDialog({ vm, sourceId, otherServers, open, onOpenChange
 
                 const res = await scheduleMigration(sourceId, vm.vmid, vm.type, options, scheduleString);
                 if (res.success) {
-                    setLogs(prev => [...prev, 'Migration scheduled successfully.']);
+                    setLogs(prev => [...prev, 'Миграция запланирована успешно.']);
                     setTimeout(() => {
                         onOpenChange(false);
                         router.refresh();
                     }, 1500);
                 } else {
-                    setError("Scheduling failed.");
+                    setError("Планирование не удалось.");
                 }
             } catch (e) {
                 setError(String(e));
@@ -163,23 +163,23 @@ export function MigrationDialog({ vm, sourceId, otherServers, open, onOpenChange
             return;
         }
 
-        setLogs(prev => [...prev, `Starting migration of ${vm.name} (${vm.vmid})...`]);
+        setLogs(prev => [...prev, `Начало миграции ${vm.name} (${vm.vmid})...`]);
 
         try {
             const res = await migrateVM(sourceId, vm.vmid, vm.type, options);
             if (res.success) {
-                setLogs(prev => [...prev, 'Migration finished successfully.', 'Log:', res.message || '']);
+                setLogs(prev => [...prev, 'Миграция завершена успешно.', 'Лог:', res.message || '']);
                 setTimeout(() => {
                     onOpenChange(false);
                     router.refresh();
                 }, 1500);
             } else {
                 setError(res.message);
-                setLogs(prev => [...prev, `Error: ${res.message}`]);
+                setLogs(prev => [...prev, `Ошибка: ${res.message}`]);
             }
         } catch (e) {
             setError(String(e));
-            setLogs(prev => [...prev, `Exception: ${String(e)}`]);
+            setLogs(prev => [...prev, `Исключение: ${String(e)}`]);
         } finally {
             setMigrating(false);
         }
@@ -193,10 +193,10 @@ export function MigrationDialog({ vm, sourceId, otherServers, open, onOpenChange
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <ArrowRightLeft className="h-5 w-5" />
-                        Live Migration: {vm.name}
+                        Онлайн миграция: {vm.name}
                     </DialogTitle>
                     <DialogDescription>
-                        Move virtual machine/container to another node.
+                        Переместить виртуальную машину/контейнер на другой узел.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -204,16 +204,16 @@ export function MigrationDialog({ vm, sourceId, otherServers, open, onOpenChange
                     <div className="grid gap-6 py-4">
                         {/* Source VM Info */}
                         <div className="p-4 border rounded-lg bg-muted/30">
-                            <h4 className="font-medium text-sm mb-3">Aktuelle Konfiguration</h4>
+                            <h4 className="font-medium text-sm mb-3">Текущая конфигурация</h4>
                             <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div>
-                                    <span className="text-muted-foreground">Netzwerk Interfaces:</span>
+                                    <span className="text-muted-foreground">Сетевые интерфейсы:</span>
                                     <div className="font-mono mt-1 space-y-1">
-                                        {sourceInterfaces.length > 0 ? sourceInterfaces.join(', ') : <span className="text-muted-foreground">Analysing...</span>}
+                                        {sourceInterfaces.length > 0 ? sourceInterfaces.join(', ') : <span className="text-muted-foreground">Анализ...</span>}
                                     </div>
                                 </div>
                                 <div>
-                                    <span className="text-muted-foreground">Storage:</span>
+                                    <span className="text-muted-foreground">Хранилище:</span>
                                     <div className="font-mono mt-1">
                                         {vm.storages?.length ? vm.storages.join(', ') : <span className="text-muted-foreground">-</span>}
                                     </div>
@@ -224,10 +224,10 @@ export function MigrationDialog({ vm, sourceId, otherServers, open, onOpenChange
                         <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <Label className="mb-2 block">Target Node</Label>
+                                    <Label className="mb-2 block">Целевой узел</Label>
                                     <Select value={targetServerId} onValueChange={setTargetServerId}>
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Select Server" />
+                                            <SelectValue placeholder="Выберите сервер" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {otherServers.map(s => (
@@ -238,7 +238,7 @@ export function MigrationDialog({ vm, sourceId, otherServers, open, onOpenChange
                                 </div>
                                 <div className="flex flex-col justify-end pb-2">
                                     <div className="flex items-center justify-between border p-3 rounded-md bg-muted/40">
-                                        <Label htmlFor="online" className="cursor-pointer">Online Mode (Live)</Label>
+                                        <Label htmlFor="online" className="cursor-pointer">Онлайн режим (Live)</Label>
                                         <Switch id="online" checked={online} onCheckedChange={setOnline} />
                                     </div>
                                 </div>
@@ -247,10 +247,10 @@ export function MigrationDialog({ vm, sourceId, otherServers, open, onOpenChange
                             {targetServerId && (
                                 <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
                                     <div>
-                                        <Label className="mb-2 block">Target Storage</Label>
+                                        <Label className="mb-2 block">Целевое хранилище</Label>
                                         {loadingResources ? (
                                             <div className="h-10 flex items-center px-3 border rounded-md bg-muted text-muted-foreground text-sm">
-                                                <Loader2 className="h-3 w-3 animate-spin mr-2" /> Loading...
+                                                <Loader2 className="h-3 w-3 animate-spin mr-2" /> Загрузка...
                                             </div>
                                         ) : (
                                             <Select value={targetStorage} onValueChange={setTargetStorage}>
@@ -258,22 +258,22 @@ export function MigrationDialog({ vm, sourceId, otherServers, open, onOpenChange
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="__KEEP__">Keep Original Config (Auto)</SelectItem>
+                                                    <SelectItem value="__KEEP__">Сохранить исходную конфигурацию (Авто)</SelectItem>
                                                     {storages.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                                                 </SelectContent>
                                             </Select>
                                         )}
                                         <p className="text-xs text-muted-foreground mt-1">
-                                            Primary storage for restored disks.
+                                            Основное хранилище для восстанавливаемых дисков.
                                         </p>
                                     </div>
 
                                     {/* VMID Selection */}
                                     <div>
                                         <div className="mb-2 flex items-center justify-between">
-                                            <Label className="block">Target VMID</Label>
+                                            <Label className="block">Целевой VMID</Label>
                                             <div className="flex items-center gap-2">
-                                                <Label htmlFor="autoVmid" className="text-xs text-muted-foreground cursor-pointer">Auto</Label>
+                                                <Label htmlFor="autoVmid" className="text-xs text-muted-foreground cursor-pointer">Авто</Label>
                                                 <Switch id="autoVmid" checked={autoVmid} onCheckedChange={setAutoVmid} className="scale-75" />
                                             </div>
                                         </div>
@@ -286,7 +286,7 @@ export function MigrationDialog({ vm, sourceId, otherServers, open, onOpenChange
                                             />
                                         ) : (
                                             <div className="h-10 px-3 flex items-center border rounded-md bg-muted text-muted-foreground text-sm">
-                                                Auto-select next free
+                                                Автоматический выбор следующего свободного
                                             </div>
                                         )}
                                     </div>
@@ -298,7 +298,7 @@ export function MigrationDialog({ vm, sourceId, otherServers, open, onOpenChange
                                 <div className="p-4 border rounded-lg bg-muted/30 animate-in fade-in">
                                     <div className="flex items-center gap-2 mb-3">
                                         <Network className="h-4 w-4 text-muted-foreground" />
-                                        <h4 className="font-medium text-sm">Network Mapping</h4>
+                                        <h4 className="font-medium text-sm">Сетевое отображение</h4>
                                     </div>
                                     <div className="grid gap-3">
                                         {sourceInterfaces.map(net => (
@@ -310,7 +310,7 @@ export function MigrationDialog({ vm, sourceId, otherServers, open, onOpenChange
                                                         onValueChange={(val) => setNetworkMapping(prev => ({ ...prev, [net]: val }))}
                                                     >
                                                         <SelectTrigger className="h-8">
-                                                            <SelectValue placeholder="Select Bridge" />
+                                                            <SelectValue placeholder="Выберите мост" />
                                                         </SelectTrigger>
                                                         <SelectContent>
                                                             {bridges.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
@@ -330,7 +330,7 @@ export function MigrationDialog({ vm, sourceId, otherServers, open, onOpenChange
                                         <div className="flex items-center gap-2">
                                             <Calendar className="h-4 w-4 text-yellow-600" />
                                             <Label htmlFor="schedule" className="font-medium text-sm text-yellow-700 dark:text-yellow-400 cursor-pointer">
-                                                Schedule for later
+                                                Запланировать на позже
                                             </Label>
                                         </div>
                                         <Switch id="schedule" checked={scheduled} onCheckedChange={setScheduled} />
@@ -344,7 +344,7 @@ export function MigrationDialog({ vm, sourceId, otherServers, open, onOpenChange
                                                 min={new Date().toISOString().slice(0, 16)}
                                             />
                                             <p className="text-xs text-muted-foreground mt-1">
-                                                Migration will be queued and executed at the selected time.
+                                                Миграция будет поставлена в очередь и выполнена в выбранное время.
                                             </p>
                                         </div>
                                     )}
@@ -362,7 +362,7 @@ export function MigrationDialog({ vm, sourceId, otherServers, open, onOpenChange
                             {migrating && !scheduled && (
                                 <div className="flex items-center mt-2 text-primary animate-pulse">
                                     <Loader2 className="h-3 w-3 animate-spin mr-2" />
-                                    Processing migration...
+                                    Обработка миграции...
                                 </div>
                             )}
                             <div ref={logsEndRef} />
@@ -379,7 +379,7 @@ export function MigrationDialog({ vm, sourceId, otherServers, open, onOpenChange
                 <DialogFooter>
                     {!migrating && (
                         <>
-                            <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
+                            <Button variant="ghost" onClick={() => onOpenChange(false)}>Отмена</Button>
                             <Button
                                 onClick={handleMigrate}
                                 disabled={!targetServerId || !targetStorage || loadingResources || (scheduled && !scheduleDate)}
@@ -388,12 +388,12 @@ export function MigrationDialog({ vm, sourceId, otherServers, open, onOpenChange
                                 {scheduled ? (
                                     <>
                                         <Calendar className="h-4 w-4 mr-2" />
-                                        Schedule Migration
+                                        Запланировать миграцию
                                     </>
                                 ) : (
                                     <>
                                         {online ? <ArrowRightLeft className="h-4 w-4 mr-2" /> : <Loader2 className="h-4 w-4 mr-2" />}
-                                        {online ? 'Start Online Migration' : 'Start Offline Migration'}
+                                        {online ? 'Запустить онлайн миграцию' : 'Запустить офлайн миграцию'}
                                     </>
                                 )}
                             </Button>

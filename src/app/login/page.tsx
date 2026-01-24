@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Lock, User, Key, AlertCircle, Shield, Zap } from 'lucide-react';
+import { Loader2, Lock, User, Key, AlertCircle, Shield, Zap, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
     const router = useRouter();
@@ -23,6 +23,11 @@ export default function LoginPage() {
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+
+    // Password visibility state
+    const [showPassword, setShowPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     // Check if already logged in
     useEffect(() => {
@@ -50,11 +55,11 @@ export default function LoginPage() {
                     router.replace('/');
                 }
             } else {
-                setError(result.error || 'Login fehlgeschlagen');
+                setError(result.error || 'Ошибка входа');
             }
         } catch (e) {
             console.error('[Login] Exception:', e);
-            setError('Ein Fehler ist aufgetreten: ' + String(e));
+            setError('Произошла ошибка: ' + String(e));
         } finally {
             setLoading(false);
         }
@@ -65,12 +70,12 @@ export default function LoginPage() {
         setError('');
 
         if (newPassword !== confirmPassword) {
-            setError('Passwörter stimmen nicht überein');
+            setError('Пароли не совпадают');
             return;
         }
 
         if (newPassword.length < 6) {
-            setError('Passwort muss mindestens 6 Zeichen lang sein');
+            setError('Минимум 6 символов');
             return;
         }
 
@@ -82,10 +87,10 @@ export default function LoginPage() {
             if (result.success) {
                 router.replace('/');
             } else {
-                setError(result.error || 'Passwort ändern fehlgeschlagen');
+                setError(result.error || 'Ошибка смены пароля');
             }
         } catch (e) {
-            setError('Ein Fehler ist aufgetreten');
+            setError('Произошла ошибка');
         } finally {
             setLoading(false);
         }
@@ -113,7 +118,7 @@ export default function LoginPage() {
                             </div>
                             <div>
                                 <h1 className="text-4xl font-bold tracking-tight">Reanimator</h1>
-                                <p className="text-slate-400 text-sm">Proxmox Management Suite</p>
+                                <p className="text-slate-400 text-sm">Система управления Proxmox</p>
                             </div>
                         </div>
 
@@ -124,8 +129,8 @@ export default function LoginPage() {
                                     <Shield className="h-5 w-5 text-emerald-400" />
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold">Sichere Backups</h3>
-                                    <p className="text-sm text-slate-400">Automatisierte Sicherung aller Konfigurationen</p>
+                                    <h3 className="font-semibold">Безопасные бэкапы</h3>
+                                    <p className="text-sm text-slate-400">Автоматическое сохранение конфигураций</p>
                                 </div>
                             </div>
                             <div className="flex items-start gap-4">
@@ -135,8 +140,8 @@ export default function LoginPage() {
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold">Cross-Cluster Migration</h3>
-                                    <p className="text-sm text-slate-400">VMs zwischen Clustern verschieben</p>
+                                    <h3 className="font-semibold">Миграция между кластерами</h3>
+                                    <p className="text-sm text-slate-400">Перемещение VM между кластерами</p>
                                 </div>
                             </div>
                             <div className="flex items-start gap-4">
@@ -146,8 +151,8 @@ export default function LoginPage() {
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold">Zentrale Übersicht</h3>
-                                    <p className="text-sm text-slate-400">Alle Server und VMs im Blick</p>
+                                    <h3 className="font-semibold">Централизованный обзор</h3>
+                                    <p className="text-sm text-slate-400">Все серверы и VM на виду</p>
                                 </div>
                             </div>
                         </div>
@@ -169,20 +174,20 @@ export default function LoginPage() {
                             <Zap className="h-8 w-8 text-white" />
                         </div>
                         <h1 className="text-2xl font-bold">Reanimator</h1>
-                        <p className="text-sm text-muted-foreground">Proxmox Management Suite</p>
+                        <p className="text-sm text-muted-foreground">Система управления Proxmox</p>
                     </div>
 
                     <div className="space-y-2 text-center lg:text-left">
                         <h2 className="text-2xl font-bold tracking-tight">
-                            {showPasswordChange ? 'Passwort ändern' : 'Willkommen zurück'}
+                            {showPasswordChange ? 'Сменить пароль' : 'С возвращением'}
                         </h2>
                         <p className="text-xs text-muted-foreground mt-4">
                             © 2026 Reanimator • {APP_VERSION}
                         </p>
                         <p className="text-muted-foreground">
                             {showPasswordChange
-                                ? 'Bitte wählen Sie ein neues Passwort'
-                                : 'Melden Sie sich mit Ihren Zugangsdaten an'
+                                ? 'Выберите новый пароль'
+                                : 'Войдите с учётными данными'
                             }
                         </p>
                     </div>
@@ -197,13 +202,13 @@ export default function LoginPage() {
                     {!showPasswordChange ? (
                         <form onSubmit={handleLogin} className="space-y-5">
                             <div className="space-y-2">
-                                <Label htmlFor="username" className="text-sm font-medium">Benutzername</Label>
+                                <Label htmlFor="username" className="text-sm font-medium">Имя пользователя</Label>
                                 <div className="relative">
                                     <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         id="username"
                                         type="text"
-                                        placeholder="Benutzername eingeben"
+                                        placeholder="Введите имя пользователя"
                                         value={username}
                                         onChange={(e) => setUsername(e.target.value)}
                                         className="pl-10 h-11"
@@ -215,80 +220,101 @@ export default function LoginPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="password" className="text-sm font-medium">Passwort</Label>
+                                <Label htmlFor="password" className="text-sm font-medium">Пароль</Label>
                                 <div className="relative">
                                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         id="password"
-                                        type="password"
+                                        type={showPassword ? "text" : "password"}
                                         placeholder="••••••••"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="pl-10 h-11"
+                                        className="pl-10 pr-10 h-11"
                                         required
                                         autoComplete="current-password"
                                     />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
+                                    >
+                                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                    </button>
                                 </div>
                             </div>
 
                             <Button type="submit" className="w-full h-11 text-base font-medium" disabled={loading}>
                                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Anmelden
+                                Войти
                             </Button>
                         </form>
                     ) : (
                         <form onSubmit={handlePasswordChange} className="space-y-5">
                             <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400">
                                 <p className="text-sm">
-                                    <strong>Erster Login:</strong> Bitte ändern Sie Ihr temporäres Passwort.
+                                    <strong>Первый вход:</strong> Смените временный пароль.
                                 </p>
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="newPassword" className="text-sm font-medium">Neues Passwort</Label>
+                                <Label htmlFor="newPassword" className="text-sm font-medium">Новый пароль</Label>
                                 <div className="relative">
                                     <Key className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         id="newPassword"
-                                        type="password"
-                                        placeholder="Mindestens 6 Zeichen"
+                                        type={showNewPassword ? "text" : "password"}
+                                        placeholder="Минимум 6 символов"
                                         value={newPassword}
                                         onChange={(e) => setNewPassword(e.target.value)}
-                                        className="pl-10 h-11"
+                                        className="pl-10 pr-10 h-11"
                                         required
                                         minLength={6}
                                         autoComplete="new-password"
                                         autoFocus
                                     />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowNewPassword(!showNewPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                                    >
+                                        {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                    </button>
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="confirmPassword" className="text-sm font-medium">Passwort bestätigen</Label>
+                                <Label htmlFor="confirmPassword" className="text-sm font-medium">Подтвердите пароль</Label>
                                 <div className="relative">
                                     <Key className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         id="confirmPassword"
-                                        type="password"
-                                        placeholder="Passwort wiederholen"
+                                        type={showConfirmPassword ? "text" : "password"}
+                                        placeholder="Повторите пароль"
                                         value={confirmPassword}
                                         onChange={(e) => setConfirmPassword(e.target.value)}
-                                        className="pl-10 h-11"
+                                        className="pl-10 pr-10 h-11"
                                         required
                                         autoComplete="new-password"
                                     />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                                    >
+                                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                    </button>
                                 </div>
                             </div>
 
                             <Button type="submit" className="w-full h-11 text-base font-medium" disabled={loading}>
                                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Passwort speichern
+                                Сохранить пароль
                             </Button>
                         </form>
                     )}
 
                     <p className="text-xs text-center text-muted-foreground pt-4">
-                        Geschützt durch Session-basierte Authentifizierung
+                        Защищено сессионной аутентификацией
                     </p>
                 </div>
             </div>

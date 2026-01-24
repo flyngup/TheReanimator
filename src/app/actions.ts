@@ -246,9 +246,9 @@ export async function testSSHConnection(formData: FormData) {
 
         await client.disconnect();
 
-        let message = 'SSH Verbindung erfolgreich';
-        if (fingerprint) message += ' + Fingerprint geladen';
-        if (clusterNodes.length > 1) message += ` + ${clusterNodes.length} Cluster-Nodes gefunden`;
+        let message = 'SSH соединение успешно';
+        if (fingerprint) message += ' + отпечаток загружен';
+        if (clusterNodes.length > 1) message += ` + найдено ${clusterNodes.length} узлов кластера`;
 
         return {
             success: true,

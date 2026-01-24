@@ -349,12 +349,12 @@ export function FileBrowser({
                     onClick={handleSelectAll}
                     className="text-xs"
                 >
-                    {selectedPaths.size === files.length ? 'Alle abwählen' : 'Alle auswählen'}
+                    {selectedPaths.size === files.length ? 'Снять выделение' : 'Выделить все'}
                 </Button>
                 {selectedPaths.size > 0 && (
                     <>
                         <span className="text-xs text-muted-foreground">
-                            {selectedPaths.size} ausgewählt ({formatBytes(selectedSize)})
+                            {selectedPaths.size} выбрано ({formatBytes(selectedSize)})
                         </span>
                         <Button
                             variant="default"
