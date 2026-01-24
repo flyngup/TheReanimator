@@ -8,7 +8,7 @@ import { LayoutDashboard, Server, FolderCog, ArrowRightLeft, Tag as TagIcon, Har
 import { getCurrentUser, logout, User as UserType } from '@/app/actions/userAuth';
 import { APP_VERSION, IS_BETA } from '@/lib/constants';
 import { UserNav } from './UserNav';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
 // Keep navItems outside component as const (like original)
