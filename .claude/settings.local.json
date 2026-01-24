@@ -3,7 +3,9 @@
     "allow": [
       "Skill(glm-plan-usage:usage-query-skill)",
       "Bash(git checkout:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(npm run build:*)"
     ]
   }
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { APP_VERSION } from '@/lib/constants';
-
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { login, changePassword, getCurrentUser } from '@/app/actions/userAuth';
@@ -10,8 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Lock, User, Key, AlertCircle, Shield, Zap, Eye, EyeOff } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export default function LoginPage() {
+    const t = useTranslations('login');
     const router = useRouter();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -43,7 +44,6 @@ export default function LoginPage() {
         setError('');
         setLoading(true);
 
-
         try {
             const result = await login(username, password);
 
@@ -55,11 +55,11 @@ export default function LoginPage() {
                     router.replace('/');
                 }
             } else {
-                setError(result.error || 'Ошибка входа');
+                setError(result.error || t('loginFailed'));
             }
         } catch (e) {
             console.error('[Login] Exception:', e);
-            setError('Произошла ошибка: ' + String(e));
+            setError(t('errorOccurred') + ': ' + String(e));
         } finally {
             setLoading(false);
         }
@@ -70,12 +70,12 @@ export default function LoginPage() {
         setError('');
 
         if (newPassword !== confirmPassword) {
-            setError('Пароли не совпадают');
+            setError(t('passwordMismatch'));
             return;
         }
 
         if (newPassword.length < 6) {
-            setError('Минимум 6 символов');
+            setError(t('passwordTooShort'));
             return;
         }
 
@@ -87,10 +87,10 @@ export default function LoginPage() {
             if (result.success) {
                 router.replace('/');
             } else {
-                setError(result.error || 'Ошибка смены пароля');
+                setError(result.error || t('errorOccurred'));
             }
         } catch (e) {
-            setError('Произошла ошибка');
+            setError(t('errorOccurred'));
         } finally {
             setLoading(false);
         }
@@ -118,7 +118,7 @@ export default function LoginPage() {
                             </div>
                             <div>
                                 <h1 className="text-4xl font-bold tracking-tight">Reanimator</h1>
-                                <p className="text-slate-400 text-sm">Система управления Proxmox</p>
+                                <p className="text-slate-400 text-sm">{t('title')}</p>
                             </div>
                         </div>
 
@@ -129,8 +129,8 @@ export default function LoginPage() {
                                     <Shield className="h-5 w-5 text-emerald-400" />
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold">Безопасные бэкапы</h3>
-                                    <p className="text-sm text-slate-400">Автоматическое сохранение конфигураций</p>
+                                    <h3 className="font-semibold">Safe Backups</h3>
+                                    <p className="text-sm text-slate-400">Automatic configuration backups</p>
                                 </div>
                             </div>
                             <div className="flex items-start gap-4">
@@ -140,8 +140,8 @@ export default function LoginPage() {
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold">Миграция между кластерами</h3>
-                                    <p className="text-sm text-slate-400">Перемещение VM между кластерами</p>
+                                    <h3 className="font-semibold">Cluster Migration</h3>
+                                    <p className="text-sm text-slate-400">Move VMs between clusters</p>
                                 </div>
                             </div>
                             <div className="flex items-start gap-4">
@@ -151,8 +151,8 @@ export default function LoginPage() {
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold">Централизованный обзор</h3>
-                                    <p className="text-sm text-slate-400">Все серверы и VM на виду</p>
+                                    <h3 className="font-semibold">Centralized Overview</h3>
+                                    <p className="text-sm text-slate-400">All servers and VMs in one place</p>
                                 </div>
                             </div>
                         </div>
@@ -174,20 +174,20 @@ export default function LoginPage() {
                             <Zap className="h-8 w-8 text-white" />
                         </div>
                         <h1 className="text-2xl font-bold">Reanimator</h1>
-                        <p className="text-sm text-muted-foreground">Система управления Proxmox</p>
+                        <p className="text-sm text-muted-foreground">{t('title')}</p>
                     </div>
 
                     <div className="space-y-2 text-center lg:text-left">
                         <h2 className="text-2xl font-bold tracking-tight">
-                            {showPasswordChange ? 'Сменить пароль' : 'С возвращением'}
+                            {showPasswordChange ? t('passwordChange') : t('title')}
                         </h2>
                         <p className="text-xs text-muted-foreground mt-4">
                             © 2026 Reanimator • {APP_VERSION}
                         </p>
                         <p className="text-muted-foreground">
                             {showPasswordChange
-                                ? 'Выберите новый пароль'
-                                : 'Войдите с учётными данными'
+                                ? t('newPassword')
+                                : t('username')
                             }
                         </p>
                     </div>
@@ -202,13 +202,13 @@ export default function LoginPage() {
                     {!showPasswordChange ? (
                         <form onSubmit={handleLogin} className="space-y-5">
                             <div className="space-y-2">
-                                <Label htmlFor="username" className="text-sm font-medium">Имя пользователя</Label>
+                                <Label htmlFor="username" className="text-sm font-medium">{t('username')}</Label>
                                 <div className="relative">
                                     <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         id="username"
                                         type="text"
-                                        placeholder="Введите имя пользователя"
+                                        placeholder={t('username')}
                                         value={username}
                                         onChange={(e) => setUsername(e.target.value)}
                                         className="pl-10 h-11"
@@ -220,7 +220,7 @@ export default function LoginPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="password" className="text-sm font-medium">Пароль</Label>
+                                <Label htmlFor="password" className="text-sm font-medium">{t('password')}</Label>
                                 <div className="relative">
                                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
@@ -245,25 +245,25 @@ export default function LoginPage() {
 
                             <Button type="submit" className="w-full h-11 text-base font-medium" disabled={loading}>
                                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Войти
+                                {t('login')}
                             </Button>
                         </form>
                     ) : (
                         <form onSubmit={handlePasswordChange} className="space-y-5">
                             <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400">
                                 <p className="text-sm">
-                                    <strong>Первый вход:</strong> Смените временный пароль.
+                                    <strong>{t('passwordChange')}:</strong> {t('newPassword')}
                                 </p>
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="newPassword" className="text-sm font-medium">Новый пароль</Label>
+                                <Label htmlFor="newPassword" className="text-sm font-medium">{t('newPassword')}</Label>
                                 <div className="relative">
                                     <Key className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         id="newPassword"
                                         type={showNewPassword ? "text" : "password"}
-                                        placeholder="Минимум 6 символов"
+                                        placeholder="******"
                                         value={newPassword}
                                         onChange={(e) => setNewPassword(e.target.value)}
                                         className="pl-10 pr-10 h-11"
@@ -283,13 +283,13 @@ export default function LoginPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="confirmPassword" className="text-sm font-medium">Подтвердите пароль</Label>
+                                <Label htmlFor="confirmPassword" className="text-sm font-medium">{t('confirmPassword')}</Label>
                                 <div className="relative">
                                     <Key className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         id="confirmPassword"
                                         type={showConfirmPassword ? "text" : "password"}
-                                        placeholder="Повторите пароль"
+                                        placeholder="******"
                                         value={confirmPassword}
                                         onChange={(e) => setConfirmPassword(e.target.value)}
                                         className="pl-10 pr-10 h-11"
@@ -308,13 +308,13 @@ export default function LoginPage() {
 
                             <Button type="submit" className="w-full h-11 text-base font-medium" disabled={loading}>
                                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Сохранить пароль
+                                {t('confirmPassword')}
                             </Button>
                         </form>
                     )}
 
                     <p className="text-xs text-center text-muted-foreground pt-4">
-                        Защищено сессионной аутентификацией
+                        Protected by session authentication
                     </p>
                 </div>
             </div>

@@ -1,0 +1,38 @@
+name: Auto-translate with DeepL
+
+on:
+  push:
+    branches: [feat/internationalization]
+    paths:
+      - 'src/messages/de.json'
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run translation
+        env:
+          DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
+        run: python .github/scripts/translate.py
+
+      - name: Commit translations
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "actions@github"
+          git add src/messages/*.json
+          git diff --staged --quiet || git commit -m "chore(i18n): auto-translate with DeepL"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
