@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -16,6 +15,8 @@ import { User, Settings, LogOut, Shield } from "lucide-react";
 import { User as UserType, logout } from "@/app/actions/userAuth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from 'next-intl';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
 interface UserNavProps {
     user: UserType;
@@ -23,6 +24,7 @@ interface UserNavProps {
 
 export function UserNav({ user }: UserNavProps) {
     const router = useRouter();
+    const t = useTranslations('common');
 
     const handleLogout = async () => {
         await logout();
@@ -40,15 +42,15 @@ export function UserNav({ user }: UserNavProps) {
                             {user.username.substring(0, 2).toUpperCase()}
                         </AvatarFallback>
                     </Avatar>
-                    <div className="flex flex-col items-start text-left space-y-1 overflow-hidden">
+                    <div className="flex flex-col items-start text-left space-y-1 overflow-hidden flex-1">
                         <span className="text-sm font-semibold leading-none truncate w-full">{user.username}</span>
                         <span className="text-xs text-muted-foreground truncate w-full">
-                            {user.is_admin ? 'Администратор' : 'Пользователь'}
+                            {user.is_admin ? t('settings') : 'User'}
                         </span>
                     </div>
-                    {/* Visual indicator for dropdown */}
-                    <div className="ml-auto text-muted-foreground/50">
-                        <User className="h-4 w-4" />
+                    {/* Language switcher */}
+                    <div className="ml-auto">
+                        <LanguageSwitcher />
                     </div>
                 </Button>
             </DropdownMenuTrigger>
@@ -57,7 +59,7 @@ export function UserNav({ user }: UserNavProps) {
                     <div className="flex flex-col space-y-1">
                         <p className="text-sm font-medium leading-none">{user.username}</p>
                         <p className="text-xs leading-none text-muted-foreground">
-                            {user.is_admin ? 'Права администратора' : 'Ограниченный доступ'}
+                            {user.is_admin ? 'Admin Rights' : 'Limited'}
                         </p>
                     </div>
                 </DropdownMenuLabel>
@@ -66,14 +68,14 @@ export function UserNav({ user }: UserNavProps) {
                     <DropdownMenuItem asChild>
                         <Link href="/settings" className="cursor-pointer w-full">
                             <Settings className="mr-2 h-4 w-4" />
-                            Настройки
+                            {t('settings')}
                         </Link>
                     </DropdownMenuItem>
                     {user.is_admin && (
                         <DropdownMenuItem asChild>
                             <Link href="/settings/trust" className="cursor-pointer w-full">
                                 <Shield className="mr-2 h-4 w-4" />
-                                Доверие кластера
+                                Cluster Trust
                             </Link>
                         </DropdownMenuItem>
                     )}
@@ -81,7 +83,7 @@ export function UserNav({ user }: UserNavProps) {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:bg-red-500/10 focus:text-red-600 cursor-pointer">
                     <LogOut className="mr-2 h-4 w-4" />
-                    Выйти
+                    {t('logout')}
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { LayoutDashboard, Server, FolderCog, ArrowRightLeft, Tag as TagIcon, HardDrive, Users, Terminal, Activity, ListTodo, Calendar, TrendingUp, Disc } from 'lucide-react';
 import { getCurrentUser, logout, User as UserType } from '@/app/actions/userAuth';
 import { APP_VERSION, IS_BETA } from '@/lib/constants';
-import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { UserNav } from './UserNav';
 import { useTranslations, useLocale } from 'next-intl';
 
 // Keep navItems outside component as const (like original)
@@ -117,19 +117,7 @@ export function Sidebar() {
 
             {/* User info and language switcher */}
             <div className="p-4 border-t border-border">
-                {user && (
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2">
-                            <div className="bg-primary/20 p-1.5 rounded-full">
-                                <span className="text-xs font-bold text-primary">
-                                    {user.username.charAt(0).toUpperCase()}
-                                </span>
-                            </div>
-                            <span className="text-sm font-medium">{user.username}</span>
-                        </div>
-                        <LanguageSwitcher />
-                    </div>
-                )}
+                {user && <UserNav user={user} />}
 
                 <div className="mt-4 px-2 flex items-center justify-between text-xs text-muted-foreground opacity-60 hover:opacity-100 transition-opacity">
                     <span>v{APP_VERSION}</span>
