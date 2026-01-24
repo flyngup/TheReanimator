@@ -45,8 +45,11 @@ export function Sidebar() {
         await logout();
     };
 
+    // Remove locale prefix from pathname for comparison
+    const pathnameWithoutLocale = pathname.replace(new RegExp(`^/${locale}`), '') || '/';
+
     // Don't show sidebar on login page
-    if (pathname.endsWith('/login')) {
+    if (pathnameWithoutLocale === '/login') {
         return null;
     }
 
@@ -55,9 +58,6 @@ export function Sidebar() {
         if (item.key === 'optimizer' && !aiEnabled) return false;
         return true;
     });
-
-    // Remove locale prefix from pathname for comparison
-    const pathnameWithoutLocale = pathname.replace(new RegExp(`^/${locale}`), '') || '/';
 
     return (
         <div className="flex flex-col w-64 border-r border-border bg-card h-screen fixed left-0 top-0 z-30">
