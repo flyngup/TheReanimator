@@ -64,7 +64,7 @@ export function Sidebar() {
         <div className="flex flex-col w-64 border-r border-border bg-card h-screen fixed left-0 top-0 z-30">
             <div className="p-6 pb-2 relative">
                 {/* Language switcher - absolutely positioned in top-right */}
-                <div className="absolute top-4 right-6">
+                <div className="absolute top-1 right-1">
                     <LanguageSwitcher />
                 </div>
 
