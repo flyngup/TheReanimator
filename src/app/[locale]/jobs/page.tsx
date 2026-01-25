@@ -6,8 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, ArrowRightLeft, CheckCircle2, XCircle, MoreVertical, Trash2, Play, ChevronLeft, ChevronRight } from 'lucide-react';
-import { getAllTasks, TaskItem, PaginatedTasks } from '@/app/actions/tasks';
-import { getAllJobs, runJob, deleteJob } from '@/app/actions/scheduler_actions';
+import { getAllTasks, TaskItem, PaginatedTasks } from '@/lib/actions/tasks';
+import { getAllJobs, runJob, deleteJob } from '@/lib/actions/scheduler_actions';
 import { toast } from 'sonner';
 
 import {

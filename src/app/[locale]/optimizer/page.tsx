@@ -7,8 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Loader2, RefreshCw, BarChart3, TrendingUp, AlertTriangle, ArrowRight, CheckCircle2, Server, Cpu } from "lucide-react";
-import { getNodeStats, getOptimizationSuggestions, NodeStats, OptimizationSuggestion } from '@/app/actions/optimizer_actions';
-import { getAISettings } from '@/app/actions/ai';
+import { getNodeStats, getOptimizationSuggestions, NodeStats, OptimizationSuggestion } from '@/lib/actions/optimizer_actions';
+import { getAISettings } from '@/lib/actions/ai';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 

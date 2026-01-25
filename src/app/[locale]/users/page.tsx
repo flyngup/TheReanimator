@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { getUsers, createUser, updateUser, deleteUser, getRoles, getUserRoles, setUserRoles, User, Role, getCurrentUser } from '@/app/actions/userAuth';
-import { getServers, Server } from '@/app/actions/server';
-import { getUserServerAccess, setUserServerAccess } from '@/app/actions/userAuth';
+import { getUsers, createUser, updateUser, deleteUser, getRoles, getUserRoles, setUserRoles, User, Role, getCurrentUser } from '@/lib/actions/userAuth';
+import { getServers, Server } from '@/lib/actions/server';
+import { getUserServerAccess, setUserServerAccess } from '@/lib/actions/userAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

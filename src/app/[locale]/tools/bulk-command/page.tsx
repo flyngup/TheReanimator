@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Label } from "@/components/ui/label";
 import { Terminal, Play, Loader2, CheckCircle2, XCircle, Server, Command } from "lucide-react";
-import { getBulkServers, executeBulkCommand, BulkCommandResult } from '@/app/actions/bulk_actions';
+import { getBulkServers, executeBulkCommand, BulkCommandResult } from '@/lib/actions/bulk_actions';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 

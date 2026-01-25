@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Save, Key, Network, Plus } from "lucide-react";
-import { addServer, testSSHConnection, generateApiToken } from '@/app/actions';
+import { addServer, testSSHConnection, generateApiToken } from '@/lib/actions/serverExtras';
 import { useState, useEffect } from 'react';
 
 interface NewServerFormProps {

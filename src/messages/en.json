@@ -1119,6 +1119,8 @@
     "error": "Error:"
   },
   "commander": {
+    "title": "Bulk Commander",
+    "subtitle": "Execute commands on multiple servers or VMs simultaneously.",
     "commandExecuted": "Command executed",
     "processed": "Processed {count} targets.",
     "error": "Error",

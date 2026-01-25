@@ -1,7 +1,7 @@
 'use server';
 
 import db from '@/lib/db';
-import { cancelMigration } from '@/app/actions/migration';
+import { cancelMigration } from '@/lib/actions/migration';
 
 export interface TaskItem {
     id: string; // "job-123" or "mig-456"

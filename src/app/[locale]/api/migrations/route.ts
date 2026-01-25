@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
-import { getAllMigrationTasks, startServerMigration, startVMMigration } from '@/app/actions/migration';
-import { getVMs } from '@/app/actions/vm';
+import { getAllMigrationTasks, startServerMigration, startVMMigration } from '@/lib/actions/migration';
+import { getVMs } from '@/lib/actions/vm';
 
 export const dynamic = 'force-dynamic';
 

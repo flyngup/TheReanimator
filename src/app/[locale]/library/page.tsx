@@ -1,4 +1,4 @@
-import { getLibraryContent } from '@/app/actions/library';
+import { getLibraryContent } from '@/lib/actions/library';
 import db from '@/lib/db';
 import { LibraryView } from '@/components/library/LibraryView';
 

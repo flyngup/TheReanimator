@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { runNetworkAnalysis, getLatestNetworkAnalysis } from '@/app/actions/network_analysis';
-import { getAISettings } from '@/app/actions/ai';
+import { runNetworkAnalysis, getLatestNetworkAnalysis } from '@/lib/actions/network_analysis';
+import { getAISettings } from '@/lib/actions/ai';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

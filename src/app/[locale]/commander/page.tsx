@@ -1,10 +1,18 @@
 import db from '@/lib/db';
 import { CommanderInterface } from '@/components/commander/CommanderInterface';
 import { Terminal } from 'lucide-react';
+import { getTranslations } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
 
-export default async function CommanderPage() {
+export default async function CommanderPage({
+    params
+}: {
+    params: Promise<{ locale: string }>;
+}) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: 'commander' });
+
     const servers = db.prepare('SELECT id, name, type FROM servers').all() as any[];
     const vms = db.prepare('SELECT id, vmid, name, server_id, tags FROM vms').all() as any[];
 
@@ -32,9 +40,9 @@ export default async function CommanderPage() {
                     <Terminal className="h-6 w-6 text-green-500" />
                 </div>
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Bulk Commander</h1>
+                    <h1 className="text-3xl font-bold tracking-tight">{t('title')}</h1>
                     <p className="text-muted-foreground">
-                        Führen Sie Befehle auf mehreren Servern oder VMs gleichzeitig aus.
+                        {t('subtitle')}
                     </p>
                 </div>
             </div>

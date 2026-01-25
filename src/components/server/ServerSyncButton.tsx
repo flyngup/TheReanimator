@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
-import { syncServerVMs } from "@/app/actions/sync"; // Ensure sync.ts is created
+import { syncServerVMs } from "@/lib/actions/sync"; // Ensure sync.ts is created
 import { toast } from "sonner";
 import { useState } from "react";
 import { useRouter } from "next/navigation";

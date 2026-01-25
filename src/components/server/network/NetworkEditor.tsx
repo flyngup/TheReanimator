@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { NetworkInterface } from '@/lib/network-parser';
-import { getNetworkConfig, saveNetworkConfig } from '@/app/actions/network';
+import { getNetworkConfig, saveNetworkConfig } from '@/lib/actions/network';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

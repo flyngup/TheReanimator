@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Download, Loader2 } from "lucide-react";
-import { createConfigBackup } from '@/app/actions/configBackup';
+import { createConfigBackup } from '@/lib/actions/configBackup';
 import { useTranslations } from 'next-intl';
 
 export function BackupButton({ serverId }: { serverId: number }) {

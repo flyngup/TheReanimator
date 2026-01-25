@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Loader2, Copy } from "lucide-react";
-import { LibraryItem, syncLibraryItem, getEligibleStorages } from '@/app/actions/library';
+import { LibraryItem, syncLibraryItem, getEligibleStorages } from '@/lib/actions/library';
 import { toast } from "sonner";
 
 interface ServerOption {

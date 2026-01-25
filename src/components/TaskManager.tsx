@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { ListTodo, Loader2, StopCircle, Terminal, CheckCircle2, XCircle, AlertTriangle, Eye, Clock, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
-import { getAllTasks, TaskItem, PaginatedTasks, cancelTask } from '@/app/actions/tasks';
+import { getAllTasks, TaskItem, PaginatedTasks, cancelTask } from '@/lib/actions/tasks';
 import { toast } from 'sonner';
 import { cn } from "@/lib/utils";
 import { useTranslations } from 'next-intl';

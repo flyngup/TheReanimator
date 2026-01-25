@@ -12,7 +12,7 @@ import {
     ArrowLeft, ArrowRightLeft, CheckCircle, XCircle,
     Loader2, Clock, AlertTriangle, StopCircle, Trash2, Terminal
 } from "lucide-react";
-import { MigrationTask, MigrationStep } from '@/app/actions/migration';
+import { MigrationTask, MigrationStep } from '@/lib/actions/migration';
 
 export default function MigrationDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
@@ -224,7 +224,7 @@ export default function MigrationDetailPage({ params }: { params: Promise<{ id: 
     );
 }
 
-import { analyzeLogWithAI } from '@/app/actions/ai';
+import { analyzeLogWithAI } from '@/lib/actions/ai';
 import { Sparkles } from "lucide-react";
 
 function AIAnalysisButton({ log }: { log: string }) {

@@ -110,7 +110,7 @@ export async function getNodeStats(forceRefresh: boolean = false): Promise<NodeS
     return Promise.all(promises);
 }
 
-import { getAISettings } from '@/app/actions/ai';
+import { getAISettings } from '@/lib/actions/ai';
 
 export async function getOptimizationSuggestions(): Promise<OptimizationSuggestion[]> {
     const settings = await getAISettings();

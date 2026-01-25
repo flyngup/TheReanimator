@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRightLeft, Plus, Clock, CheckCircle, XCircle, Loader2, AlertTriangle, Trash2 } from "lucide-react";
-import { MigrationTask } from '@/app/actions/migration';
+import { MigrationTask } from '@/lib/actions/migration';
 
 export default function MigrationsPage() {
     const t = useTranslations('migrations');

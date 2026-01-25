@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { deleteConfigBackup, getBackupFiles, readBackupFile } from '@/app/actions/configBackup';
+import { deleteConfigBackup, getBackupFiles, readBackupFile } from '@/lib/actions/configBackup';
 
 export async function GET(
     request: NextRequest,

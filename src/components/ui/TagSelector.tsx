@@ -18,7 +18,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover';
-import { Tag } from '@/app/actions/tags';
+import { Tag } from '@/lib/actions/tags';
 import { useTranslations } from 'next-intl';
 
 interface TagSelectorProps {

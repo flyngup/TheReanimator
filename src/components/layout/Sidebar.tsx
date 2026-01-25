@@ -1,10 +1,10 @@
 'use client';
 
-import { getAISettings } from '@/app/actions/ai';
+import { getAISettings } from '@/lib/actions/ai';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { LayoutDashboard, Server, FolderCog, ArrowRightLeft, Tag as TagIcon, HardDrive, Users, Terminal, Activity, ListTodo, Calendar, TrendingUp, Disc } from 'lucide-react';
-import { getCurrentUser, logout, User as UserType } from '@/app/actions/userAuth';
+import { getCurrentUser, logout, User as UserType } from '@/lib/actions/userAuth';
 import { APP_VERSION, IS_BETA } from '@/lib/constants';
 import { UserNav } from './UserNav';
 import { useTranslations, useLocale } from 'next-intl';

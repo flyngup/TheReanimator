@@ -3,7 +3,7 @@
 import { APP_VERSION } from '@/lib/constants';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { login, changePassword, getCurrentUser } from '@/app/actions/userAuth';
+import { login, changePassword, getCurrentUser } from '@/lib/actions/userAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

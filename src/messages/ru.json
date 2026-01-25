@@ -1123,6 +1123,8 @@
     "error": "Ошибка:"
   },
   "commander": {
+    "title": "Bulk Commander",
+    "subtitle": "Выполняйте команды на нескольких серверах или VM одновременно.",
     "commandExecuted": "Команда выполнена",
     "processed": "Обработано {count} целей.",
     "error": "Ошибка",

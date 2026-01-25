@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Server, FolderCog, Trash2, Clock, FileText, Search, HardDrive, ChevronDown, ChevronRight, FolderOpen, Layers } from "lucide-react";
 import { BackupButton } from './BackupButton';
-import { deleteConfigBackup } from '@/app/actions/configBackup';
+import { deleteConfigBackup } from '@/lib/actions/configBackup';
 
 interface ServerItem {
     id: number;

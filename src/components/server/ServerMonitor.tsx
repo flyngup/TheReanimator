@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { ServerVisualization } from '@/components/ui/ServerVisualization';
-import { getServerHealth, ServerHealth } from '@/app/actions/monitoring';
+import { getServerHealth, ServerHealth } from '@/lib/actions/monitoring';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, AlertTriangle, CheckCircle2, Database, Activity } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";

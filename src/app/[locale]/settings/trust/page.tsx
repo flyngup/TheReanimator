@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ShieldCheck, Server, ArrowRight, Loader2, CheckCircle, XCircle, Key } from "lucide-react";
-import { getServers, Server as ServerType } from '@/app/actions/server';
-import { establishClusterTrust } from '@/app/actions/trust';
+import { getServers, Server as ServerType } from '@/lib/actions/server';
+import { establishClusterTrust } from '@/lib/actions/trust';
 
 export default function TrustPage() {
     const t = useTranslations('trust');

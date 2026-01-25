@@ -8,9 +8,9 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Monitor, Smartphone, ArrowRightLeft, PlayCircle, StopCircle, Loader2, Stethoscope, MoreHorizontal, Power, RefreshCw, Trash2, HardDrive, FileText, Activity, Sparkles, CheckCircle, AlertTriangle, Info, AlertCircle } from "lucide-react"
-import { VirtualMachine } from '@/app/actions/vm';
+import { VirtualMachine } from '@/lib/actions/vm';
 import { MigrationDialog } from './MigrationDialog';
-import { Tag, assignTagsToResource } from '@/app/actions/tags';
+import { Tag, assignTagsToResource } from '@/lib/actions/tags';
 import { TagSelector } from '@/components/ui/TagSelector';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
@@ -193,8 +193,8 @@ export function VirtualMachineList({ vms, currentServerId, otherServers, availab
 // --- Health Check Components ---
 
 // Imports moved to top
-import { getVMConfig } from '@/app/actions/vm';
-import { analyzeConfigWithAI, HealthResult } from '@/app/actions/ai';
+import { getVMConfig } from '@/lib/actions/vm';
+import { analyzeConfigWithAI, HealthResult } from '@/lib/actions/ai';
 
 function HealthCheckDialog({ open, onOpenChange, result }: { open: boolean, onOpenChange: (o: boolean) => void, result: HealthResult | null }) {
     const t = useTranslations('virtualMachineList');

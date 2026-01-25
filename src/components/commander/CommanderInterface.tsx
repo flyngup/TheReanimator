@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Server, Monitor, Play, AlertTriangle, CheckCircle2, XCircle, ChevronDown, ChevronRight, Terminal } from "lucide-react";
-import { runBulkNodeCommand, runBulkVMCommand, CommandResult } from '@/app/actions/commander';
+import { runBulkNodeCommand, runBulkVMCommand, CommandResult } from '@/lib/actions/commander';
 import { toast } from "sonner";
 import { useTranslations } from 'next-intl';
 

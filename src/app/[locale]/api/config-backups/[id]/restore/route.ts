@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { restoreFile } from '@/app/actions/configBackup';
+import { restoreFile } from '@/lib/actions/configBackup';
 import db from '@/lib/db';
 
 export async function POST(

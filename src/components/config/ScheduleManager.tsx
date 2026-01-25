@@ -14,7 +14,7 @@ import {
     toggleJob,
     deleteScheduledJob,
     ScheduledJob
-} from '@/app/actions/schedule';
+} from '@/lib/actions/schedule';
 import { useTranslations } from 'next-intl';
 
 interface ScheduleManagerProps {

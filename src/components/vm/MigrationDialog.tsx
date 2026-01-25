@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, ArrowRightLeft, AlertTriangle, Calendar, Network } from "lucide-react";
-import { VirtualMachine, migrateVM, getTargetResources, scheduleMigration, getVMConfig } from '@/app/actions/vm';
+import { VirtualMachine, migrateVM, getTargetResources, scheduleMigration, getVMConfig } from '@/lib/actions/vm';
 import { useRouter } from 'next/navigation';
 
 interface MigrationDialogProps {

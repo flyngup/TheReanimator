@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getConfigBackups, createConfigBackup } from '@/app/actions/configBackup';
+import { getConfigBackups, createConfigBackup } from '@/lib/actions/configBackup';
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);

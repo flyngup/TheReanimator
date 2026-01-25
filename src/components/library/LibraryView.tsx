@@ -12,7 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import Link from 'next/link';
 import { SyncDialog } from '@/components/library/SyncDialog';
 import { LibraryLoadingSkeleton } from '@/components/library/LibraryLoadingSkeleton';
-import { LibraryItem } from '@/app/actions/library';
+import { LibraryItem } from '@/lib/actions/library';
 
 interface LibraryViewProps {
     initialItems: LibraryItem[];

@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Activity, LayoutDashboard, Monitor, Network as NetworkIcon, HardDrive, Terminal } from "lucide-react";
 
-import { getServerInfo } from '@/app/actions/monitoring';
-import { getVMs } from '@/app/actions/vm';
-import { getTags } from '@/app/actions/tags';
+import { getServerInfo } from '@/lib/actions/monitoring';
+import { getVMs } from '@/lib/actions/vm';
+import { getTags } from '@/lib/actions/tags';
 
 import { ServerHeader } from '@/components/server/details/ServerHeader';
 import { ServerOverview } from '@/components/server/details/ServerOverview';
@@ -143,6 +143,6 @@ export default async function ServerDetailPage({
     );
 }
 
-import { getScanResults } from '@/app/actions/scan';
+import { getScanResults } from '@/lib/actions/scan';
 import { ServerHealth } from '@/components/server/details/ServerHealth';
 import { ShieldCheck } from 'lucide-react';

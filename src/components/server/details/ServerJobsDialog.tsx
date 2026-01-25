@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Clock, Plus, Trash2, Play, AlertCircle, RefreshCw } from "lucide-react";
-import { getJobsForServer, createConfigBackupSchedule, createScanSchedule, toggleJob, deleteScheduledJob, ScheduledJob } from '@/app/actions/schedule';
+import { getJobsForServer, createConfigBackupSchedule, createScanSchedule, toggleJob, deleteScheduledJob, ScheduledJob } from '@/lib/actions/schedule';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 

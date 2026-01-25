@@ -15,10 +15,10 @@ import {
     ArrowRight, ArrowLeft, Loader2, CheckCircle2, AlertTriangle,
     Server as ServerIcon, Database, ArrowRightLeft, HardDrive, Network, Calendar, HelpCircle
 } from "lucide-react";
-import { getServers } from '@/app/actions/server';
-import { startServerMigration } from "@/app/actions/migration";
-import { getVMs, VirtualMachine, scheduleMigration } from "@/app/actions/vm";
-import { setupSSHTrust } from '@/app/actions/trust';
+import { getServers } from '@/lib/actions/server';
+import { startServerMigration } from "@/lib/actions/migration";
+import { getVMs, VirtualMachine, scheduleMigration } from "@/lib/actions/vm";
+import { setupSSHTrust } from '@/lib/actions/trust';
 import { Badge } from "@/components/ui/badge";
 import {
     Tooltip,
@@ -107,7 +107,7 @@ export default function NewMigrationPage() {
 
         // Parallel Fetch: Resources + VMs (for ID check)
         Promise.all([
-            import('@/app/actions/server').then(mod => mod.getServerResources(parseInt(targetId))),
+            import('@/lib/actions/server').then(mod => mod.getServerResources(parseInt(targetId))),
             getVMs(parseInt(targetId)).catch(e => [] as VirtualMachine[])
         ]).then(([resources, tVms]) => {
             setTargetResources({ ...resources, vms: tVms || [] });

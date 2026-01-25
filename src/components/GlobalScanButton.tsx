@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Activity, Loader2, Sparkles } from "lucide-react";
-import { scanEntireInfrastructure } from '@/app/actions/scan';
-import { getAISettings } from '@/app/actions/ai';
+import { scanEntireInfrastructure } from '@/lib/actions/scan';
+import { getAISettings } from '@/lib/actions/ai';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import { getAllTasks, TaskItem, cancelTask } from '@/app/actions/tasks';
+import { getAllTasks, TaskItem, cancelTask } from '@/lib/actions/tasks';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

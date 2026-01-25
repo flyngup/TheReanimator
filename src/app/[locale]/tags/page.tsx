@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
-import { getTags, createTag, deleteTag, scanAllClusterTags, Tag, pushTagsToServer, assignTagsToResource } from '@/app/actions/tags';
-import { getServers, Server } from '@/app/actions/server';
-import { getVMs, VirtualMachine } from '@/app/actions/vm';
+import { getTags, createTag, deleteTag, scanAllClusterTags, Tag, pushTagsToServer, assignTagsToResource } from '@/lib/actions/tags';
+import { getServers, Server } from '@/lib/actions/server';
+import { getVMs, VirtualMachine } from '@/lib/actions/vm';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

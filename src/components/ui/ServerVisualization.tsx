@@ -21,7 +21,7 @@ const UsageBar = ({ usage, color, label }: { usage: number, color: string, label
     </div>
 );
 
-import { SystemInfo, NetworkInterface, DiskInfo, StoragePool, ServerHealth } from '@/app/actions/monitoring';
+import { SystemInfo, NetworkInterface, DiskInfo, StoragePool, ServerHealth } from '@/lib/actions/monitoring';
 
 export interface ServerVisualizationProps {
     system: SystemInfo;
