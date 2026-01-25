@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,8 @@ interface NewServerFormProps {
 }
 
 export default function NewServerForm({ existingGroups }: NewServerFormProps) {
+    const t = useTranslations('addServer');
+    const tCommon = useTranslations('common');
     const [sshStatus, setSSHStatus] = useState<'none' | 'success' | 'error'>('none');
     const [sshMessage, setSSHMessage] = useState('');
     const [tokenStatus, setTokenStatus] = useState<'none' | 'success' | 'error'>('none');
@@ -34,7 +37,7 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
 
     async function handleTestSSH(formData: FormData) {
         setSSHStatus('none');
-        setSSHMessage('Проверка соединения...');
+        setSSHMessage(t('checkingConnection'));
 
         const res = await testSSHConnection(formData);
 
@@ -66,7 +69,7 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
 
     async function handleGenToken() {
         setTokenStatus('none');
-        setTokenMessage('Генерация токена...');
+        setTokenMessage(t('generatingToken'));
 
         const form = document.querySelector('form') as HTMLFormElement;
         const formData = new FormData(form);
@@ -77,12 +80,12 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
 
         if (res.success && res.token) {
             setTokenStatus('success');
-            setTokenMessage('Токен сгенерирован!');
+            setTokenMessage(t('tokenGenerated'));
             const tokenInput = document.getElementById('token') as HTMLInputElement;
             if (tokenInput) tokenInput.value = res.token;
         } else {
             setTokenStatus('error');
-            setTokenMessage(res.message || 'Ошибка');
+            setTokenMessage(res.message || t('error'));
         }
     }
 
@@ -104,26 +107,26 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
                     </Button>
                 </Link>
                 <div>
-                    <h1 className="text-2xl font-bold">Добавить сервер</h1>
-                    <p className="text-muted-foreground">Подключить Proxmox VE или PBS</p>
+                    <h1 className="text-2xl font-bold">{t('title')}</h1>
+                    <p className="text-muted-foreground">{t('subtitle')}</p>
                 </div>
             </div>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Конфигурация сервера</CardTitle>
-                    <CardDescription>Введите данные подключения.</CardDescription>
+                    <CardTitle>{t('configSection')}</CardTitle>
+                    <CardDescription>{t('configDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form action={handleSubmit} className="space-y-4">
                         <div className="grid gap-2">
-                            <label htmlFor="name" className="text-sm font-medium">Название</label>
-                            <Input id="name" name="name" placeholder="Мой PVE сервер" required />
+                            <label htmlFor="name" className="text-sm font-medium">{t('name')}</label>
+                            <Input id="name" name="name" placeholder={t('namePlaceholder')} required />
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="grid gap-2">
-                                <label htmlFor="type" className="text-sm font-medium">Тип</label>
+                                <label htmlFor="type" className="text-sm font-medium">{t('type')}</label>
                                 <select
                                     id="type"
                                     name="type"
@@ -136,11 +139,11 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
                             </div>
 
                             <div className="grid gap-2">
-                                <label className="text-sm font-medium">Группа</label>
+                                <label className="text-sm font-medium">{t('group')}</label>
                                 {isNewGroup ? (
                                     <div className="flex gap-2">
                                         <Input
-                                            placeholder="Введите название группы..."
+                                            placeholder={t('groupPlaceholder')}
                                             value={newGroupName}
                                             onChange={(e) => setNewGroupName(e.target.value)}
                                             className="flex-1"
@@ -151,7 +154,7 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
                                             size="sm"
                                             onClick={() => { setIsNewGroup(false); setNewGroupName(''); }}
                                         >
-                                            Отмена
+                                            {tCommon('cancel')}
                                         </Button>
                                     </div>
                                 ) : (
@@ -161,7 +164,7 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
                                             onChange={(e) => setSelectedGroup(e.target.value)}
                                             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm flex-1"
                                         >
-                                            <option value="">Без группы</option>
+                                            <option value="">{t('noGroup')}</option>
                                             {existingGroups.map(g => (
                                                 <option key={g} value={g}>{g}</option>
                                             ))}
@@ -171,7 +174,7 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
                                             variant="outline"
                                             size="icon"
                                             onClick={() => setIsNewGroup(true)}
-                                            title="Создать новую группу"
+                                            title={t('createNewGroup')}
                                         >
                                             <Plus className="h-4 w-4" />
                                         </Button>
@@ -181,18 +184,18 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
                         </div>
 
                         <div className="grid gap-2">
-                            <label htmlFor="url" className="text-sm font-medium">URL</label>
-                            <Input id="url" name="url" placeholder="https://192.168.1.100:8006" required />
+                            <label htmlFor="url" className="text-sm font-medium">{t('url')}</label>
+                            <Input id="url" name="url" placeholder={t('urlPlaceholder')} required />
                         </div>
 
                         <div className="p-4 bg-muted/50 rounded-lg space-y-4 border">
                             <h4 className="font-medium text-sm flex items-center gap-2">
                                 <Key className="h-4 w-4" />
-                                Генератор API токена (опционально)
+                                {t('apiTokenGenerator')}
                             </h4>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="grid gap-2">
-                                    <label className="text-xs">Пользователь (для генерации токена)</label>
+                                    <label className="text-xs">{t('userForToken')}</label>
                                     <Input
                                         value={pmUser}
                                         onChange={e => setPmUser(e.target.value)}
@@ -200,18 +203,18 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
                                     />
                                 </div>
                                 <div className="grid gap-2">
-                                    <label className="text-xs">Пароль (для генерации токена)</label>
+                                    <label className="text-xs">{t('passwordForToken')}</label>
                                     <Input
                                         type="password"
                                         value={pmPass}
                                         onChange={e => setPmPass(e.target.value)}
-                                        placeholder="***"
+                                        placeholder={t('passwordPlaceholder')}
                                     />
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
                                 <Button type="button" size="sm" variant="outline" onClick={handleGenToken}>
-                                    Сгенерировать токен
+                                    {t('generateToken')}
                                 </Button>
                                 {tokenMessage && (
                                     <span className={`text-xs ${tokenStatus === 'success' ? 'text-green-500' : 'text-red-500'}`}>
@@ -222,18 +225,18 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
                         </div>
 
                         <div className="grid gap-2">
-                            <label htmlFor="token" className="text-sm font-medium">API токен</label>
-                            <Input id="token" name="token" placeholder="user@pam!tokenid=secret" required />
+                            <label htmlFor="token" className="text-sm font-medium">{t('apiToken')}</label>
+                            <Input id="token" name="token" placeholder={t('apiTokenPlaceholder')} required />
                             <p className="text-xs text-muted-foreground">
-                                Будет заполнено автоматически выше или введите вручную.
+                                {t('apiTokenDesc')}
                             </p>
                         </div>
 
                         <div className="grid gap-2">
-                            <label htmlFor="ssl_fingerprint" className="text-sm font-medium">SSL отпечаток (SHA256)</label>
-                            <Input id="ssl_fingerprint" name="ssl_fingerprint" placeholder="AA:BB:CC..." />
+                            <label htmlFor="ssl_fingerprint" className="text-sm font-medium">{t('sslFingerprint')}</label>
+                            <Input id="ssl_fingerprint" name="ssl_fingerprint" placeholder={t('sslFingerprintPlaceholder')} />
                             <p className="text-xs text-muted-foreground">
-                                Опционально. Необходимо для миграции между кластерами.
+                                {t('sslFingerprintDesc')}
                             </p>
                         </div>
 
@@ -241,7 +244,7 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
 
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
-                                <h4 className="font-medium">SSH конфигурация</h4>
+                                <h4 className="font-medium">{t('sshConfig')}</h4>
                                 <div className="flex items-center gap-2">
                                     {sshMessage && (
                                         <span className={`text-xs ${sshStatus === 'success' ? 'text-green-500' : 'text-red-500'}`}>
@@ -258,7 +261,7 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
                                         }}
                                     >
                                         <Network className="mr-2 h-3 w-3" />
-                                        Проверить соединение
+                                        {t('testConnection')}
                                     </Button>
                                 </div>
                             </div>
@@ -273,10 +276,9 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
                                             <Network className="h-4 w-4" />
                                         </div>
                                         <div className="space-y-1">
-                                            <h4 className="font-medium text-sm text-blue-500">Обнаружен Proxmox кластер</h4>
+                                            <h4 className="font-medium text-sm text-blue-500">{t('clusterDetected')}</h4>
                                             <p className="text-xs text-muted-foreground">
-                                                Найдено {detectedNodes.length} нод в кластере.
-                                                Импортировать все ноды сразу?
+                                                {t('clusterDetectedDesc', { count: detectedNodes.length })}
                                             </p>
 
                                             <div className="flex items-center gap-2 mt-2">
@@ -289,7 +291,7 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
                                                     onChange={(e) => setImportCluster(e.target.checked)}
                                                 />
                                                 <label htmlFor="import_cluster" className="text-sm font-medium cursor-pointer">
-                                                    Да, импортировать все {detectedNodes.length} нод кластера
+                                                    {t('importAllNodes', { count: detectedNodes.length })}
                                                 </label>
                                             </div>
 
@@ -308,31 +310,30 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
                                         </div>
                                     </div>
                                     <p className="text-[10px] text-muted-foreground pl-11">
-                                        Примечание: для всех нод будет использоваться один API токен и SSH пользователь.
-                                        Убедитесь, что токен действителен для всего кластера (по умолчанию).
+                                        {t('clusterNote')}
                                     </p>
                                 </div>
                             )}
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="grid gap-2">
-                                    <label htmlFor="ssh_host" className="text-sm font-medium">SSH хост (опционально)</label>
-                                    <Input id="ssh_host" name="ssh_host" placeholder="напр. 192.168.1.100" />
+                                    <label htmlFor="ssh_host" className="text-sm font-medium">{t('sshHost')}</label>
+                                    <Input id="ssh_host" name="ssh_host" placeholder={t('sshHostPlaceholder')} />
                                 </div>
                                 <div className="grid gap-2">
-                                    <label htmlFor="ssh_port" className="text-sm font-medium">SSH порт</label>
+                                    <label htmlFor="ssh_port" className="text-sm font-medium">{t('sshPort')}</label>
                                     <Input id="ssh_port" name="ssh_port" type="number" defaultValue="22" />
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="grid gap-2">
-                                    <label htmlFor="ssh_user" className="text-sm font-medium">SSH пользователь</label>
+                                    <label htmlFor="ssh_user" className="text-sm font-medium">{t('sshUser')}</label>
                                     <Input id="ssh_user" name="ssh_user" defaultValue="root" />
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <label htmlFor="ssh_password" className="text-sm font-medium">SSH пароль</label>
+                                    <label htmlFor="ssh_password" className="text-sm font-medium">{t('sshPassword')}</label>
                                     <Input id="ssh_password" name="ssh_password" type="password" />
                                 </div>
                             </div>
@@ -340,11 +341,11 @@ export default function NewServerForm({ existingGroups }: NewServerFormProps) {
 
                         <div className="flex justify-end gap-2 pt-4">
                             <Link href="/servers">
-                                <Button type="button" variant="ghost">Отмена</Button>
+                                <Button type="button" variant="ghost">{tCommon('cancel')}</Button>
                             </Link>
                             <Button type="submit">
                                 <Save className="mr-2 h-4 w-4" />
-                                Сохранить
+                                {t('save')}
                             </Button>
                         </div>
                     </form>

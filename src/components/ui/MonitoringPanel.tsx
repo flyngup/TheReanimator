@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Server, HardDrive, CheckCircle2, AlertCircle, XCircle, Clock, RefreshCw, Activity, Wifi, WifiOff, ChevronRight, Cpu, MemoryStick, AlertTriangle, Bell, TrendingUp } from "lucide-react";
 import { motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 
 interface ServerMetrics {
     cpuUsage: number;
@@ -84,12 +85,12 @@ function formatBytes(bytes: number): string {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
-function formatBackupAge(hours: number | null): string {
-    if (hours === null) return 'Никогда';
-    if (hours < 1) return 'Только что';
-    if (hours < 24) return `${hours}ч назад`;
+function formatBackupAgeI18n(hours: number | null, t: (key: string, params?: any) => string): string {
+    if (hours === null) return t('never');
+    if (hours < 1) return t('justNow');
+    if (hours < 24) return t('hoursAgo', { hours });
     const days = Math.floor(hours / 24);
-    return `${days}д назад`;
+    return t('daysAgo', { days });
 }
 
 function UsageGauge({ value, label, color, icon: Icon }: { value: number; label: string; color: string; icon: any }) {
@@ -126,6 +127,7 @@ function UsageGauge({ value, label, color, icon: Icon }: { value: number; label:
 }
 
 export function MonitoringPanel() {
+    const t = useTranslations('monitoringPanel');
     const [data, setData] = useState<MonitoringData | null>(null);
     const [loading, setLoading] = useState(true);
     const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
@@ -165,7 +167,7 @@ export function MonitoringPanel() {
         return (
             <Card className="border-muted/60">
                 <CardContent className="p-8 text-center text-muted-foreground">
-                    <p>Не удалось загрузить данные мониторинга.</p>
+                    <p>{t('loadError')}</p>
                 </CardContent>
             </Card>
         );
@@ -186,13 +188,13 @@ export function MonitoringPanel() {
                         <div className="flex items-start gap-3">
                             <AlertTriangle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
                             <div className="flex-1">
-                                <p className="font-medium text-red-500">Критические проблемы ({criticalAlerts.length})</p>
+                                <p className="font-medium text-red-500">{t('criticalIssues', { count: criticalAlerts.length })}</p>
                                 <ul className="text-sm text-red-400/80 mt-1 space-y-1">
                                     {criticalAlerts.slice(0, 3).map((alert, i) => (
                                         <li key={i}>• {alert.message}</li>
                                     ))}
                                     {criticalAlerts.length > 3 && (
-                                        <li className="text-red-400/60">... и ещё {criticalAlerts.length - 3}</li>
+                                        <li className="text-red-400/60">{t('andMore', { count: criticalAlerts.length - 3 })}</li>
                                     )}
                                 </ul>
                             </div>
@@ -209,13 +211,13 @@ export function MonitoringPanel() {
                     <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-muted-foreground">Состояние серверов</p>
+                                <p className="text-sm text-muted-foreground">{t('serversStatus')}</p>
                                 <p className="text-2xl font-bold">
                                     {summary.onlineServers}
                                     <span className="text-muted-foreground text-lg font-normal">/{summary.totalServers}</span>
                                 </p>
                                 <p className={`text-xs mt-1 ${summary.offlineServers === 0 ? 'text-green-500' : 'text-red-500'}`}>
-                                    {summary.offlineServers === 0 ? 'Все онлайн' : `${summary.offlineServers} offline`}
+                                    {summary.offlineServers === 0 ? t('allOnline') : `${summary.offlineServers} ${t('offline')}`}
                                 </p>
                             </div>
                             <div className={`w-12 h-12 rounded-full flex items-center justify-center ${summary.offlineServers === 0 ? 'bg-green-500/10' : 'bg-red-500/10'
@@ -231,7 +233,7 @@ export function MonitoringPanel() {
                 <Card className="overflow-hidden">
                     <div className="h-1 bg-gradient-to-r from-blue-500 to-cyan-500" />
                     <CardContent className="p-4">
-                        <p className="text-sm text-muted-foreground mb-3">Средняя нагрузка</p>
+                        <p className="text-sm text-muted-foreground mb-3">{t('avgLoad')}</p>
                         <div className="flex justify-around">
                             <UsageGauge
                                 value={summary.avgCpuUsage}
@@ -261,7 +263,7 @@ export function MonitoringPanel() {
                     <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-muted-foreground">Статус бэкапов</p>
+                                <p className="text-sm text-muted-foreground">{t('backupStatus')}</p>
                                 <div className="flex items-center gap-4 mt-2">
                                     <div className="flex items-center gap-1.5">
                                         <div className="w-3 h-3 rounded-full bg-green-500" />
@@ -277,7 +279,7 @@ export function MonitoringPanel() {
                                     </div>
                                 </div>
                                 <p className="text-xs text-muted-foreground mt-2">
-                                    {summary.healthCounts.none > 0 && `${summary.healthCounts.none} без бэкапа`}
+                                    {summary.healthCounts.none > 0 && `${summary.healthCounts.none} ${t('noBackup')}`}
                                 </p>
                             </div>
                             <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center">
@@ -293,10 +295,10 @@ export function MonitoringPanel() {
                     <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-muted-foreground">Хранилище бэкапов</p>
+                                <p className="text-sm text-muted-foreground">{t('backupStorage')}</p>
                                 <p className="text-2xl font-bold">{formatBytes(summary.totalSize)}</p>
                                 <p className="text-xs text-muted-foreground mt-1">
-                                    {summary.totalBackups} всего бэкапов
+                                    {summary.totalBackups} {t('totalBackups')}
                                 </p>
                             </div>
                             <div className="w-12 h-12 rounded-full bg-orange-500/10 flex items-center justify-center">
@@ -314,7 +316,7 @@ export function MonitoringPanel() {
                         <div className="flex items-start gap-3">
                             <Bell className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
                             <div className="flex-1">
-                                <p className="font-medium text-amber-500">Предупреждения ({warningAlerts.length})</p>
+                                <p className="font-medium text-amber-500">{t('warnings', { count: warningAlerts.length })}</p>
                                 <div className="flex flex-wrap gap-2 mt-2">
                                     {warningAlerts.slice(0, 5).map((alert, i) => (
                                         <span key={i} className="text-xs px-2 py-1 rounded bg-amber-500/10 text-amber-500">
@@ -334,7 +336,7 @@ export function MonitoringPanel() {
             {/* Server Grid */}
             <Card className="overflow-hidden border-muted/60">
                 <CardHeader className="py-3 px-4 bg-muted/10 flex flex-row items-center justify-between">
-                    <CardTitle className="text-base">Обзор серверов</CardTitle>
+                    <CardTitle className="text-base">{t('serverOverview')}</CardTitle>
                     <div className="flex items-center gap-2">
                         {lastUpdate && (
                             <span className="text-xs text-muted-foreground">
@@ -418,11 +420,11 @@ export function MonitoringPanel() {
                                                     server.backupHealth === 'critical' ? 'text-red-500' :
                                                         'text-muted-foreground'
                                             }`}>
-                                            {formatBackupAge(server.backupAge)}
+                                            {formatBackupAgeI18n(server.backupAge, t)}
                                         </span>
                                     </div>
                                     <span className="text-muted-foreground">
-                                        {server.totalBackups} бэкапов
+                                        {server.totalBackups} {t('backups')}
                                     </span>
                                 </div>
                             </Link>
@@ -436,7 +438,7 @@ export function MonitoringPanel() {
                                 size="sm"
                                 onClick={() => setShowAllServers(!showAllServers)}
                             >
-                                {showAllServers ? 'Показать меньше' : `Показать все ${servers.length} серверов`}
+                                {showAllServers ? t('showLess') : t('showAll', { count: servers.length })}
                             </Button>
                         </div>
                     )}
@@ -449,7 +451,7 @@ export function MonitoringPanel() {
                     <CardHeader className="py-3 px-4 bg-muted/10">
                         <CardTitle className="text-base flex items-center gap-2">
                             <TrendingUp className="h-4 w-4" />
-                            Последние бэкапы
+                            {t('recentBackups')}
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="p-0">
@@ -475,7 +477,7 @@ export function MonitoringPanel() {
                                         </p>
                                     </div>
                                     <div className="text-right text-xs text-muted-foreground">
-                                        <p>{backup.file_count} файлов</p>
+                                        <p>{backup.file_count} {t('files')}</p>
                                         <p>{formatBytes(backup.total_size)}</p>
                                     </div>
                                 </Link>

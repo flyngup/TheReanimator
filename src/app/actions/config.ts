@@ -3,6 +3,39 @@
 import { createSSHClient } from '@/lib/ssh';
 import db from '@/lib/db';
 import { getServer } from './server';
+import { getTranslations } from 'next-intl/server';
+import { headers, cookies } from 'next/headers';
+import { routing } from '@/i18n/routing';
+
+// Helper to get locale in server actions
+async function getServerLocale(): Promise<string> {
+    const headersList = await headers();
+    const cookieStore = await cookies();
+
+    // Try to get locale from cookie (next-intl stores it as 'NEXT_LOCALE')
+    const localeCookie = cookieStore.get('NEXT_LOCALE');
+    if (localeCookie?.value && routing.locales.includes(localeCookie.value as any)) {
+        return localeCookie.value;
+    }
+
+    // Fallback: try referer header
+    const referer = headersList.get('referer') || '';
+    const localeMatch = referer.match(/\/([a-z]{2})\//);
+    if (localeMatch) {
+        const locale = localeMatch[1];
+        if (routing.locales.includes(locale as any)) {
+            return locale;
+        }
+    }
+
+    // Final fallback to default locale
+    return routing.defaultLocale;
+}
+
+async function t(namespace: string) {
+    const locale = await getServerLocale();
+    return getTranslations({ locale, namespace });
+}
 
 
 export interface CloneOptions {
@@ -217,7 +250,8 @@ export async function cloneServerConfig(
                     await targetSsh.exec(`pvesh set /cluster/options --tag-style "${tagStyle}"`);
                     logs.push('Tags synced successfully.');
                 } else {
-                    logs.push('Теги не найдены на источнике.');
+                    const configT = await t('actionsConfig');
+                    logs.push(configT('tagsNotFoundOnSource'));
                 }
             } catch (tagErr) {
                 logs.push(`Error syncing tags: ${tagErr}`);

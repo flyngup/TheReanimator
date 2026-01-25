@@ -1,7 +1,34 @@
 'use server';
 
+import { headers, cookies } from 'next/headers';
+import { getTranslations } from 'next-intl/server';
+import { routing } from '@/i18n/routing';
 import { createSSHClient } from '@/lib/ssh';
 import { Server } from './server';
+
+// Helper function to get locale from request
+async function getServerLocale(): Promise<string> {
+    const headersList = await headers();
+    const cookieStore = await cookies();
+
+    // Try to get locale from cookie first
+    const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value;
+    if (cookieLocale && routing.locales.includes(cookieLocale as any)) {
+        return cookieLocale;
+    }
+
+    // Try to get from Accept-Language header
+    const acceptLanguage = headersList.get('accept-language');
+    if (acceptLanguage) {
+        const preferredLocale = acceptLanguage.split(',')[0].split('-')[0];
+        if (routing.locales.includes(preferredLocale as any)) {
+            return preferredLocale;
+        }
+    }
+
+    // Fallback to default locale
+    return routing.defaultLocale;
+}
 
 export interface NetworkInterface {
     name: string;
@@ -60,18 +87,21 @@ function formatBytesSimple(bytes: number): string {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
-function formatUptime(uptime: string): string {
+async function formatUptime(uptime: string): Promise<string> {
     if (!uptime || uptime === 'Unknown' || uptime === '-') {
         return uptime;
     }
 
+    const locale = await getServerLocale();
+    const t = await getTranslations({ locale, namespace: 'actionsMonitoring' });
+
     // Parse "up X weeks, Y days, Z hours, W minutes" format from uptime -p
-    const translated = uptime
+    let translated = uptime
         .replace(/^up\s*/, '')
-        .replace(/weeks?/, 'недель')
-        .replace(/days?/, 'дней')
-        .replace(/hours?/, 'часов')
-        .replace(/minutes?/, 'минут')
+        .replace(/weeks?/, ` ${t('week')} `)
+        .replace(/days?/, ` ${t('day')} `)
+        .replace(/hours?/, ` ${t('hour')} `)
+        .replace(/minutes?/, ` ${t('minute')} `)
         .replace(/,\s*/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
@@ -79,15 +109,18 @@ function formatUptime(uptime: string): string {
     return translated || uptime;
 }
 
-function formatMemoryString(memory: string): string {
+async function formatMemoryString(memory: string): Promise<string> {
     if (!memory || memory === '-') {
         return memory;
     }
 
+    const locale = await getServerLocale();
+    const t = await getTranslations({ locale, namespace: 'actionsMonitoring' });
+
     // Parse "251Gi total, 155Gi used" format from free -h
     const translated = memory
-        .replace(/total/, 'всего')
-        .replace(/used/, 'занято')
+        .replace(/total/, ` ${t('total')}`)
+        .replace(/used/, ` ${t('used')}`)
         .replace(/,/g, ',');
 
     return translated || memory;
@@ -131,11 +164,11 @@ async function getSystemStats(ssh: any) {
             hostname,
             os: osRelease.trim(),
             kernel,
-            uptime: formatUptime(uptime),
+            uptime: await formatUptime(uptime),
             cpu: cpuInfo,
             cpuCores,
             cpuUsage,
-            memory: formatMemoryString(memReadable),
+            memory: await formatMemoryString(memReadable),
             memoryTotal,
             memoryUsed,
             memoryUsage,

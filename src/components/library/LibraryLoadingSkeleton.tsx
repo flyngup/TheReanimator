@@ -1,11 +1,13 @@
-import { getTranslations } from 'next-intl/server';
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Disc, RefreshCw } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 
-export default async function LibraryLoading() {
-    const t = await getTranslations('library');
+export function LibraryLoadingSkeleton() {
+    const t = useTranslations('library');
 
     return (
         <div className="space-y-6">

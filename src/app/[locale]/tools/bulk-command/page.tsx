@@ -10,8 +10,10 @@ import { Label } from "@/components/ui/label";
 import { Terminal, Play, Loader2, CheckCircle2, XCircle, Server, Command } from "lucide-react";
 import { getBulkServers, executeBulkCommand, BulkCommandResult } from '@/app/actions/bulk_actions';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 export default function BulkCommandPage() {
+    const t = useTranslations('bulkCommand');
     const [servers, setServers] = useState<{ id: number, name: string, host: string }[]>([]);
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const [command, setCommand] = useState('');
@@ -44,9 +46,9 @@ export default function BulkCommandPage() {
         try {
             const res = await executeBulkCommand(selectedIds, command);
             setResults(res);
-            toast.success(`Выполнено на ${res.length} серверах.`);
+            toast.success(t('executedOn', { count: res.length }));
         } catch (e) {
-            toast.error('Ошибка выполнения');
+            toast.error(t('executionError'));
             console.error(e);
         } finally {
             setExecuting(false);
@@ -60,8 +62,8 @@ export default function BulkCommandPage() {
                     <Terminal className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                    <h1 className="text-2xl font-bold">Центр массовых команд</h1>
-                    <p className="text-muted-foreground text-sm">Выполняйте команды на всех серверах одновременно.</p>
+                    <h1 className="text-2xl font-bold">{t('title')}</h1>
+                    <p className="text-muted-foreground text-sm">{t('description')}</p>
                 </div>
             </div>
 
@@ -70,9 +72,9 @@ export default function BulkCommandPage() {
                 <Card className="w-1/4 flex flex-col">
                     <CardHeader className="py-3 px-4 border-b bg-muted/20">
                         <div className="flex items-center justify-between">
-                            <CardTitle className="text-sm font-medium">Цели</CardTitle>
+                            <CardTitle className="text-sm font-medium">{t('targets')}</CardTitle>
                             <Button variant="ghost" size="sm" onClick={toggleAll} className="h-6 text-xs">
-                                {selectedIds.length === servers.length ? 'Нет' : 'Все'}
+                                {selectedIds.length === servers.length ? t('none') : t('all')}
                             </Button>
                         </div>
                     </CardHeader>
@@ -103,7 +105,7 @@ export default function BulkCommandPage() {
                         </ScrollArea>
                     </CardContent>
                     <div className="p-3 border-t bg-muted/10 text-xs text-muted-foreground text-center">
-                        Выбрано серверов: {selectedIds.length}
+                        {t('selected', { count: selectedIds.length })}
                     </div>
                 </Card>
 
@@ -117,7 +119,7 @@ export default function BulkCommandPage() {
                                 <Input
                                     value={command}
                                     onChange={(e) => setCommand(e.target.value)}
-                                    placeholder="например: uptime; free -h; apt update"
+                                    placeholder={t('placeholder')}
                                     className="pl-9 font-mono text-sm h-10 border-0 shadow-none focus-visible:ring-0 bg-transparent"
                                     onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleExecute()}
                                 />
@@ -128,7 +130,7 @@ export default function BulkCommandPage() {
                                 className="w-24 font-medium"
                             >
                                 {executing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4 mr-1" />}
-                                Выполнить
+                                {t('execute')}
                             </Button>
                         </div>
                     </Card>
@@ -136,14 +138,14 @@ export default function BulkCommandPage() {
                     {/* Results Area */}
                     <div className="flex-1 bg-black/95 rounded-lg border border-white/10 overflow-hidden flex flex-col shadow-inner">
                         <div className="px-4 py-2 border-b border-white/10 bg-white/5 flex items-center justify-between">
-                            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Вывод консоли</span>
-                            {results.length > 0 && <span className="text-xs text-muted-foreground">{results.filter(r => r.status === 'success').length} Успешно, {results.filter(r => r.status === 'failed').length} Ошибок</span>}
+                            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('consoleOutput')}</span>
+                            {results.length > 0 && <span className="text-xs text-muted-foreground">{t('successAndErrors', { success: results.filter(r => r.status === 'success').length, errors: results.filter(r => r.status === 'failed').length })}</span>}
                         </div>
                         <ScrollArea className="flex-1 p-4">
                             {results.length === 0 && !executing ? (
                                 <div className="h-full flex flex-col items-center justify-center text-white/20">
                                     <Terminal className="h-12 w-12 mb-3 opacity-50" />
-                                    <p>Готов к выполнению.</p>
+                                    <p>{t('ready')}</p>
                                 </div>
                             ) : (
                                 <div className="space-y-6">
@@ -173,7 +175,7 @@ export default function BulkCommandPage() {
                                     {executing && (
                                         <div className="flex items-center gap-2 text-blue-400 animate-pulse">
                                             <Loader2 className="h-3 w-3 animate-spin" />
-                                            <span className="text-xs font-mono">Ожидание ответов...</span>
+                                            <span className="text-xs font-mono">{t('awaiting')}</span>
                                         </div>
                                     )}
                                 </div>

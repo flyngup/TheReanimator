@@ -129,8 +129,8 @@ export default function LoginPage() {
                                     <Shield className="h-5 w-5 text-emerald-400" />
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold">Safe Backups</h3>
-                                    <p className="text-sm text-slate-400">Automatic configuration backups</p>
+                                    <h3 className="font-semibold">{t('safeBackups')}</h3>
+                                    <p className="text-sm text-slate-400">{t('safeBackupsDesc')}</p>
                                 </div>
                             </div>
                             <div className="flex items-start gap-4">
@@ -140,8 +140,8 @@ export default function LoginPage() {
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold">Cluster Migration</h3>
-                                    <p className="text-sm text-slate-400">Move VMs between clusters</p>
+                                    <h3 className="font-semibold">{t('clusterMigration')}</h3>
+                                    <p className="text-sm text-slate-400">{t('clusterMigrationDesc')}</p>
                                 </div>
                             </div>
                             <div className="flex items-start gap-4">
@@ -151,8 +151,8 @@ export default function LoginPage() {
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold">Centralized Overview</h3>
-                                    <p className="text-sm text-slate-400">All servers and VMs in one place</p>
+                                    <h3 className="font-semibold">{t('centralizedOverview')}</h3>
+                                    <p className="text-sm text-slate-400">{t('centralizedOverviewDesc')}</p>
                                 </div>
                             </div>
                         </div>

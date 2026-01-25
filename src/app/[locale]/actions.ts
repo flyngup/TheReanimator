@@ -1,8 +1,29 @@
 'use server'
 
+import { headers, cookies } from 'next/headers';
 import db from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
+import { routing } from '@/i18n/routing';
+
+async function getServerLocale(): Promise<string> {
+    const headersList = await headers();
+    const cookieStore = await cookies();
+    const localeCookie = cookieStore.get('NEXT_LOCALE');
+    if (localeCookie?.value && routing.locales.includes(localeCookie.value as any)) {
+        return localeCookie.value;
+    }
+    const referer = headersList.get('referer') || '';
+    const localeMatch = referer.match(/\/([a-z]{2})\//);
+    if (localeMatch) {
+        const locale = localeMatch[1];
+        if (routing.locales.includes(locale as any)) {
+            return locale;
+        }
+    }
+    return routing.defaultLocale;
+}
 
 export async function addServer(formData: FormData) {
     const name = formData.get('name') as string;
@@ -246,9 +267,11 @@ export async function testSSHConnection(formData: FormData) {
 
         await client.disconnect();
 
-        let message = 'SSH соединение успешно';
-        if (fingerprint) message += ' + отпечаток загружен';
-        if (clusterNodes.length > 1) message += ` + найдено ${clusterNodes.length} узлов кластера`;
+        const locale = await getServerLocale();
+        const t = await getTranslations({ locale, namespace: 'servers' });
+        let message = t('sshConnectionSuccess');
+        if (fingerprint) message += ' ' + t('fingerprintLoaded');
+        if (clusterNodes.length > 1) message += ' ' + t('clusterNodesFound', { count: clusterNodes.length });
 
         return {
             success: true,

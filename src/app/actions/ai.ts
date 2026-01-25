@@ -2,6 +2,39 @@
 
 import db from '@/lib/db';
 import { request } from 'undici';
+import { getTranslations } from 'next-intl/server';
+import { headers, cookies } from 'next/headers';
+import { routing } from '@/i18n/routing';
+
+// Helper to get locale in server actions
+async function getServerLocale(): Promise<string> {
+    const headersList = await headers();
+    const cookieStore = await cookies();
+
+    // Try to get locale from cookie (next-intl stores it as 'NEXT_LOCALE')
+    const localeCookie = cookieStore.get('NEXT_LOCALE');
+    if (localeCookie?.value && routing.locales.includes(localeCookie.value as any)) {
+        return localeCookie.value;
+    }
+
+    // Fallback: try referer header
+    const referer = headersList.get('referer') || '';
+    const localeMatch = referer.match(/\/([a-z]{2})\//);
+    if (localeMatch) {
+        const locale = localeMatch[1];
+        if (routing.locales.includes(locale as any)) {
+            return locale;
+        }
+    }
+
+    // Final fallback to default locale
+    return routing.defaultLocale;
+}
+
+async function t(namespace: string) {
+    const locale = await getServerLocale();
+    return getTranslations({ locale, namespace });
+}
 
 // --- Settings Management ---
 
@@ -71,8 +104,9 @@ export async function generateAIResponse(
     onProgress?: (partialResponse: string, tokenCount: number) => void
 ): Promise<string> {
     const settings = await getAISettings();
-    if (!settings.enabled) throw new Error('AI функции отключены.');
-    if (!settings.model) throw new Error('AI модель не выбрана. Настройте в настройках.');
+    const aiT = await t('actionsAI');
+    if (!settings.enabled) throw new Error(aiT('aiDisabled'));
+    if (!settings.model) throw new Error(aiT('aiModelNotSelected'));
 
     // Create abort controller with 300 second timeout (5 minutes for large models)
     const controller = new AbortController();
@@ -93,7 +127,7 @@ export async function generateAIResponse(
         const payload = {
             model: settings.model,
             prompt: prompt,
-            system: systemContext || "Du bist ein hilfreicher Systemadministrator-Assistent für Proxhost.",
+            system: systemContext || aiT('defaultSystemContext'),
             stream: true, // Enable streaming for progress tracking
             options: {
                 temperature: 0.3 // Low temperature for factual admin tasks
@@ -146,11 +180,12 @@ export async function generateAIResponse(
         return fullResponse;
 
     } catch (e: any) {
+        const aiT = await t('actionsAI');
         if (e.name === 'AbortError') {
-            throw new Error('AI Timeout: Keine Antwort nach 5 Minuten oder 60s Inaktivität');
+            throw new Error(aiT('timeoutError'));
         }
         console.error('AI Generation Error:', e);
-        throw new Error(`AI Fehler: ${e.message}`);
+        throw new Error(aiT('generationError') + e.message);
     } finally {
         clearTimeout(timeoutId);
         clearInterval(activityTimeoutId);
@@ -163,16 +198,10 @@ export async function analyzeLogWithAI(logContent: string): Promise<string> {
     // Truncate log if too long (Ollama context limits)
     const truncatedLog = logContent.length > 8000 ? logContent.slice(-8000) : logContent;
 
-    const context = `
-Ты эксперт по Linux/Proxmox.
-Проанализируй следующий лог-файл неудачной задачи (миграция или бэкап).
-Определи основную проблему.
-Отвечай коротко и ясно (макс 2 предложения) на русском языке.
-Дай пользователю конкретные инструкции по решению.
-Игнорируй stack trace, сосредоточься на сообщении об ошибке.
-    `.trim();
+    const aiT = await t('actionsAI');
+    const context = aiT('logAnalysisPrompt');
 
-    return generateAIResponse(`Вот лог:\n\n${truncatedLog}`, context);
+    return generateAIResponse(aiT('hereIsLog') + truncatedLog, context);
 }
 
 // Helper to separate JSON from text
@@ -228,71 +257,25 @@ export type HealthResult = {
 };
 
 export async function analyzeConfigWithAI(config: string, type: 'qemu' | 'lxc'): Promise<HealthResult> {
-    const context = `
-Du bist ein Proxmox Performance & Security Auditor.
-Analysiere diese VM-Konfiguration (Type: ${type}) sehr detailliert.
-
-Antworte AUSSCHLIESSLICH mit validem JSON:
-{
-  "score": number, // 0-100
-  "summary": "string",
-  "markdown_report": "string", // HIER: Ausführlicher Bericht in Markdown.
-  "issues": [
-    {
-      "severity": "critical" | "warning" | "info",
-      "title": "string",
-      "description": "string",
-      "fix": "string",
-      "reasoning": "string"
-    }
-  ]
-}
-
-Anforderungen für 'markdown_report':
-- Strukturiert (## Sektionen).
-- Erkläre die Konfiguration (CPU, RAM, Disk Bus).
-- Analysiere Performance-Flaschenhälse.
-- Gib konkrete Handlungsempfehlungen.
-- Sei kritisch aber konstruktiv.
-
-Prüfe Best Practices: VirtIO, CPU Type 'host', Discard, Guest Agent.
-Config:
-${config}
-    `.trim();
+    const aiT = await t('actionsAI');
+    const context = aiT('configAnalysisPrompt', { type, config });
 
     const response = await generateAIResponse(context, '');
     const result = parseAIJSON(response);
 
     if (!result) {
-        return { score: 100, issues: [], summary: 'AI-синтаксический анализ не удался (недействительный JSON)' };
+        return { score: 100, issues: [], summary: aiT('parseError') };
     }
     return result;
 }
 
 export async function analyzeHostWithAI(files: { filename: string, content: string }[]): Promise<HealthResult> {
-    const context = `
-Ты системный инженер Linux (Debian/Proxmox).
-Проанализируй эти дампы системы на безопасность, производительность и стабильность.
-
-Отвечай ТОЛЬКО валидным JSON:
-{
-  "score": number,
-  "summary": "string",
-  "markdown_report": "string", // ЗДЕСЬ: Подробный отчёт в Markdown.
-  "issues": [{ "severity": "...", "title": "...", "description": "...", "fix": "...", "reasoning": "..." }]
-}
-
-Требования к 'markdown_report':
-- Секции: Статус системы, Сетевая топология, Состояние хранилища, Безопасность.
-- Объясни аномалии в логах/конфигах.
-- Дай конкретные команды терминала для исправления проблем.
-
-Файлы:
-${files.map(f => `=== ${f.filename} ===\n${f.content}\n`).join('\n')}
-    `.trim();
+    const aiT = await t('actionsAI');
+    const filesStr = files.map(f => `=== ${f.filename} ===\n${f.content}\n`).join('\n');
+    const context = aiT('hostAnalysisPrompt', { files: filesStr });
 
     const response = await generateAIResponse(context, '');
-    return parseAIJSON(response) || { score: 100, issues: [], summary: 'AI-синтаксический анализ не удался' };
+    return parseAIJSON(response) || { score: 100, issues: [], summary: aiT('parseError') };
 }
 
 // --- Network Analysis Types ---
@@ -327,32 +310,10 @@ export interface NetworkAnalysisResult {
 }
 
 export async function explainNetworkConfig(interfaces: any[]): Promise<NetworkAnalysisResult> {
-    const context = `
-Ты опытный сетевой архитектор и консультант по безопасности.
-Проанализируй следующую сетевую конфигурацию Linux (/etc/network/interfaces структура).
+    const aiT = await t('actionsAI');
+    const context = aiT('networkAnalysisPrompt');
 
-Отвечай ТОЛЬКО валидным JSON.
-Структура:
-{
-  "summary": "Краткое ёмкое резюме (макс 2 предложения)",
-  "topology": [
-    { "interface": "eth0", "type": "Physical", "status": "Up", "ip_connect": "192.168.1.1/24", "usage": "Uplink" }
-  ],
-  "security_analysis": [
-    { "severity": "warning", "title": "Promiscuous Mode", "description": "Интерфейс в promiscuous mode", "recommendation": "Отключить если не нужен" }
-  ],
-  "performance_analysis": [
-     { "severity": "info", "title": "MTU Стандарт", "description": "MTU 1500 - это стандарт", "recommendation": "Проверить Jumbo Frames для хранилища" }
-  ],
-  "recommendations": [
-    { "action": "Изменить режим bonding", "command": "iface bond0 inet manual ...", "reason": "LACP (802.3ad) обеспечивает лучшую балансировку нагрузки" }
-  ]
-}
-
-Будь строг к рискам безопасности.
-    `.trim();
-
-    const response = await generateAIResponse(`Вот конфиг:\n${JSON.stringify(interfaces, null, 2)}`, context);
+    const response = await generateAIResponse(aiT('hereIsConfig') + JSON.stringify(interfaces, null, 2), context);
 
     // Use parseAIJSON helper to extract JSON from markdown block if needed
     const result = parseAIJSON(response);
@@ -360,9 +321,9 @@ export async function explainNetworkConfig(interfaces: any[]): Promise<NetworkAn
     if (!result) {
         // Fallback structure if parsing fails entirely
         return {
-            summary: "AI-анализ не удался (ошибка синтаксического анализа).",
+            summary: aiT('networkAnalysisFailed'),
             topology: [],
-            security_analysis: [{ severity: 'critical', title: 'Ошибка синтаксического анализа', description: 'AI-ответ не удалось прочитать.', recommendation: 'Попробуйте снова.' }],
+            security_analysis: [{ severity: 'critical', title: aiT('parseErrorTitle'), description: aiT('parseErrorDesc'), recommendation: aiT('parseErrorRec') }],
             performance_analysis: [],
             recommendations: []
         };

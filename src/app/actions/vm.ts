@@ -3,6 +3,39 @@
 import { createSSHClient, SSHClient } from '@/lib/ssh';
 import db from '@/lib/db';
 import { syncServerVMs } from './sync';
+import { getTranslations } from 'next-intl/server';
+import { headers, cookies } from 'next/headers';
+import { routing } from '@/i18n/routing';
+
+// Helper to get locale in server actions
+async function getServerLocale(): Promise<string> {
+    const headersList = await headers();
+    const cookieStore = await cookies();
+
+    // Try to get locale from cookie (next-intl stores it as 'NEXT_LOCALE')
+    const localeCookie = cookieStore.get('NEXT_LOCALE');
+    if (localeCookie?.value && routing.locales.includes(localeCookie.value as any)) {
+        return localeCookie.value;
+    }
+
+    // Fallback: try referer header
+    const referer = headersList.get('referer') || '';
+    const localeMatch = referer.match(/\/([a-z]{2})\//);
+    if (localeMatch) {
+        const locale = localeMatch[1];
+        if (routing.locales.includes(locale as any)) {
+            return locale;
+        }
+    }
+
+    // Final fallback to default locale
+    return routing.defaultLocale;
+}
+
+async function t(namespace: string) {
+    const locale = await getServerLocale();
+    return getTranslations({ locale, namespace });
+}
 
 // --- Interfaces ---
 
@@ -364,12 +397,13 @@ async function testServerToServerSSH(
             throw new Error('Unexpected response');
         }
     } catch (e: any) {
+        const vmT = await t('actionsVM');
         throw new Error(
-            `Server-to-Server SSH не удалось!\n\n` +
-            `Исходный сервер должен иметь доступ по SSH к целевому серверу.\n` +
-            `Выполните на ИСХОДНОМ сервере:\n\n` +
+            vmT('serverToServerSSHFailed') +
+            vmT('sourceServerMustHaveSSHAccess') +
+            vmT('runOnSourceServer') +
             `  ssh-copy-id root@${targetHost}\n\n` +
-            `Ошибка: ${e.message}`
+            vmT('error') + e.message
         );
     }
 }
@@ -390,7 +424,8 @@ async function runPreFlightChecks(
         await sourceSsh.exec('echo "OK"');
         log('[Check 1/6] ✓ Source SSH OK');
     } catch (e) {
-        throw new Error('SSH-подключение к исходному серверу не удалось');
+        const vmT = await t('actionsVM');
+        throw new Error(vmT('sshConnectionToSourceFailed'));
     }
 
     // 2. SSH Connectivity - Target
@@ -399,7 +434,8 @@ async function runPreFlightChecks(
         await targetSsh.exec('echo "OK"');
         log('[Check 2/6] ✓ Target SSH OK');
     } catch (e) {
-        throw new Error('SSH-подключение к целевому серверу не удалось');
+        const vmT = await t('actionsVM');
+        throw new Error(vmT('sshConnectionToTargetFailed'));
     }
 
     // 3. VM State Recovery
@@ -818,7 +854,8 @@ async function migrateRemote(ctx: MigrationContext): Promise<string> {
             try { await targetSsh.exec(`rm -f ${targetBackupDir}/*`); } catch { }
         }
 
-        throw new Error(`Миграция не удалась:\n\n${error.message}\n\nПожалуйста, проверьте:\n- SSH-доступ между серверами (для SCP)\n- Достаточно места для бэкапа в /tmp\n- Целевое хранилище доступно`);
+        const vmT = await t('actionsVM');
+        throw new Error(vmT('migrationFailed', { error: error.message }));
     }
 }
 
@@ -903,10 +940,12 @@ async function pollMigrationTaskWithLogs(
             const logJson = await client.exec(logCmd);
             const logData = JSON.parse(logJson);
             const lastLogs = logData.slice(-15).map((l: any) => l.t).join('\n');
-            errorDetails = `\n\nПоследние записи лога:\n${lastLogs}`;
+            const vmT = await t('actionsVM');
+            errorDetails = vmT('lastLogEntries') + lastLogs;
         } catch { }
 
-        throw new Error(`Миграция не удалась со статусом: ${exitStatus}${errorDetails}`);
+        const vmT = await t('actionsVM');
+        throw new Error(`${vmT('migrationFailedWithStatus')}${exitStatus}${errorDetails}`);
     }
 
     log('[Migration] Task completed with status: OK');

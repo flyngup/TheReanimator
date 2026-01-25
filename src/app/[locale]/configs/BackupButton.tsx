@@ -4,8 +4,10 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Download, Loader2 } from "lucide-react";
 import { createConfigBackup } from '@/app/actions/configBackup';
+import { useTranslations } from 'next-intl';
 
 export function BackupButton({ serverId }: { serverId: number }) {
+    const t = useTranslations('configDetail');
     const [loading, setLoading] = useState(false);
 
     async function handleClick() {
@@ -13,12 +15,12 @@ export function BackupButton({ serverId }: { serverId: number }) {
         try {
             const result = await createConfigBackup(serverId);
             if (result.success) {
-                alert(`Бэкап создан успешно!\n${result.message}`);
+                alert(t('backupCreatedSuccess', { message: result.message }));
             } else {
-                alert(`Ошибка бэкапа:\n${result.message}`);
+                alert(t('backupError', { message: result.message }));
             }
         } catch (err) {
-            alert('Произошла неожиданная ошибка.');
+            alert(t('unexpectedError'));
             console.error(err);
         } finally {
             setLoading(false);
@@ -30,7 +32,7 @@ export function BackupButton({ serverId }: { serverId: number }) {
     return (
         <Button onClick={handleClick} disabled={loading}>
             {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-            {loading ? 'Сохранение...' : 'Создать бэкап'}
+            {loading ? t('saving') : t('createBackup')}
         </Button>
     );
 }

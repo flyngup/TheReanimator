@@ -1,9 +1,36 @@
 'use server';
 
+import { headers, cookies } from 'next/headers';
+import { getTranslations } from 'next-intl/server';
+import { routing } from '@/i18n/routing';
 import db from '@/lib/db';
 import fs from 'fs';
 import path from 'path';
 import { performFullBackup, restoreFileToRemote } from '@/lib/backup-logic';
+
+// Helper function to get locale from request
+async function getServerLocale(): Promise<string> {
+    const headersList = await headers();
+    const cookieStore = await cookies();
+
+    // Try to get locale from cookie first
+    const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value;
+    if (cookieLocale && routing.locales.includes(cookieLocale as any)) {
+        return cookieLocale;
+    }
+
+    // Try to get from Accept-Language header
+    const acceptLanguage = headersList.get('accept-language');
+    if (acceptLanguage) {
+        const preferredLocale = acceptLanguage.split(',')[0].split('-')[0];
+        if (routing.locales.includes(preferredLocale as any)) {
+            return preferredLocale;
+        }
+    }
+
+    // Fallback to default locale
+    return routing.defaultLocale;
+}
 
 interface Server {
     id: number;
@@ -35,14 +62,17 @@ export async function getConfigBackups(serverId: number): Promise<ConfigBackup[]
 }
 
 export async function createConfigBackup(serverId: number): Promise<{ success: boolean; message: string; backupId?: number }> {
+    const locale = await getServerLocale();
+    const t = await getTranslations({ locale, namespace: 'actionsConfigBackup' });
+
     const server = db.prepare('SELECT * FROM servers WHERE id = ?').get(serverId) as Server | undefined;
 
     if (!server) {
-        return { success: false, message: 'Сервер не найден' };
+        return { success: false, message: t('serverNotFound') };
     }
 
     if (!server.ssh_key) {
-        return { success: false, message: 'SSH данные отсутствуют' };
+        return { success: false, message: t('sshDataMissing') };
     }
 
     try {
@@ -52,9 +82,11 @@ export async function createConfigBackup(serverId: number): Promise<{ success: b
         return await performFullBackup(serverId, server);
     } catch (err) {
         console.error('[ConfigBackup] Backup failed:', err);
+        const locale = await getServerLocale();
+        const t = await getTranslations({ locale, namespace: 'actionsConfigBackup' });
         return {
             success: false,
-            message: `Ошибка бэкапа: ${err instanceof Error ? err.message : String(err)}`
+            message: t('backupError') + `${err instanceof Error ? err.message : String(err)}`
         };
     }
 }
@@ -125,17 +157,20 @@ export async function readBackupFile(backupId: number, filePath: string) {
 }
 
 export async function deleteConfigBackup(backupId: number) {
+    const locale = await getServerLocale();
+    const t = await getTranslations({ locale, namespace: 'actionsConfigBackup' });
+
     const backup = db.prepare('SELECT * FROM config_backups WHERE id = ?').get(backupId) as ConfigBackup | undefined;
-    if (!backup) return { success: false, message: 'Nicht gefunden' };
+    if (!backup) return { success: false, message: t('notFound') };
 
     try {
         if (fs.existsSync(backup.backup_path)) {
             fs.rmSync(backup.backup_path, { recursive: true });
         }
         db.prepare('DELETE FROM config_backups WHERE id = ?').run(backupId);
-        return { success: true, message: 'Удалено' };
+        return { success: true, message: t('deleted') };
     } catch (e) {
-        return { success: false, message: 'Ошибка при удалении' };
+        return { success: false, message: t('deleteError') };
     }
 }
 export async function restoreFile(backupId: number, filePath: string, serverId: number) {

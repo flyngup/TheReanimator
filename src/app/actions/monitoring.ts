@@ -2,6 +2,39 @@
 
 import { createSSHClient } from '@/lib/ssh';
 import { Server } from './server';
+import { getTranslations } from 'next-intl/server';
+import { headers, cookies } from 'next/headers';
+import { routing } from '@/i18n/routing';
+
+// Helper to get locale in server actions
+async function getServerLocale(): Promise<string> {
+    const headersList = await headers();
+    const cookieStore = await cookies();
+
+    // Try to get locale from cookie (next-intl stores it as 'NEXT_LOCALE')
+    const localeCookie = cookieStore.get('NEXT_LOCALE');
+    if (localeCookie?.value && routing.locales.includes(localeCookie.value as any)) {
+        return localeCookie.value;
+    }
+
+    // Fallback: try referer header
+    const referer = headersList.get('referer') || '';
+    const localeMatch = referer.match(/\/([a-z]{2})\//);
+    if (localeMatch) {
+        const locale = localeMatch[1];
+        if (routing.locales.includes(locale as any)) {
+            return locale;
+        }
+    }
+
+    // Final fallback to default locale
+    return routing.defaultLocale;
+}
+
+async function t(namespace: string) {
+    const locale = await getServerLocale();
+    return getTranslations({ locale, namespace });
+}
 
 export interface NetworkInterface {
     name: string;
@@ -60,18 +93,20 @@ function formatBytesSimple(bytes: number): string {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
-function formatUptime(uptime: string): string {
+async function formatUptime(uptime: string): Promise<string> {
     if (!uptime || uptime === 'Unknown' || uptime === '-') {
         return uptime;
     }
 
+    const t_ = await t('actionsMonitoring');
+
     // Parse "up X weeks, Y days, Z hours, W minutes" format from uptime -p
     const translated = uptime
         .replace(/^up\s*/, '')
-        .replace(/weeks?/, 'недель')
-        .replace(/days?/, 'дней')
-        .replace(/hours?/, 'часов')
-        .replace(/minutes?/, 'минут')
+        .replace(/weeks?/g, t_('weeks'))
+        .replace(/days?/g, t_('days'))
+        .replace(/hours?/g, t_('hours'))
+        .replace(/minutes?/g, t_('minutes'))
         .replace(/,\s*/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
@@ -79,15 +114,17 @@ function formatUptime(uptime: string): string {
     return translated || uptime;
 }
 
-function formatMemoryString(memory: string): string {
+async function formatMemoryString(memory: string): Promise<string> {
     if (!memory || memory === '-') {
         return memory;
     }
 
+    const t_ = await t('actionsMonitoring');
+
     // Parse "251Gi total, 155Gi used" format from free -h
     const translated = memory
-        .replace(/total/, 'всего')
-        .replace(/used/, 'занято')
+        .replace(/total/g, t_('total'))
+        .replace(/used/g, t_('used'))
         .replace(/,/g, ',');
 
     return translated || memory;
@@ -110,13 +147,13 @@ async function getSystemStats(ssh: any) {
             ssh.exec('hostname', 5000).then((o: string) => o.trim()).catch(() => 'Unknown'),
             ssh.exec('cat /etc/os-release | grep PRETTY_NAME | cut -d= -f2 | tr -d \\"', 5000).catch(() => 'Unknown'),
             ssh.exec('uname -r', 5000).then((o: string) => o.trim()).catch(() => 'Unknown'),
-            ssh.exec('uptime -p', 5000).then((o: string) => o.trim()).catch(() => 'Unknown'),
+            ssh.exec('LANG=C uptime -p', 5000).then((o: string) => o.trim()).catch(() => 'Unknown'),
             ssh.exec('grep "model name" /proc/cpuinfo | head -1 | cut -d: -f2', 5000).then((o: string) => o.trim()).catch(() => 'Unknown'),
             ssh.exec('nproc 2>/dev/null || grep -c processor /proc/cpuinfo', 5000).then((o: string) => o.trim()).catch(() => '1'),
             ssh.exec('cat /proc/loadavg | cut -d" " -f1-3', 5000).then((o: string) => o.trim()).catch(() => '0.00 0.00 0.00'),
             ssh.exec(`top -bn1 | grep "Cpu(s)" | awk '{print $2}' | cut -d'%' -f1 2>/dev/null || echo "0"`, 5000).catch(() => '0'),
             ssh.exec(`free -b | grep Mem | awk '{print $2, $3}'`, 5000).catch(() => '0 0'),
-            ssh.exec('free -h | grep Mem | awk \'{print $2 " total, " $3 " used"}\'', 5000).then((o: string) => o.trim()).catch(() => '-')
+            ssh.exec('LANG=C free -h | grep Mem | awk \'{print $2 " total, " $3 " used"}\'', 5000).then((o: string) => o.trim()).catch(() => '-')
         ]);
 
         const cpuCores = parseInt(cpuCoresOutput) || 1;
@@ -131,11 +168,11 @@ async function getSystemStats(ssh: any) {
             hostname,
             os: osRelease.trim(),
             kernel,
-            uptime: formatUptime(uptime),
+            uptime: await formatUptime(uptime),
             cpu: cpuInfo,
             cpuCores,
             cpuUsage,
-            memory: formatMemoryString(memReadable),
+            memory: await formatMemoryString(memReadable),
             memoryTotal,
             memoryUsed,
             memoryUsage,

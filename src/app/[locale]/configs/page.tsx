@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import db from '@/lib/db';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,8 @@ interface ConfigBackup {
     total_size: number;
 }
 
-export default function ConfigsPage() {
+export default async function ConfigsPage() {
+    const t = await getTranslations('configs');
     const servers = db.prepare('SELECT * FROM servers ORDER BY group_name, name').all() as ServerItem[];
     const allBackups = db.prepare('SELECT * FROM config_backups ORDER BY backup_date DESC').all() as ConfigBackup[];
 
@@ -51,20 +53,20 @@ export default function ConfigsPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-3xl font-bold">Конфигурации</h1>
-                <p className="text-muted-foreground">Резервное копирование и восстановление конфигураций серверов</p>
+                <h1 className="text-3xl font-bold">{t('title')}</h1>
+                <p className="text-muted-foreground">{t('subtitle')}</p>
             </div>
 
             {servers.length === 0 ? (
                 <Card className="border-dashed">
                     <CardContent className="flex flex-col items-center justify-center py-12">
                         <Server className="h-12 w-12 text-muted-foreground mb-4" />
-                        <h3 className="text-lg font-semibold mb-2">Нет серверов</h3>
+                        <h3 className="text-lg font-semibold mb-2">{t('noServers')}</h3>
                         <p className="text-muted-foreground text-center mb-4">
-                            Добавьте сервер для резервного копирования конфигураций.
+                            {t('noServersDesc')}
                         </p>
                         <Link href="/servers/new">
-                            <Button>Добавить сервер</Button>
+                            <Button>{t('addServer')}</Button>
                         </Link>
                     </CardContent>
                 </Card>

@@ -2,13 +2,49 @@
 
 import { getServer } from './server';
 import { createSSHClient } from '@/lib/ssh';
+import { getTranslations } from 'next-intl/server';
+import { headers, cookies } from 'next/headers';
+import { routing } from '@/i18n/routing';
+
+// Helper to get locale in server actions
+async function getServerLocale(): Promise<string> {
+    const headersList = await headers();
+    const cookieStore = await cookies();
+
+    // Try to get locale from cookie (next-intl stores it as 'NEXT_LOCALE')
+    const localeCookie = cookieStore.get('NEXT_LOCALE');
+    if (localeCookie?.value && routing.locales.includes(localeCookie.value as any)) {
+        return localeCookie.value;
+    }
+
+    // Fallback: try referer header
+    const referer = headersList.get('referer') || '';
+    const localeMatch = referer.match(/\/([a-z]{2})\//);
+    if (localeMatch) {
+        const locale = localeMatch[1];
+        if (routing.locales.includes(locale as any)) {
+            return locale;
+        }
+    }
+
+    // Final fallback to default locale
+    return routing.defaultLocale;
+}
+
+async function t(namespace: string) {
+    const locale = await getServerLocale();
+    return getTranslations({ locale, namespace });
+}
 
 // --- Single Trust Setup ---
 export async function setupSSHTrust(sourceId: number, targetId: number, rootPassword: string): Promise<string> {
     const source = await getServer(sourceId);
     const target = await getServer(targetId);
 
-    if (!source || !target) throw new Error('Сервер не найден');
+    if (!source || !target) {
+        const trustT = await t('actionsTrust');
+        throw new Error(trustT('serverNotFound'));
+    }
 
     // 1. Source Key
     const sourceSsh = createSSHClient(source);
@@ -57,9 +93,11 @@ export async function setupSSHTrust(sourceId: number, targetId: number, rootPass
             await targetSsh.exec(`echo "${pubKey.trim()}" >> ~/.ssh/authorized_keys`);
             await targetSsh.exec('chmod 600 ~/.ssh/authorized_keys');
         }
-        return 'SSH Trust успешно настроен!';
+        const trustT = await t('actionsTrust');
+        return trustT('sshTrustSetupSuccess');
     } catch (e: any) {
-        throw new Error(`Подключение к целевому серверу не удалось: ${e.message}`);
+        const trustT = await t('actionsTrust');
+        throw new Error(`${trustT('targetConnectionFailed')}${e.message}`);
     } finally {
         await targetSsh.disconnect();
     }

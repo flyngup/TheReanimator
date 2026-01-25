@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import db from '@/lib/db';
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,15 +37,16 @@ export default async function ServerDetailPage({
 }) {
     const { id } = await params;
     const serverId = parseInt(id);
+    const t = await getTranslations('servers');
 
     const server = db.prepare('SELECT * FROM servers WHERE id = ?').get(serverId) as ServerItem | undefined;
 
     if (!server) {
         return (
             <div className="text-center py-20">
-                <h1 className="text-2xl font-bold">Сервер не найден</h1>
+                <h1 className="text-2xl font-bold">{t('serverNotFound')}</h1>
                 <Link href="/servers">
-                    <Button className="mt-4">Назад</Button>
+                    <Button className="mt-4">{t('overview')}</Button>
                 </Link>
             </div>
         );
@@ -67,7 +69,7 @@ export default async function ServerDetailPage({
                 <Card className="border-amber-500/50 bg-amber-500/10">
                     <CardContent className="p-6">
                         <p className="text-amber-400">
-                            Ошибка SSH соединения. Проверьте учетные данные SSH.
+                            {t('sshConnectionError')}
                         </p>
                     </CardContent>
                 </Card>
@@ -76,28 +78,28 @@ export default async function ServerDetailPage({
                     <TabsList className="bg-background border h-auto p-1">
                         <TabsTrigger value="overview" className="gap-2 px-4 py-2">
                             <LayoutDashboard className="h-4 w-4" />
-                            Обзор
+                            {t('overview')}
                         </TabsTrigger>
                         <TabsTrigger value="vms" className="gap-2 px-4 py-2">
                             <Monitor className="h-4 w-4" />
-                            ВМ и Контейнеры
+                            {t('vmsAndContainers')}
                             <span className="bg-muted px-1.5 py-0.5 rounded-full text-[10px]">{vms.length}</span>
                         </TabsTrigger>
                         <TabsTrigger value="health" className="gap-2 px-4 py-2">
                             <ShieldCheck className="h-4 w-4" />
-                            Здоровье и безопасность
+                            {t('healthAndSecurity')}
                         </TabsTrigger>
                         <TabsTrigger value="hardware" className="gap-2 px-4 py-2">
                             <HardDrive className="h-4 w-4" />
-                            Оборудование
+                            {t('hardware')}
                         </TabsTrigger>
                         <TabsTrigger value="network" className="gap-2 px-4 py-2">
                             <NetworkIcon className="h-4 w-4" />
-                            Сеть
+                            {t('network')}
                         </TabsTrigger>
                         <TabsTrigger value="debug" className="gap-2 px-4 py-2">
                             <Terminal className="h-4 w-4" />
-                            Отладка
+                            {t('debug')}
                         </TabsTrigger>
                     </TabsList>
 
@@ -130,7 +132,7 @@ export default async function ServerDetailPage({
                         <Card className="overflow-hidden border-muted/60 bg-muted/5">
                             <CardContent className="p-0">
                                 <div className="p-4 bg-black/80 font-mono text-xs text-green-500 overflow-x-auto max-h-[500px] whitespace-pre-wrap">
-                                    {info.debug?.join('\n') || 'Логи отладки недоступны'}
+                                    {info.debug?.join('\n') || t('debugLogsNotAvailable')}
                                 </div>
                             </CardContent>
                         </Card>

@@ -4,6 +4,9 @@ import path from 'path';
 import * as tar from 'tar';
 import db, { getBackupDir } from '@/lib/db';
 import { createSSHClient } from '@/lib/ssh';
+import { getTranslations } from 'next-intl/server';
+import { routing } from '@/i18n/routing';
+import { headers } from 'next/headers';
 
 // Paths to backup
 const BACKUP_PATHS = [
@@ -31,36 +34,50 @@ function formatBytes(bytes: number): string {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
-function createRecoveryGuide(server: Server, date: Date): string {
-    const dateStr = date.toLocaleString('ru-RU', { dateStyle: 'full', timeStyle: 'short' });
-    return `# 🔧 Инструкция по аварийному восстановлению
+async function getServerLocale(): Promise<string> {
+    try {
+        const headersList = await headers();
+        const locale = headersList.get('x-locale') || routing.defaultLocale;
+        return locale;
+    } catch {
+        return routing.defaultLocale;
+    }
+}
 
-## Информация о сервере
-| Свойство | Значение |
+async function createRecoveryGuide(server: Server, date: Date): Promise<string> {
+    const locale = await getServerLocale();
+    const t = await getTranslations({ locale, namespace: 'backupLogic' });
+
+    // Format date according to locale
+    const dateStr = date.toLocaleString(locale, { dateStyle: 'full', timeStyle: 'short' });
+
+    return `# ${t('instructionsTitle')}
+
+## ${t('serverInfo')}
+| ${t('property')} | ${t('value')} |
 |----------|----------|
-| **Имя** | ${server.name} |
-| **Тип** | ${server.type.toUpperCase()} |
-| **Дата бэкапа** | ${dateStr} |
+| **${t('name')}** | ${server.name} |
+| **${t('type')}** | ${server.type.toUpperCase()} |
+| **${t('backupDate')}** | ${dateStr} |
 
 ---
 
-## ⚠️ Важное примечание
-Эта инструкция проведёт вас через восстановление сервера после полного сбоя.
-Все команды выполнять с \`sudo\` или войдя как Root.
+## ${t('importantNote')}
+${t('noteDescription')}
 
 ---
 
-## Шаг 1: Установка операционной системы
-1. Скачать Proxmox VE ISO (такая же или более новая версия)
-2. Загрузиться с USB/CD и установить
-3. **Важно:** Использовать то же имя хоста: \`${server.name}\`
-4. Использовать тот же IP-адрес и сетевую конфигурацию (см. SYSTEM_INFO.txt)
+## ${t('step1Title')}
+1. ${t('step1_1')}
+2. ${t('step1_2')}
+3. ${t('step1_3', { hostname: server.name })}
+4. ${t('step1_4')}
 
 ---
 
-## Шаг 2: Подготовка SSH-доступа
+## ${t('step2Title')}
 \`\`\`bash
-# Скопировать SSH-ключ из бэкапа
+${t('step2CopyKey')}
 mkdir -p /root/.ssh
 cp <backup>/root/.ssh/authorized_keys /root/.ssh/
 chmod 600 /root/.ssh/authorized_keys
@@ -68,68 +85,68 @@ chmod 600 /root/.ssh/authorized_keys
 
 ---
 
-## Шаг 3: Восстановление сетевой конфигурации
+## ${t('step3Title')}
 \`\`\`bash
-# Резервная копия текущей сетевой конфигурации
+${t('step3Backup')}
 cp /etc/network/interfaces /etc/network/interfaces.bak
 
-# Копировать конфигурацию из бэкапа
+${t('step3Copy')}
 cp <backup>/etc/network/interfaces /etc/network/interfaces
 
-# Перезапустить сеть
+${t('step3Restart')}
 systemctl restart networking
 \`\`\`
 
 ---
 
-## Шаг 4: Восстановление конфигурации Proxmox
+## ${t('step4Title')}
 \`\`\`bash
-# Конфигурации VM/CT
+${t('step4VM')}
 cp -r <backup>/etc/pve/* /etc/pve/
 
-# Конфигурация хранилища
+${t('step4Storage')}
 cp <backup>/etc/pve/storage.cfg /etc/pve/storage.cfg
 \`\`\`
 
 ---
 
-## Шаг 5: Восстановление хранилища
-1. Проверьте \`SYSTEM_INFO.txt\` для UUID дисков
-2. Новые диски имеют другие UUID → настроить \`/etc/fstab\`!
+## ${t('step5Title')}
+1. ${t('step5_1')}
+2. ${t('step5_2')}
 
 \`\`\`bash
-# Показать UUID новых дисков
+${t('step5ShowUUID')}
 blkid
 
-# Настроить fstab
+${t('step5ConfigureFstab')}
 nano /etc/fstab
 \`\`\`
 
 ---
 
-## Шаг 6: Проверка служб
+## ${t('step6Title')}
 \`\`\`bash
-# Перезапустить службы Proxmox
+${t('step6Restart')}
 systemctl restart pvedaemon pveproxy pvestatd
 
-# Проверить статус
-pvecm status  # Статус кластера
-pvesh get /nodes  # Проверить ноды
+${t('step6CheckStatus')}
+pvecm status  ${t('step6Cluster')}
+pvesh get /nodes  ${t('step6Nodes')}
 \`\`\`
 
 ---
 
-## 📋 Контрольный список после восстановления
-- [ ] Сеть доступна (Ping-тест)
-- [ ] Веб-интерфейс доступен по https://<IP>:8006
-- [ ] Все VM/CT видны
-- [ ] Хранилище корректно смонтировано
-- [ ] Бэкапы снова настроены
+## ${t('checklistTitle')}
+- [ ] ${t('checklist_1')}
+- [ ] ${t('checklist_2')}
+- [ ] ${t('checklist_3')}
+- [ ] ${t('checklist_4')}
+- [ ] ${t('checklist_5')}
 
 ---
 
-## 📞 Поддержка
-При проблемах: проверить логи с помощью \`journalctl -xe\` или \`dmesg\`
+## ${t('supportTitle')}
+${t('supportDescription')}
 `;
 }
 
@@ -263,7 +280,7 @@ export async function performFullBackup(serverId: number, server: Server) {
         }
 
         // 6. Metadata
-        const recoveryGuide = createRecoveryGuide(server, new Date());
+        const recoveryGuide = await createRecoveryGuide(server, new Date());
         fs.writeFileSync(path.join(destPath, 'WIEDERHERSTELLUNG.md'), recoveryGuide);
 
         ssh.disconnect();
@@ -278,9 +295,12 @@ export async function performFullBackup(serverId: number, server: Server) {
             VALUES (?, ?, ?, ?, ?)
         `).run(serverId, destPath, totalFiles, totalSize, 'complete');
 
+        // Get translations for success message
+        const tSuccess = await getTranslations({ locale: await getServerLocale(), namespace: 'backupLogic' });
+
         return {
             success: true,
-            message: `Бэкап успешно создан: ${totalFiles} файлов (${formatBytes(totalSize)})`,
+            message: tSuccess('backupSuccess', { files: totalFiles, size: formatBytes(totalSize) }),
             backupId: result.lastInsertRowid as number
         };
 
@@ -294,14 +314,18 @@ export async function restoreFileToRemote(serverId: number, backupId: number, re
     const backup = db.prepare('SELECT * FROM config_backups WHERE id = ?').get(backupId) as { backup_path: string } | undefined;
     const server = db.prepare('SELECT * FROM servers WHERE id = ?').get(serverId) as Server | undefined;
 
-    if (!backup || !server) throw new Error('Бэкап или сервер не найден');
+    // Get translations for error messages
+    const locale = await getServerLocale();
+    const t = await getTranslations({ locale, namespace: 'backupLogic' });
+
+    if (!backup || !server) throw new Error(t('backupNotFound'));
 
     // Security: Validate path
     const normalized = path.normalize(relativePath).replace(/^(\.\.[\/\\])+/, '');
     const localPath = path.join(backup.backup_path, normalized);
 
-    if (!localPath.startsWith(backup.backup_path)) throw new Error('Недопустимый путь');
-    if (!fs.existsSync(localPath)) throw new Error('Файл не найден в бэкапе');
+    if (!localPath.startsWith(backup.backup_path)) throw new Error(t('invalidPath'));
+    if (!fs.existsSync(localPath)) throw new Error(t('fileNotFound'));
 
     const ssh = createSSHClient(server);
     await ssh.connect();
@@ -311,7 +335,7 @@ export async function restoreFileToRemote(serverId: number, backupId: number, re
         const remotePath = '/' + normalized;
         await ssh.uploadFile(localPath, remotePath);
         ssh.disconnect();
-        return { success: true, message: `Datei wiederhergestellt: ${remotePath}` };
+        return { success: true, message: t('fileRestored', { path: remotePath }) };
     } catch (e) {
         ssh.disconnect();
         throw e;

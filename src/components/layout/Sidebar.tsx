@@ -1,7 +1,6 @@
 'use client';
 
 import { getAISettings } from '@/app/actions/ai';
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { LayoutDashboard, Server, FolderCog, ArrowRightLeft, Tag as TagIcon, HardDrive, Users, Terminal, Activity, ListTodo, Calendar, TrendingUp, Disc } from 'lucide-react';
@@ -10,6 +9,7 @@ import { APP_VERSION, IS_BETA } from '@/lib/constants';
 import { UserNav } from './UserNav';
 import { useTranslations, useLocale } from 'next-intl';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { Link } from '@/i18n/routing';
 
 // Keep navItems outside component as const (like original)
 const navItems = [

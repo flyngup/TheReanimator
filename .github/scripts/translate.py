@@ -1,133 +1,142 @@
+#!/usr/bin/env python3
+"""
+DeepL Auto-Translation Script for TheReanimator-i18n
+
+Translates new keys from German (de.json) to other languages (en, ru, etc.)
+"""
 import json
 import os
-import requests
+import sys
 from pathlib import Path
 
-DEEPL_API_KEY = os.environ.get("DEEPL_API_KEY", "")
+try:
+    import requests
+except ImportError:
+    print("❌ Error: requests module not found")
+    print("   Run: pip install requests")
+    sys.exit(1)
+
+# Configuration
+DEEPL_API_KEY = os.environ.get("DEEPL_API_KEY")
+if not DEEPL_API_KEY:
+    print("❌ Error: DEEPL_API_KEY environment variable not set")
+    print("   Set it in GitHub Secrets: DEEPL_API_KEY")
+    sys.exit(1)
+
 DEEPL_URL = "https://api-free.deepl.com/v2/translate"
-SRC_LANG = "DE"  # German - base language
-TARGET_LANGS = ["EN", "RU"]  # English, Russian
+SRC_LANG = "DE"  # German - source language
+TARGET_LANGS = {
+    "EN": "en",
+    "RU": "ru",
+    # Add more languages here: ES (Spanish), FR (French), etc.
+}
 LOCALES_DIR = Path("src/messages")
 
-def translate_text(text, target_lang):
-    """Translate text using DeepL API."""
-    if not text or not text.strip():
+def get_all_namespaces():
+    """Get all JSON files from de directory (source of truth)"""
+    de_dir = LOCALES_DIR / "de"
+    if not de_dir.exists():
+        print(f"❌ Error: Directory {de_dir} not found")
+        return []
+
+    return [f.stem for f in de_dir.glob("*.json") if f.is_file()]
+
+def translate_text(text: str, target_lang: str) -> str:
+    """Translate text using DeepL API"""
+    if not text.strip():
         return text
 
-    headers = {
-        "Authorization": f"DeepL-Auth-Key {DEEPL_API_KEY}"
-    }
-
-    data = {
-        "text": text,
-        "source_lang": SRC_LANG,
-        "target_lang": target_lang,
-        "tag_handling": "xml"
-    }
+    # Skip if already contains HTML/React placeholders
+    if text.startswith("__") and text.endswith("__"):
+        return text
 
     try:
-        resp = requests.post(DEEPL_URL, headers=headers, data=data, timeout=30)
-        resp.raise_for_status()
-        return resp.json()["translations"][0]["text"]
-    except requests.exceptions.RequestException as e:
-        print(f"    ✗ Translation error: {e}")
-        return None
-
-def load_json_file(file_path):
-    """Load JSON file if it exists."""
-    if file_path.exists():
-        with open(file_path, encoding="utf-8") as f:
-            return json.load(f)
-    return {}
-
-def save_json_file(file_path, data):
-    """Save JSON file with proper formatting."""
-    file_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(file_path, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-
-def flatten_keys(d, parent_key='', sep='.'):
-    """Flatten nested dictionary."""
-    items = []
-    for k, v in d.items():
-        new_key = f"{parent_key}{sep}{k}" if parent_key else k
-        if isinstance(v, dict):
-            items.extend(flatten_keys(v, new_key, sep=sep).items())
-        else:
-            items.append((new_key, v))
-    return dict(items)
-
-def unflatten_keys(d, sep='.'):
-    """Unflatten dictionary."""
-    result = {}
-    for key, value in d.items():
-        parts = key.split(sep)
-        d = result
-        for part in parts[:-1]:
-            if part not in d:
-                d[part] = {}
-            d = d[part]
-        d[parts[-1]] = value
-    return result
+        response = requests.post(
+            DEEPL_URL,
+            headers={"Authorization": f"DeepL-Auth-Key {DEEPL_API_KEY}"},
+            data={
+                "text": text,
+                "source_lang": SRC_LANG,
+                "target_lang": target_lang,
+                "tag_handling": "xml",
+                "preserve_formating": True
+            },
+            timeout=10
+        )
+        response.raise_for_status()
+        return response.json()["translations"][0]["text"]
+    except Exception as e:
+        print(f"      ❌ Translation error: {e}")
+        return text  # Return original on error
 
 def main():
-    print("🌍 Starting DeepL translation...")
+    print("🌍 Starting DeepL Auto-Translation...")
+    print(f"   Source: German (de.json)")
+    print(f"   Targets: {', '.join(TARGET_LANGS.values())}")
+    print()
 
-    if not DEEPL_API_KEY:
-        print("❌ DEEPL_API_KEY environment variable not set!")
+    namespaces = get_all_namespaces()
+    if not namespaces:
+        print("❌ No namespaces found")
         return
 
-    # Load German (source) translations
-    de_file = LOCALES_DIR / "de.json"
-    if not de_file.exists():
-        print(f"❌ Source file {de_file} not found!")
-        return
+    total_translations = 0
 
-    with open(de_file, encoding="utf-8") as f:
-        de_data = json.load(f)
+    for ns in namespaces:
+        src_file = LOCALES_DIR / "de" / f"{ns}.json"
 
-    print(f"📦 Loaded German translations: {len(flatten_keys(de_data))} keys")
-
-    # Process each target language
-    for dl_lang in TARGET_LANGS:
-        lang_code = dl_lang.lower()
-        target_file = LOCALES_DIR / f"{lang_code}.json"
-
-        print(f"\n🌐 Processing {lang_code.upper()}...")
-
-        # Load existing translations
-        target_data = load_json_file(target_file)
-        target_flat = flatten_keys(target_data)
-        de_flat = flatten_keys(de_data)
-
-        # Find missing or empty keys
-        missing_keys = [
-            (key, text)
-            for key, text in de_flat.items()
-            if key not in target_flat or not target_flat[key]
-        ]
-
-        if not missing_keys:
-            print(f"   ✅ All {len(de_flat)} keys present")
+        if not src_file.exists():
+            print(f"⚠️  Skipping {ns} - source file not found")
             continue
 
-        print(f"   📝 Translating {len(missing_keys)} missing keys")
+        with open(src_file, encoding="utf-8") as f:
+            src_data = json.load(f)
 
-        # Translate missing keys
-        translated_count = 0
-        for key, text in missing_keys:
-            translated = translate_text(text, dl_lang)
-            if translated:
-                target_flat[key] = translated
-                translated_count += 1
-                print(f"      ✓ {key}")
+        print(f"📦 Processing namespace: {ns}")
+        print(f"   Keys: {len(src_data)}")
 
-        # Save updated translations
-        target_data = unflatten_keys(target_flat)
-        save_json_file(target_file, target_data)
-        print(f"   💾 Saved {translated_count} translations to {lang_code}.json")
+        for dl_lang, lang_code in TARGET_LANGS.items():
+            target_file = LOCALES_DIR / lang_code / f"{ns}.json"
 
-    print("\n✅ Translation complete!")
+            # Load existing translations
+            try:
+                with open(target_file, encoding="utf-8") as f:
+                    target_data = json.load(f)
+            except:
+                target_data = {}
+
+            # Find missing keys
+            missing_keys = [
+                (key, text)
+                for key, text in src_data.items()
+                if key not in target_data or not target_data[key]
+            ]
+
+            if not missing_keys:
+                print(f"   {lang_code}: ✅ All keys present")
+                continue
+
+            print(f"   {lang_code}: Translating {len(missing_keys)} missing keys")
+
+            # Translate missing keys
+            for key, text in missing_keys:
+                translated = translate_text(text, dl_lang)
+                target_data[key] = translated
+                print(f"      ✓ {key}: {text[:30]}...")
+                total_translations += 1
+
+            # Save updated translations
+            target_file.parent.mkdir(parents=True, exist_ok=True)
+            with open(target_file, "w", encoding="utf-8") as f:
+                json.dump(target_data, f, ensure_ascii=False, indent=2)
+
+            print(f"   {lang_code}: ✅ Saved {len(target_data)} keys")
+
+        print()
+
+    print(f"✅ Translation complete!")
+    print(f"   Total translations: {total_translations}")
+    print(f"   DeepL quota used: ~{total_translations} requests")
 
 if __name__ == "__main__":
     main()

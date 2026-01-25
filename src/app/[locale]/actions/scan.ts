@@ -1,5 +1,8 @@
 'use server';
 
+import { headers, cookies } from 'next/headers';
+import { getTranslations } from 'next-intl/server';
+import { routing } from '@/i18n/routing';
 import db from '@/lib/db';
 import { createSSHClient } from '@/lib/ssh';
 import { getServer, determineNodeName } from './vm';
@@ -7,6 +10,30 @@ import { getVMs, getVMConfig } from './vm';
 import { analyzeConfigWithAI, analyzeHostWithAI, HealthResult, getAISettings } from './ai';
 import { runNetworkAnalysis } from './network_analysis';
 import { getCurrentUser } from './userAuth';
+
+// Helper function to get locale from request
+async function getServerLocale(): Promise<string> {
+    const headersList = await headers();
+    const cookieStore = await cookies();
+
+    // Try to get locale from cookie first
+    const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value;
+    if (cookieLocale && routing.locales.includes(cookieLocale as any)) {
+        return cookieLocale;
+    }
+
+    // Try to get from Accept-Language header
+    const acceptLanguage = headersList.get('accept-language');
+    if (acceptLanguage) {
+        const preferredLocale = acceptLanguage.split(',')[0].split('-')[0];
+        if (routing.locales.includes(preferredLocale as any)) {
+            return preferredLocale;
+        }
+    }
+
+    // Fallback to default locale
+    return routing.defaultLocale;
+}
 
 export interface ScanResult {
     id: number;
@@ -32,9 +59,12 @@ export async function scanAllVMs(serverId: number) {
     const user = await getCurrentUser();
     if (!user) throw new Error('Unauthorized');
 
+    const locale = await getServerLocale();
+    const t = await getTranslations({ locale, namespace: 'actionsScan' });
+
     try {
         const settings = await getAISettings();
-        if (!settings.enabled) return { success: false, error: 'AI ist deaktiviert.' };
+        if (!settings.enabled) return { success: false, error: t('aiDisabled') };
 
         const vms = await getVMs(serverId);
 
@@ -78,8 +108,11 @@ export async function scanHost(serverId: number) {
     const user = await getCurrentUser();
     if (!user) throw new Error('Unauthorized');
 
+    const locale = await getServerLocale();
+    const t = await getTranslations({ locale, namespace: 'actionsScan' });
+
     const settings = await getAISettings();
-    if (!settings.enabled) return { success: false, error: 'AI ist deaktiviert.' };
+    if (!settings.enabled) return { success: false, error: t('aiDisabled') };
 
     const server = await getServer(serverId);
     if (!server) throw new Error('Server not found');
@@ -146,6 +179,9 @@ export async function runServerScan(serverId: number) {
     const server = await getServer(serverId);
     if (!server) return; // Should not happen
 
+    const locale = await getServerLocale();
+    const t = await getTranslations({ locale, namespace: 'actionsScan' });
+
     // Create a job log for this specific server scan
     // We assume check for existing "Scan Node X" job definition or create ad-hoc log?
     // Using a generic 'scan' job definition or just inserting history with null job_id (if allowed) or a placeholder.
@@ -155,17 +191,17 @@ export async function runServerScan(serverId: number) {
     // Looking at previous code, it created a 'Global Scan' job.
     // Let's create/use a "Scan Node: [Name]" job definition to be clean.
 
-    let jobDef = db.prepare("SELECT id FROM jobs WHERE name = ? AND job_type = 'scan'").get(`Сканирование узла: ${server.name}`) as { id: number };
+    let jobDef = db.prepare("SELECT id FROM jobs WHERE name = ? AND job_type = 'scan'").get(`${t('scanNode')}: ${server.name}`) as { id: number };
     if (!jobDef) {
         const info = db.prepare(`
             INSERT INTO jobs (name, job_type, schedule, enabled, source_server_id, target_server_id)
             VALUES (?, 'scan', '@manual', 1, ?, ?)
-        `).run(`Сканирование узла: ${server.name}`, server.id, server.id);
+        `).run(`${t('scanNode')}: ${server.name}`, server.id, server.id);
         jobDef = { id: Number(info.lastInsertRowid) };
     }
 
     // Start History Log
-    const historyInfo = db.prepare("INSERT INTO history (job_id, start_time, status, log) VALUES (?, ?, 'running', ?)").run(jobDef.id, new Date().toISOString(), `Запуск полного сканирования для ${server.name}...`);
+    const historyInfo = db.prepare("INSERT INTO history (job_id, start_time, status, log) VALUES (?, ?, 'running', ?)").run(jobDef.id, new Date().toISOString(), `${t('startingFullScan')} ${server.name}...`);
     const historyId = historyInfo.lastInsertRowid;
 
     const updateLog = (msg: string) => {
@@ -174,28 +210,28 @@ export async function runServerScan(serverId: number) {
 
     try {
         // 1. Scan Host Files
-        updateLog(`[1/3] Получение системных файлов...`);
+        updateLog(t('fetchingSystemFiles'));
         const hostRes = await scanHost(server.id);
         if (!hostRes.success) throw new Error(hostRes.error);
 
         // 2. Network Analysis
-        updateLog(`[2/3] Анализ сети (AI)...`);
+        updateLog(t('analyzingNetwork'));
         try {
             await runNetworkAnalysis(server.id);
-            updateLog(`  -> Анализ AI завершён.`);
+            updateLog(t('aiAnalysisCompleted'));
         } catch (e: any) {
-            updateLog(`  -> Предупреждение AI: ${e.message}`);
+            updateLog(t('aiWarning') + `${e.message}`);
         }
 
         // 3. Scan VMs
-        updateLog(`[3/3] Сканирование VM и контейнеров...`);
+        updateLog(t('scanningVMs'));
         const vmRes = await scanAllVMs(server.id);
-        if (vmRes.success) {
-            updateLog(`  -> Обработано ${vmRes.count} VM.`);
+        if (vmRes.success && vmRes.count !== undefined) {
+            updateLog(t('processed', { count: vmRes.count }));
         }
 
         // Finish
-        db.prepare("UPDATE history SET end_time = ?, status = 'success', log = log || '\n' || ? WHERE id = ?").run(new Date().toISOString(), "Сканирование завершено успешно.", historyId);
+        db.prepare("UPDATE history SET end_time = ?, status = 'success', log = log || '\n' || ? WHERE id = ?").run(new Date().toISOString(), t('scanCompleted'), historyId);
 
     } catch (e: any) {
         console.error(`Scan failed for ${server.name}:`, e);
@@ -204,15 +240,18 @@ export async function runServerScan(serverId: number) {
 }
 
 export async function scanEntireInfrastructure() {
-    console.log('[Глобальное сканирование] Запущено.');
+    const locale = await getServerLocale();
+    const t = await getTranslations({ locale, namespace: 'actionsScan' });
+
+    console.log(t('globalScanRunning'));
 
     // We create a "Meta" task just to say "Triggered"
-    let globalJob = db.prepare("SELECT id FROM jobs WHERE name = ?").get('Глобальное сканирование') as { id: number };
+    let globalJob = db.prepare("SELECT id FROM jobs WHERE name = ?").get(t('globalScan')) as { id: number };
     if (!globalJob) {
         // Fallback create if missing (using first server as dummy ID if needed)
         const srv = db.prepare('SELECT id FROM servers LIMIT 1').get() as { id: number };
         if (srv) {
-            const info = db.prepare("INSERT INTO jobs (name, job_type, schedule, enabled, source_server_id, target_server_id) VALUES (?, 'scan', '@manual', 1, ?, ?)").run('Глобальное сканирование', srv.id, srv.id);
+            const info = db.prepare("INSERT INTO jobs (name, job_type, schedule, enabled, source_server_id, target_server_id) VALUES (?, 'scan', '@manual', 1, ?, ?)").run(t('globalScan'), srv.id, srv.id);
             globalJob = { id: Number(info.lastInsertRowid) };
         }
     }
@@ -222,7 +261,7 @@ export async function scanEntireInfrastructure() {
             globalJob.id,
             new Date().toISOString(),
             new Date().toISOString(),
-            'Глобальное сканирование запущено. Проверьте отдельные задачи "Сканирование узла: X" для прогресса.'
+            t('globalScanStarted')
         );
     }
 
@@ -231,11 +270,11 @@ export async function scanEntireInfrastructure() {
 
         // Dispatch all scans in parallel (fire and forget from this main thread's perspective)
         servers.forEach(server => {
-            console.log(`[Глобальное сканирование] Отправка сканирования для ${server.name}...`);
-            runServerScan(server.id).catch(e => console.error(`[Фон] Задача сканирования для ${server.name} ошибка:`, e));
+            console.log(t('dispatchingScan') + ` ${server.name}...`);
+            runServerScan(server.id).catch(e => console.error(t('backgroundScanError') + ` ${server.name}: ` + t('error') + `:`, e));
         });
 
-        return { success: true, message: `Запущено ${servers.length} фоновых сканирований.` };
+        return { success: true, message: t('backgroundScansLaunched', { count: servers.length }) };
     } catch (e: any) {
         return { success: false, error: e.message };
     }

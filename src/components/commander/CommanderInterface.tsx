@@ -10,6 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Server, Monitor, Play, AlertTriangle, CheckCircle2, XCircle, ChevronDown, ChevronRight, Terminal } from "lucide-react";
 import { runBulkNodeCommand, runBulkVMCommand, CommandResult } from '@/app/actions/commander';
 import { toast } from "sonner";
+import { useTranslations } from 'next-intl';
 
 interface CommanderInterfaceProps {
     servers: any[];
@@ -17,6 +18,7 @@ interface CommanderInterfaceProps {
 }
 
 export function CommanderInterface({ servers, vms }: CommanderInterfaceProps) {
+    const t = useTranslations('commander');
     const [mode, setMode] = useState<'nodes' | 'vms'>('nodes');
     const [selectedNodes, setSelectedNodes] = useState<number[]>([]);
     const [selectedVMs, setSelectedVMs] = useState<number[]>([]);
@@ -60,9 +62,9 @@ export function CommanderInterface({ servers, vms }: CommanderInterfaceProps) {
                 res = await runBulkVMCommand(selectedVMs, command);
             }
             setResults(res);
-            toast.success("Команда выполнена", { description: `Обработано ${res.length} целей.` });
+            toast.success(t('commandExecuted'), { description: t('processed', { count: res.length }) });
         } catch (e: any) {
-            toast.error("Ошибка", { description: e.message });
+            toast.error(t('error'), { description: e.message });
         } finally {
             setExecuting(false);
         }
@@ -76,8 +78,8 @@ export function CommanderInterface({ servers, vms }: CommanderInterfaceProps) {
                     <CardHeader>
                         <Tabs value={mode} onValueChange={(v) => setMode(v as any)} className="w-full">
                             <TabsList className="grid w-full grid-cols-2">
-                                <TabsTrigger value="nodes">Серверы (Nodes)</TabsTrigger>
-                                <TabsTrigger value="vms">Виртуальные машины</TabsTrigger>
+                                <TabsTrigger value="nodes">{t('servers')}</TabsTrigger>
+                                <TabsTrigger value="vms">{t('vms')}</TabsTrigger>
                             </TabsList>
                         </Tabs>
                     </CardHeader>
@@ -91,7 +93,7 @@ export function CommanderInterface({ servers, vms }: CommanderInterfaceProps) {
                                                 checked={selectedNodes.length === servers.length && servers.length > 0}
                                                 onCheckedChange={toggleAllNodes}
                                             />
-                                            <span className="text-sm font-medium">Выбрать все ({servers.length})</span>
+                                            <span className="text-sm font-medium">{t('selectAll', { count: servers.length })}</span>
                                         </div>
                                         {servers.map(node => (
                                             <div key={node.id} className="flex items-center space-x-2 p-2 hover:bg-muted/10 rounded">
@@ -112,7 +114,7 @@ export function CommanderInterface({ servers, vms }: CommanderInterfaceProps) {
                                                 checked={selectedVMs.length === vms.length && vms.length > 0}
                                                 onCheckedChange={toggleAllVMs}
                                             />
-                                            <span className="text-sm font-medium">Выбрать все ({vms.length})</span>
+                                            <span className="text-sm font-medium">{t('selectAll', { count: vms.length })}</span>
                                         </div>
                                         {vms.map(vm => (
                                             <div key={vm.id} className="flex items-center space-x-2 p-2 hover:bg-muted/10 rounded">
@@ -136,8 +138,8 @@ export function CommanderInterface({ servers, vms }: CommanderInterfaceProps) {
                 <Card className={`border-muted/60 ${isDestructive ? 'border-red-500/50 bg-red-500/5' : ''}`}>
                     <CardHeader className="py-3">
                         <CardTitle className="text-sm flex items-center justify-between">
-                            <span>Командная строка</span>
-                            {isDestructive && <span className="text-red-500 flex items-center gap-1 text-xs"><AlertTriangle className="h-3 w-3" /> Внимание: Деструктивно</span>}
+                            <span>{t('commandLine')}</span>
+                            {isDestructive && <span className="text-red-500 flex items-center gap-1 text-xs"><AlertTriangle className="h-3 w-3" /> {t('destructiveWarning')}</span>}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -154,7 +156,7 @@ export function CommanderInterface({ servers, vms }: CommanderInterfaceProps) {
                                 variant={isDestructive ? "destructive" : "default"}
                             >
                                 {executing ? <Terminal className="h-4 w-4 animate-spin mr-2" /> : <Play className="h-4 w-4 mr-2" />}
-                                Выполнить
+                                {t('execute')}
                             </Button>
                         </div>
                     </CardContent>
@@ -165,14 +167,14 @@ export function CommanderInterface({ servers, vms }: CommanderInterfaceProps) {
             <div className="lg:col-span-1">
                 <Card className="h-full border-muted/60 flex flex-col">
                     <CardHeader className="py-4">
-                        <CardTitle className="text-sm">Вывод</CardTitle>
+                        <CardTitle className="text-sm">{t('output')}</CardTitle>
                     </CardHeader>
                     <CardContent className="flex-1 p-0 relative min-h-[400px]">
                         <ScrollArea className="absolute inset-0">
                             <div className="p-4 space-y-2">
                                 {results.length === 0 && !executing && (
                                     <div className="text-center text-muted-foreground text-xs py-10">
-                                        Нет результатов.
+                                        {t('noResults')}
                                     </div>
                                 )}
                                 {results.map((res, i) => (
@@ -187,7 +189,7 @@ export function CommanderInterface({ servers, vms }: CommanderInterfaceProps) {
                                         </div>
                                         {expandedResult === i && (
                                             <div className="p-2 bg-black/50 font-mono text-[10px] text-zinc-300 whitespace-pre-wrap overflow-x-auto border-t border-border/30">
-                                                {res.error ? <span className="text-red-400">{res.error}</span> : res.output || <span className="text-zinc-600">Нет вывода</span>}
+                                                {res.error ? <span className="text-red-400">{res.error}</span> : res.output || <span className="text-zinc-600">{t('noOutput')}</span>}
                                             </div>
                                         )}
                                     </div>

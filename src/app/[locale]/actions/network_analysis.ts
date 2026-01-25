@@ -1,8 +1,29 @@
 'use server';
 
+import { headers, cookies } from 'next/headers';
 import db from '@/lib/db';
 import { getNetworkConfig } from './network';
 import { explainNetworkConfig, getAISettings } from './ai';
+import { getTranslations } from 'next-intl/server';
+import { routing } from '@/i18n/routing';
+
+async function getServerLocale(): Promise<string> {
+    const headersList = await headers();
+    const cookieStore = await cookies();
+    const localeCookie = cookieStore.get('NEXT_LOCALE');
+    if (localeCookie?.value && routing.locales.includes(localeCookie.value as any)) {
+        return localeCookie.value;
+    }
+    const referer = headersList.get('referer') || '';
+    const localeMatch = referer.match(/\/([a-z]{2})\//);
+    if (localeMatch) {
+        const locale = localeMatch[1];
+        if (routing.locales.includes(locale as any)) {
+            return locale;
+        }
+    }
+    return routing.defaultLocale;
+}
 
 export interface AnalysisResult {
     id: number;
@@ -26,6 +47,8 @@ export async function getLatestNetworkAnalysis(serverId: number): Promise<Analys
 export async function runNetworkAnalysis(serverId: number): Promise<string> {
     console.log(`[AI Analysis] Starting Network Analysis for Server ${serverId}...`);
 
+    const locale = await getServerLocale();
+    const t = await getTranslations({ locale, namespace: 'servers' });
     const settings = await getAISettings();
     if (!settings.enabled) throw new Error('KI-Funktionen sind deaktiviert.');
 
@@ -49,7 +72,7 @@ export async function runNetworkAnalysis(serverId: number): Promise<string> {
             analysisResult = await explainNetworkConfig(config.interfaces);
         } catch (aiError: any) {
             console.error(`[AI Analysis] AI processing failed:`, aiError);
-            throw new Error(`AI-анализ не удался: ${aiError.message}`);
+            throw new Error(`${t('aiAnalysisFailed')} ${aiError.message}`);
         }
 
         // Serialize for DB/Frontend

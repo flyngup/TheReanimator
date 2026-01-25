@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,12 +42,14 @@ function formatBytes(bytes: number): string {
 }
 
 async function handleDelete(itemId: number) {
-    if (confirm('Действительно удалить этот бэкап?')) {
+    const t = useTranslations('configList');
+    if (confirm(t('deleteConfirm'))) {
         await deleteConfigBackup(itemId);
     }
 }
 
 export default function ConfigList({ servers, backupsByServer, groups }: ConfigListProps) {
+    const t = useTranslations('configList');
     const [searchTerm, setSearchTerm] = useState('');
     const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(['ungrouped', ...groups]));
 
@@ -134,7 +137,7 @@ export default function ConfigList({ servers, backupsByServer, groups }: ConfigL
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                         type="search"
-                        placeholder="Поиск сервера, типа, группы или даты бэкапа..."
+                        placeholder={t('searchPlaceholder')}
                         className="pl-10"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -143,17 +146,17 @@ export default function ConfigList({ servers, backupsByServer, groups }: ConfigL
                 <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={expandAll}>
                         <Layers className="h-4 w-4 mr-2" />
-                        Развернуть всё
+                        {t('expandAll')}
                     </Button>
                     <Button variant="outline" size="sm" onClick={collapseAll}>
-                        Свернуть всё
+                        {t('collapseAll')}
                     </Button>
                 </div>
             </div>
 
             {filteredServers.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground">
-                    <p>Серверы не найдены.</p>
+                    <p>{t('noServers')}</p>
                 </div>
             ) : (
                 <div className="space-y-4">
@@ -182,9 +185,9 @@ export default function ConfigList({ servers, backupsByServer, groups }: ConfigL
                                             <CardTitle className="text-base">{groupName}</CardTitle>
                                         </div>
                                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                            <span>{groupServers.length} серверов</span>
+                                            <span>{groupServers.length} {t('servers')}</span>
                                             <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 text-xs font-medium">
-                                                {stats.totalBackups} бэкапов
+                                                {stats.totalBackups} {t('backups')}
                                             </span>
                                             <span className="text-xs">{formatBytes(stats.totalSize)}</span>
                                         </div>
@@ -194,7 +197,7 @@ export default function ConfigList({ servers, backupsByServer, groups }: ConfigL
                                     <CardContent className="p-0 divide-y divide-border/30">
                                         {groupServers.length === 0 ? (
                                             <div className="p-4 text-center text-muted-foreground text-sm">
-                                                Нет серверов в этой группе
+                                                {t('noServersInGroup')}
                                             </div>
                                         ) : (
                                             groupServers.map((server) => (
@@ -228,12 +231,12 @@ export default function ConfigList({ servers, backupsByServer, groups }: ConfigL
                                             <ChevronRight className="h-5 w-5 text-muted-foreground" />
                                         )}
                                         <Server className="h-5 w-5 text-muted-foreground" />
-                                        <CardTitle className="text-base text-muted-foreground">Без группы</CardTitle>
+                                        <CardTitle className="text-base text-muted-foreground">{t('ungrouped')}</CardTitle>
                                     </div>
                                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                        <span>{groupedServers['ungrouped'].length} серверов</span>
+                                        <span>{groupedServers['ungrouped'].length} {t('servers')}</span>
                                         <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs">
-                                            {getGroupStats(groupedServers['ungrouped']).totalBackups} бэкапов
+                                            {getGroupStats(groupedServers['ungrouped']).totalBackups} {t('backups')}
                                         </span>
                                     </div>
                                 </div>
@@ -270,6 +273,7 @@ function ServerBackupCard({
     isExpanded: boolean;
     onToggle: () => void;
 }) {
+    const t = useTranslations('configList');
     return (
         <div className="border-l-4 border-l-transparent hover:border-l-primary/50 transition-colors">
             <div
@@ -299,7 +303,7 @@ function ServerBackupCard({
                 </div>
                 <div className="flex items-center gap-4" onClick={e => e.stopPropagation()}>
                     <span className="text-sm text-muted-foreground">
-                        {backups.length} бэкапов
+                        {backups.length} {t('backups')}
                     </span>
                     <BackupButton serverId={server.id} />
                 </div>
@@ -310,7 +314,7 @@ function ServerBackupCard({
                     {backups.length === 0 ? (
                         <div className="p-6 text-center text-muted-foreground">
                             <Clock className="h-8 w-8 mx-auto mb-2 opacity-20" />
-                            <p>Бэкапов пока нет</p>
+                            <p>{t('noBackups')}</p>
                         </div>
                     ) : (
                         <div className="divide-y divide-border/30">
@@ -327,7 +331,7 @@ function ServerBackupCard({
                                             })}
                                         </p>
                                         <p className="text-xs text-muted-foreground flex items-center gap-2">
-                                            <span>{backup.file_count} файлов</span>
+                                            <span>{backup.file_count} {t('files')}</span>
                                             <span>•</span>
                                             <span>{formatBytes(backup.total_size)}</span>
                                         </p>
@@ -336,7 +340,7 @@ function ServerBackupCard({
                                         <Link href={`/configs/${backup.id}`}>
                                             <Button variant="secondary" size="sm" className="h-8">
                                                 <FileText className="mr-2 h-3.5 w-3.5" />
-                                                Подробнее
+                                                {t('moreDetails')}
                                             </Button>
                                         </Link>
                                         <Button
@@ -353,7 +357,7 @@ function ServerBackupCard({
                             {backups.length > 5 && (
                                 <div className="p-3 pl-16 text-center">
                                     <span className="text-xs text-muted-foreground">
-                                        и ещё {backups.length - 5} бэкапов...
+                                        {t('andMore', { count: backups.length - 5 })}
                                     </span>
                                 </div>
                             )}

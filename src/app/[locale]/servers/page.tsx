@@ -1,6 +1,7 @@
 import db from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import ServersClient from './ServersClient';
+import { getTranslations } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,7 +21,7 @@ async function deleteServer(id: number) {
     const deleteTransaction = db.transaction((serverId: number) => {
         // 1. Delete history for jobs related to this server
         db.prepare(`
-            DELETE FROM history 
+            DELETE FROM history
             WHERE job_id IN (
                 SELECT id FROM jobs WHERE source_server_id = ? OR target_server_id = ?
             )
@@ -28,13 +29,13 @@ async function deleteServer(id: number) {
 
         // 2. Delete jobs related to this server
         db.prepare(`
-            DELETE FROM jobs 
+            DELETE FROM jobs
             WHERE source_server_id = ? OR target_server_id = ?
         `).run(serverId, serverId);
 
         // 3. Delete config files for backups related to this server
         db.prepare(`
-            DELETE FROM config_files 
+            DELETE FROM config_files
             WHERE backup_id IN (
                 SELECT id FROM config_backups WHERE server_id = ?
             )
@@ -42,7 +43,7 @@ async function deleteServer(id: number) {
 
         // 4. Delete config backups related to this server
         db.prepare(`
-            DELETE FROM config_backups 
+            DELETE FROM config_backups
             WHERE server_id = ?
         `).run(serverId);
 
@@ -55,7 +56,8 @@ async function deleteServer(id: number) {
         revalidatePath('/servers');
     } catch (error) {
         console.error('Failed to delete server:', error);
-        throw new Error('Server konnte nicht gelöscht werden: ' + (error instanceof Error ? error.message : String(error)));
+        const t = await getTranslations('servers');
+        throw new Error(t('deleteError') + ': ' + (error instanceof Error ? error.message : String(error)));
     }
 }
 

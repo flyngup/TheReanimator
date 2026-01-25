@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,7 +19,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { formatDistanceToNow } from 'date-fns';
-import { ru } from 'date-fns/locale';
+import { dateFnsLocale } from '@/lib/date-utils';
 
 interface Job {
     id: number;
@@ -32,6 +33,9 @@ interface Job {
 }
 
 export default function JobsPage() {
+    const t = useTranslations('jobs');
+    const tCommon = useTranslations('common');
+    const locale = useLocale();
     const [jobs, setJobs] = useState<Job[]>([]);
     const [history, setHistory] = useState<TaskItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -43,18 +47,18 @@ export default function JobsPage() {
 
     // Helper function to format schedule display
     const formatSchedule = (schedule: string): string => {
-        if (schedule === '@manual') return 'Ручное';
+        if (schedule === '@manual') return t('manual');
         return schedule;
     };
 
     // Helper function to format status display
     const formatStatus = (status: string): string => {
         const statusMap: Record<string, string> = {
-            'success': 'Успешно',
-            'failed': 'Ошибка',
-            'running': 'Выполняется',
-            'completed': 'Завершено',
-            'cancelled': 'Отменено'
+            'success': t('statusSuccess'),
+            'failed': t('statusFailed'),
+            'running': t('statusRunning'),
+            'completed': t('statusCompleted'),
+            'cancelled': t('statusCancelled')
         };
         return statusMap[status] || status;
     };
@@ -87,28 +91,28 @@ export default function JobsPage() {
     const canHistoryNext = historyPage < historyTotalPages - 1;
 
     async function handleRunNow(id: number) {
-        if (!confirm("Выполнить задачу сейчас?")) return;
+        if (!confirm(t('runNowConfirm'))) return;
         try {
             const result = await runJob(id);
             if (result.success) {
-                toast.success("Задача запущена");
+                toast.success(t('taskStarted'));
             } else {
-                toast.error("Ошибка: " + (result.error || "Неизвестная ошибка"));
+                toast.error(t('error') + ": " + (result.error || t('unknownError')));
             }
             loadData();
         } catch (e: any) {
-            toast.error("Ошибка: " + e.message);
+            toast.error(t('error') + ": " + e.message);
         }
     }
 
     async function handleDelete(id: number) {
-        if (!confirm("Действительно удалить эту запланированную задачу?")) return;
+        if (!confirm(t('deleteConfirm'))) return;
         try {
             await deleteJob(id);
-            toast.success("Задача удалена");
+            toast.success(t('taskDeleted'));
             loadData();
         } catch (e: any) {
-            toast.error("Ошибка удаления: " + e.message);
+            toast.error(t('deleteError') + ": " + e.message);
         }
     }
 
@@ -116,21 +120,21 @@ export default function JobsPage() {
         <div className="container mx-auto py-8 space-y-8">
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-3xl font-bold">Задачи и расписание</h1>
-                    <p className="text-muted-foreground">Управление запланированными миграциями и фоновыми задачами.</p>
+                    <h1 className="text-3xl font-bold">{t('title')}</h1>
+                    <p className="text-muted-foreground">{t('subtitle')}</p>
                 </div>
             </div>
 
             {/* Scheduled Jobs Section */}
             <Card>
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Calendar className="h-5 w-5" /> Запланированные задачи</CardTitle>
-                    <CardDescription>Активные Cron-задачи и запланированные миграции.</CardDescription>
+                    <CardTitle className="flex items-center gap-2"><Calendar className="h-5 w-5" /> {t('scheduledJobs')}</CardTitle>
+                    <CardDescription>{t('scheduledJobsDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     {jobs.length === 0 ? (
                         <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
-                            Нет запланированных задач.
+                            {t('noScheduledTasks')}
                         </div>
                     ) : (
                         <div className="space-y-4">
@@ -144,13 +148,13 @@ export default function JobsPage() {
                                             <div className="font-semibold">{job.name}</div>
                                             <div className="flex items-center gap-3 text-sm text-muted-foreground">
                                                 <Badge variant="outline" className="font-mono">{formatSchedule(job.schedule)}</Badge>
-                                                {job.last_run && <span>Последний запуск: {new Date(job.last_run).toLocaleString()}</span>}
+                                                {job.last_run && <span>{t('lastRun')}: {new Date(job.last_run).toLocaleString(locale)}</span>}
                                             </div>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3">
                                         <div className="text-right text-sm">
-                                            <div className="font-medium text-green-600">Активна</div>
+                                            <div className="font-medium text-green-600">{t('active')}</div>
                                             {/* Future: Show next run calculation */}
                                         </div>
                                         <DropdownMenu>
@@ -158,9 +162,9 @@ export default function JobsPage() {
                                                 <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onClick={() => handleRunNow(job.id)}><Play className="h-4 w-4 mr-2" /> Выполнить сейчас</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleRunNow(job.id)}><Play className="h-4 w-4 mr-2" /> {t('runNow')}</DropdownMenuItem>
                                                 <DropdownMenuSeparator />
-                                                <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(job.id)}><Trash2 className="h-4 w-4 mr-2" /> Удалить</DropdownMenuItem>
+                                                <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(job.id)}><Trash2 className="h-4 w-4 mr-2" /> {tCommon('delete')}</DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </div>
@@ -174,8 +178,8 @@ export default function JobsPage() {
             {/* History Section */}
             <Card>
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Clock className="h-5 w-5" /> История</CardTitle>
-                    <CardDescription>История выполненных задач (всего: {historyTotal}).</CardDescription>
+                    <CardTitle className="flex items-center gap-2"><Clock className="h-5 w-5" /> {t('history')}</CardTitle>
+                    <CardDescription>{t('historyDesc', { count: historyTotal })}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-2">
@@ -186,8 +190,8 @@ export default function JobsPage() {
                                     <div>
                                         <div className="font-medium">{task.description}</div>
                                         <div className="text-xs text-muted-foreground flex gap-2">
-                                            <span>{new Date(task.startTime).toLocaleString()}</span>
-                                            {task.duration && <span>• Длительность: {task.duration}</span>}
+                                            <span>{new Date(task.startTime).toLocaleString(locale)}</span>
+                                            {task.duration && <span>• {t('duration')}: {task.duration}</span>}
                                             {task.node && <span>• {task.node}</span>}
                                         </div>
                                     </div>
@@ -203,7 +207,11 @@ export default function JobsPage() {
                     {historyTotal > historyPageSize && (
                         <div className="border-t mt-4 pt-3 flex items-center justify-between">
                             <span className="text-xs text-muted-foreground">
-                                Показано {historyPage * historyPageSize + 1}-{Math.min((historyPage + 1) * historyPageSize, historyTotal)} из {historyTotal}
+                                {t('showing', {
+                                    from: historyPage * historyPageSize + 1,
+                                    to: Math.min((historyPage + 1) * historyPageSize, historyTotal),
+                                    total: historyTotal
+                                })}
                             </span>
                             <div className="flex items-center gap-2">
                                 <Button
@@ -213,10 +221,10 @@ export default function JobsPage() {
                                     disabled={!canHistoryPrev}
                                 >
                                     <ChevronLeft className="h-4 w-4 mr-1" />
-                                    Назад
+                                    {t('back')}
                                 </Button>
                                 <span className="text-sm text-muted-foreground">
-                                    Страница {historyPage + 1} / {historyTotalPages}
+                                    {t('page', { page: historyPage + 1, total: historyTotalPages })}
                                 </span>
                                 <Button
                                     variant="outline"
@@ -224,7 +232,7 @@ export default function JobsPage() {
                                     onClick={() => setHistoryPage(p => p + 1)}
                                     disabled={!canHistoryNext}
                                 >
-                                    Далее
+                                    {t('next')}
                                     <ChevronRight className="h-4 w-4 ml-1" />
                                 </Button>
                             </div>

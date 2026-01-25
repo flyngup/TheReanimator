@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -12,6 +13,7 @@ import { getServers, Server as ServerType } from '@/app/actions/server';
 import { establishClusterTrust } from '@/app/actions/trust';
 
 export default function TrustPage() {
+    const t = useTranslations('trust');
     const [servers, setServers] = useState<ServerType[]>([]);
     const [loading, setLoading] = useState(true);
     const [sources, setSources] = useState<number[]>([]);
@@ -41,8 +43,8 @@ export default function TrustPage() {
     const clearTargets = () => setTargets([]);
 
     const handleExecute = async () => {
-        // if (!password) return alert('Введите root-пароль'); // Removed to allow fallback
-        if (sources.length === 0 || targets.length === 0) return alert('Выберите источники и назначения');
+        // if (!password) return alert('Enter root password'); // Removed to allow fallback
+        if (sources.length === 0 || targets.length === 0) return alert(t('errorSelectSources'));
 
         setProcessing(true);
         setLogs([]);
@@ -52,7 +54,7 @@ export default function TrustPage() {
             const results = await establishClusterTrust(sources, targets, password);
             setLogs(results);
         } catch (e: any) {
-            alert('Ошибка: ' + e.message);
+            alert(t('errorPrefix') + e.message);
         } finally {
             setProcessing(false);
         }
@@ -68,10 +70,10 @@ export default function TrustPage() {
             <div>
                 <h1 className="text-3xl font-bold flex items-center gap-2">
                     <ShieldCheck className="h-8 w-8 text-primary" />
-                    SSH доверие в кластере
+                    {t('title')}
                 </h1>
                 <p className="text-muted-foreground">
-                    Соедините несколько серверов автоматически (обмен SSH ключами).
+                    {t('subtitle')}
                 </p>
             </div>
 
@@ -79,18 +81,18 @@ export default function TrustPage() {
                 {/* Configuration */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Конфигурация</CardTitle>
-                        <CardDescription>Выберите серверы источники и назначения</CardDescription>
+                        <CardTitle>{t('configuration')}</CardTitle>
+                        <CardDescription>{t('configurationDesc')}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
 
                         {/* Sources */}
                         <div className="space-y-3">
                             <div className="flex items-center justify-between">
-                                <Label className="text-base font-medium">Серверы-источники (Откуда?)</Label>
+                                <Label className="text-base font-medium">{t('sourceServers')}</Label>
                                 <div className="text-xs space-x-2">
-                                    <Button variant="ghost" size="sm" onClick={selectAllSources}>Все</Button>
-                                    <Button variant="ghost" size="sm" onClick={clearSources}>Никого</Button>
+                                    <Button variant="ghost" size="sm" onClick={selectAllSources}>{t('selectAll')}</Button>
+                                    <Button variant="ghost" size="sm" onClick={clearSources}>{t('clearAll')}</Button>
                                 </div>
                             </div>
                             <ScrollArea className="h-[200px] border rounded-md p-4">
@@ -115,10 +117,10 @@ export default function TrustPage() {
                         {/* Targets */}
                         <div className="space-y-3">
                             <div className="flex items-center justify-between">
-                                <Label className="text-base font-medium">Серверы назначения (Куда?)</Label>
+                                <Label className="text-base font-medium">{t('targetServers')}</Label>
                                 <div className="text-xs space-x-2">
-                                    <Button variant="ghost" size="sm" onClick={selectAllTargets}>Все</Button>
-                                    <Button variant="ghost" size="sm" onClick={clearTargets}>Никого</Button>
+                                    <Button variant="ghost" size="sm" onClick={selectAllTargets}>{t('selectAll')}</Button>
+                                    <Button variant="ghost" size="sm" onClick={clearTargets}>{t('clearAll')}</Button>
                                 </div>
                             </div>
                             <ScrollArea className="h-[200px] border rounded-md p-4">
@@ -142,21 +144,21 @@ export default function TrustPage() {
 
                         {/* Password */}
                         <div className="space-y-3 pt-4 border-t">
-                            <Label>Root пароль (опционально - перезаписывает сохранённые учётные данные)</Label>
+                            <Label>{t('rootPassword')}</Label>
                             <div className="flex gap-2">
                                 <Input
                                     type="password"
-                                    placeholder="Общий root пароль (оставьте пустым для сохранённых)"
+                                    placeholder={t('rootPasswordPlaceholder')}
                                     value={password}
                                     onChange={e => setPassword(e.target.value)}
                                 />
                                 <Button onClick={handleExecute} disabled={processing}>
                                     {processing ? <Loader2 className="animate-spin mr-2" /> : <Key className="mr-2 h-4 w-4" />}
-                                    Настроить доверие
+                                    {t('setupTrust')}
                                 </Button>
                             </div>
                             <p className="text-xs text-muted-foreground">
-                                Если пусто, используются сохранённые учётные данные (из управления серверами).
+                                {t('rootPasswordDesc')}
                             </p>
                         </div>
 
@@ -166,11 +168,11 @@ export default function TrustPage() {
                 {/* Log / Status */}
                 <Card className="h-full flex flex-col">
                     <CardHeader>
-                        <CardTitle>Ход выполнения и статус</CardTitle>
+                        <CardTitle>{t('progressStatus')}</CardTitle>
                         <CardDescription>
                             {logs.length > 0
-                                ? `${successCount} успешно, ${errorCount} ошибок`
-                                : "Результаты появятся здесь..."}
+                                ? t('progressSuccess', { success: successCount, error: errorCount })
+                                : t('progressWaiting')}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="flex-1 min-h-[400px]">
@@ -178,7 +180,7 @@ export default function TrustPage() {
                             {logs.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center h-full text-muted-foreground opacity-50 py-20">
                                     <ShieldCheck className="h-16 w-16 mb-4" />
-                                    <p>Запустите процесс</p>
+                                    <p>{t('startProcess')}</p>
                                 </div>
                             ) : (
                                 <div className="space-y-2">

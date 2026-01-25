@@ -24,6 +24,8 @@ interface UserNavProps {
 export function UserNav({ user }: UserNavProps) {
     const router = useRouter();
     const t = useTranslations('common');
+    const tNav = useTranslations('nav');
+    const tUsers = useTranslations('users');
 
     const handleLogout = async () => {
         await logout();
@@ -44,7 +46,7 @@ export function UserNav({ user }: UserNavProps) {
                     <div className="flex flex-col items-start text-left space-y-1 overflow-hidden flex-1">
                         <span className="text-sm font-semibold leading-none truncate w-full">{user.username}</span>
                         <span className="text-xs text-muted-foreground truncate w-full">
-                            {user.is_admin ? 'Administrator' : 'User'}
+                            {user.is_admin ? tUsers('isAdmin') : tUsers('isUser')}
                         </span>
                     </div>
                     {/* Visual indicator for dropdown */}
@@ -58,7 +60,7 @@ export function UserNav({ user }: UserNavProps) {
                     <div className="flex flex-col space-y-1">
                         <p className="text-sm font-medium leading-none">{user.username}</p>
                         <p className="text-xs leading-none text-muted-foreground">
-                            {user.is_admin ? 'Admin Rights' : 'Limited'}
+                            {user.is_admin ? tUsers('adminRights') : tUsers('limitedRights')}
                         </p>
                     </div>
                 </DropdownMenuLabel>
@@ -74,7 +76,7 @@ export function UserNav({ user }: UserNavProps) {
                         <DropdownMenuItem asChild>
                             <Link href="/settings/trust" className="cursor-pointer w-full">
                                 <Shield className="mr-2 h-4 w-4" />
-                                Cluster Trust
+                                {tUsers('clusterTrust')}
                             </Link>
                         </DropdownMenuItem>
                     )}

@@ -52,3 +52,4 @@ data/*.db-shm
 
 data/config-backups/
 !data/.keep
+.claude/

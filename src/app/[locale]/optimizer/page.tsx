@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,8 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
 export default function OptimizerPage() {
+    const t = useTranslations('optimizer');
+    const tCommon = useTranslations('common');
     const router = useRouter();
     const [stats, setStats] = useState<NodeStats[]>([]);
     const [suggestions, setSuggestions] = useState<OptimizationSuggestion[]>([]);
@@ -36,7 +39,7 @@ export default function OptimizerPage() {
             setStats(s);
             setSuggestions(sug);
         } catch (e) {
-            toast.error('Не удалось загрузить данные оптимизатора');
+            toast.error(t('loadFailed'));
             console.error(e);
         } finally {
             setLoading(false);
@@ -66,13 +69,13 @@ export default function OptimizerPage() {
                     <TrendingUp className="h-12 w-12 text-muted-foreground opacity-50" />
                 </div>
                 <div className="space-y-2 max-w-md">
-                    <h1 className="text-2xl font-bold">Оптимизатор отключён</h1>
+                    <h1 className="text-2xl font-bold">{t('optimizerDisabled')}</h1>
                     <p className="text-muted-foreground">
-                        Эта функция требует AI-ассистента. Пожалуйста, активируйте AI в системных настройках.
+                        {t('optimizerDisabledDesc')}
                     </p>
                 </div>
                 <Button onClick={() => router.push('/settings')} variant="outline">
-                    К настройкам
+                    {t('toSettings')}
                 </Button>
             </div>
         );
@@ -85,15 +88,15 @@ export default function OptimizerPage() {
                 <div>
                     <h1 className="text-3xl font-bold flex items-center gap-2">
                         <TrendingUp className="h-8 w-8 text-primary" />
-                        Оптимизатор ресурсов
+                        {t('title')}
                     </h1>
                     <p className="text-muted-foreground mt-1">
-                        AI-балансировка нагрузки и анализ распределения ресурсов.
+                        {t('subtitle')}
                     </p>
                 </div>
                 <Button onClick={() => loadData(true)} disabled={loading} variant="outline">
                     <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                    Обновить анализ
+                    {t('refreshAnalysis')}
                 </Button>
             </div>
 
@@ -121,14 +124,14 @@ export default function OptimizerPage() {
                             <CardContent className="space-y-4">
                                 <div>
                                     <div className="flex justify-between text-sm mb-1">
-                                        <span className="text-muted-foreground flex items-center gap-1"><Cpu className="h-3 w-3" /> Нагрузка CPU</span>
+                                        <span className="text-muted-foreground flex items-center gap-1"><Cpu className="h-3 w-3" /> {t('cpuLoad')}</span>
                                         <span className="font-mono font-bold">{node.cpu.toFixed(1)}%</span>
                                     </div>
                                     <Progress value={node.cpu} className="h-2" indicatorColor={getCpuColor(node.cpu)} />
                                 </div>
                                 <div>
                                     <div className="flex justify-between text-sm mb-1">
-                                        <span className="text-muted-foreground flex items-center gap-1"><BarChart3 className="h-3 w-3" /> Использование RAM</span>
+                                        <span className="text-muted-foreground flex items-center gap-1"><BarChart3 className="h-3 w-3" /> {t('ramUsage')}</span>
                                         <span className="font-mono font-bold">{node.ram.toFixed(1)}%</span>
                                     </div>
                                     <Progress value={node.ram} className="h-2" indicatorColor={getRamColor(node.ram)} />
@@ -147,21 +150,21 @@ export default function OptimizerPage() {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <AlertTriangle className="h-5 w-5 text-orange-500" />
-                        Предложения по оптимизации
+                        {t('optimizationSuggestions')}
                     </CardTitle>
                     <CardDescription>
-                        Основано на текущем распределении нагрузки в вашем кластере.
+                        {t('optimizationSuggestionsDesc')}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     {loading ? (
                         <div className="h-20 flex items-center justify-center text-muted-foreground text-sm">
-                            Анализ метрик кластера...
+                            {t('analyzingMetrics')}
                         </div>
                     ) : suggestions.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-6 text-muted-foreground">
                             <CheckCircle2 className="h-8 w-8 text-green-500 mb-2" />
-                            <p>Кластер хорошо сбалансирован. Действия не требуются.</p>
+                            <p>{t('clusterBalanced')}</p>
                         </div>
                     ) : (
                         <div className="space-y-3">
@@ -175,7 +178,7 @@ export default function OptimizerPage() {
                                         </div>
                                     </div>
                                     <Button size="sm" variant="secondary" onClick={() => router.push(`/servers/${sug.sourceNodeId}`)}>
-                                        Исходный узел <ArrowRight className="ml-2 h-3 w-3" />
+                                        {t('sourceNode')} <ArrowRight className="ml-2 h-3 w-3" />
                                     </Button>
                                 </div>
                             ))}

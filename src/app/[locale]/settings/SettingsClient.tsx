@@ -11,6 +11,8 @@ import { Switch } from "@/components/ui/switch";
 import { getAISettings, saveAISettings, checkOllamaConnection, type OllamaModel } from "@/app/actions/ai";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
+import { useTranslations } from 'next-intl';
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 interface VersionInfo {
     currentVersion: string;
@@ -21,12 +23,15 @@ interface VersionInfo {
 }
 
 export default function SettingsClient() {
+    const t = useTranslations('settings');
     const [versionInfo, setVersionInfo] = useState<VersionInfo | null>(null);
     const [checking, setChecking] = useState(false);
     const [updating, setUpdating] = useState(false);
     const [updateLog, setUpdateLog] = useState<string[]>([]);
     const [updateComplete, setUpdateComplete] = useState(false);
     const [updateError, setUpdateError] = useState<string | null>(null);
+    const [updateConfirmOpen, setUpdateConfirmOpen] = useState(false);
+    const [restartConfirmOpen, setRestartConfirmOpen] = useState(false);
 
     useEffect(() => {
         checkForUpdates();
@@ -45,8 +50,7 @@ export default function SettingsClient() {
     }
 
     async function performUpdate() {
-        if (!confirm('Выполнить обновление сейчас? Приложение будет перезапущено.')) return;
-
+        setUpdateConfirmOpen(false);
         setUpdating(true);
         setUpdateLog([]);
         setUpdateComplete(false);
@@ -91,13 +95,13 @@ export default function SettingsClient() {
     }
 
     async function handleRestart() {
-        if (!confirm('Перезапустить приложение?')) return;
+        setRestartConfirmOpen(false);
         try {
             await fetch('/api/update', {
                 method: 'POST',
                 headers: { 'X-Restart-Only': 'true' }
             });
-            toast.success("Перезапуск инициирован");
+            toast.success(t('restartInitiated'));
         } catch {
             // Expected to fail as server restarts
         }
@@ -107,7 +111,7 @@ export default function SettingsClient() {
 
     const copyCommand = () => {
         navigator.clipboard.writeText(manualCommand);
-        toast.success("Команда скопирована!");
+        toast.success(t('commandCopied'));
     };
 
     return (
@@ -118,10 +122,10 @@ export default function SettingsClient() {
                 </div>
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-                        Системные настройки
+                        {t('title')}
                         <span className="text-xs bg-amber-500/10 text-amber-500 px-2.5 py-0.5 rounded-full border border-amber-500/20 uppercase tracking-wide font-bold">Beta</span>
                     </h1>
-                    <p className="text-muted-foreground">Управление и обслуживание экземпляра Reanimator</p>
+                    <p className="text-muted-foreground">{t('subtitle')}</p>
                 </div>
             </div>
 
@@ -134,16 +138,16 @@ export default function SettingsClient() {
                             <div className="flex items-center justify-between">
                                 <CardTitle className="flex items-center gap-2">
                                     <Download className="h-5 w-5 text-primary" />
-                                    Программное обеспечение и обновления
+                                    {t('softwareUpdates')}
                                 </CardTitle>
                                 {versionInfo && (
                                     <span className={`text-xs px-2 py-1 rounded-full font-medium border ${versionInfo.updateAvailable ? 'bg-green-500/10 text-green-600 border-green-200' : 'bg-muted text-muted-foreground border-border'}`}>
-                                        {versionInfo.updateAvailable ? 'Доступно обновление' : 'Актуально'}
+                                        {versionInfo.updateAvailable ? t('updateAvailable') : t('current')}
                                     </span>
                                 )}
                             </div>
                             <CardDescription>
-                                Управление версиями и автоматическое обновление
+                                {t('softwareUpdatesDesc')}
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="p-6 space-y-6">
@@ -154,7 +158,7 @@ export default function SettingsClient() {
                                         <GitBranch className="h-6 w-6 text-primary" />
                                     </div>
                                     <div>
-                                        <p className="font-medium text-sm text-muted-foreground">Установленная версия</p>
+                                        <p className="font-medium text-sm text-muted-foreground">{t('installedVersion')}</p>
                                         <div className="flex items-center gap-2">
                                             <span className="text-xl font-bold tracking-tight">
                                                 v{versionInfo?.currentVersion || '...'}
@@ -174,7 +178,7 @@ export default function SettingsClient() {
                                         className="flex-1 sm:flex-none"
                                         onClick={() => window.open('https://github.com/jahartmann/TheReanimator', '_blank')}
                                     >
-                                        GitHub
+                                        {t('github')}
                                     </Button>
                                     <Button
                                         variant="default"
@@ -184,7 +188,7 @@ export default function SettingsClient() {
                                         disabled={checking || updating}
                                     >
                                         {checking ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
-                                        Проверить
+                                        {t('checkForUpdates')}
                                     </Button>
                                 </div>
                             </div>
@@ -197,18 +201,18 @@ export default function SettingsClient() {
                                             <CheckCircle2 className="h-5 w-5" />
                                         </div>
                                         <div>
-                                            <p className="font-medium text-green-700 dark:text-green-400">Доступна новая версия</p>
+                                            <p className="font-medium text-green-700 dark:text-green-400">{t('newVersionAvailable')}</p>
                                             <p className="text-sm text-green-600/80 dark:text-green-500/80">
-                                                {versionInfo.commitsBehind} новых коммитов готово к установке.
+                                                {versionInfo.commitsBehind} {t('commitsReady')}
                                                 <span className="font-mono text-xs ml-2 opacity-75">
                                                     ({versionInfo.currentCommit} → {versionInfo.remoteCommit})
                                                 </span>
                                             </p>
                                         </div>
                                     </div>
-                                    <Button onClick={performUpdate} className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto">
+                                    <Button onClick={() => setUpdateConfirmOpen(true)} className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto">
                                         <Download className="h-4 w-4 mr-2" />
-                                        Обновить сейчас
+                                        {t('updateNow')}
                                     </Button>
                                 </div>
                             )}
@@ -218,8 +222,8 @@ export default function SettingsClient() {
                                 <div className="space-y-3 pt-2">
                                     <div className="flex items-center gap-2 px-1">
                                         <Terminal className="h-4 w-4 text-muted-foreground" />
-                                        <span className="text-sm font-medium">Журнал обновления</span>
-                                        {updating && <span className="text-xs text-muted-foreground animate-pulse ml-auto">Установка...</span>}
+                                        <span className="text-sm font-medium">{t('updateLog')}</span>
+                                        {updating && <span className="text-xs text-muted-foreground animate-pulse ml-auto">{t('updateRunning')}</span>}
                                     </div>
                                     <div className="rounded-xl border bg-[#0f0f0f] shadow-inner overflow-hidden">
                                         <div className="flex items-center gap-1.5 px-4 py-2 bg-[#1a1a1a] border-b border-[#333]">
@@ -230,7 +234,7 @@ export default function SettingsClient() {
                                         </div>
                                         <ScrollArea className="h-[250px] w-full p-4">
                                             <pre className="text-xs font-mono text-zinc-400 whitespace-pre-wrap leading-relaxed">
-                                                {updateLog.length === 0 && <span className="opacity-50">Ожидание запуска...</span>}
+                                                {updateLog.length === 0 && <span className="opacity-50">{t('waitingForStart')}</span>}
                                                 {updateLog.map((line, i) => (
                                                     <div key={i} className="py-0.5 border-l-2 border-transparent hover:border-zinc-700 pl-2 -ml-2 transition-colors">
                                                         {line.startsWith('✅') ? <span className="text-green-400">{line}</span> :
@@ -239,7 +243,7 @@ export default function SettingsClient() {
                                                                     <span className="text-zinc-300">{line}</span>}
                                                     </div>
                                                 ))}
-                                                {updateComplete && <div className="mt-4 pt-2 border-t border-zinc-800 text-green-500 font-bold">✨ Операция завершена.</div>}
+                                                {updateComplete && <div className="mt-4 pt-2 border-t border-zinc-800 text-green-500 font-bold">✨ {t('updateComplete')}</div>}
                                             </pre>
                                         </ScrollArea>
                                     </div>
@@ -259,24 +263,24 @@ export default function SettingsClient() {
                         <CardHeader className="pb-3">
                             <CardTitle className="flex items-center gap-2 text-base">
                                 <Power className="h-5 w-5 text-orange-500" />
-                                Управление системой
+                                {t('systemControl')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border">
                                 <div>
-                                    <h4 className="font-medium text-sm">Перезапуск сервиса</h4>
-                                    <p className="text-xs text-muted-foreground">Перезапускает Node.js приложение</p>
+                                    <h4 className="font-medium text-sm">{t('serviceRestart')}</h4>
+                                    <p className="text-xs text-muted-foreground">{t('serviceRestartDesc')}</p>
                                 </div>
-                                <Button variant="secondary" size="sm" onClick={handleRestart} className="hover:bg-orange-500/10 hover:text-orange-600 border shadow-sm">
+                                <Button variant="secondary" size="sm" onClick={() => setRestartConfirmOpen(true)} className="hover:bg-orange-500/10 hover:text-orange-600 border shadow-sm">
                                     <RefreshCw className="mr-2 h-3.5 w-3.5" />
-                                    Перезапустить
+                                    {t('restart')}
                                 </Button>
                             </div>
 
                             <div className="pt-2">
                                 <p className="text-xs font-medium mb-2 flex items-center gap-2">
-                                    <Terminal className="h-3 w-3" /> Ручное обновление через CLI
+                                    <Terminal className="h-3 w-3" /> {t('manualUpdate')}
                                 </p>
                                 <div className="relative group">
                                     <code className="block p-3 bg-muted rounded-lg text-[10px] font-mono text-muted-foreground break-all border group-hover:border-foreground/20 transition-colors">
@@ -292,7 +296,7 @@ export default function SettingsClient() {
                                     </Button>
                                 </div>
                                 <p className="text-[10px] text-muted-foreground mt-1.5 flex items-center gap-1">
-                                    <Info className="h-3 w-3" /> Выполнить как <strong>root</strong>.
+                                    <Info className="h-3 w-3" /> {t('manualUpdateDesc')}
                                 </p>
                             </div>
                         </CardContent>
@@ -303,31 +307,31 @@ export default function SettingsClient() {
                         <CardHeader className="pb-3">
                             <CardTitle className="flex items-center gap-2 text-base">
                                 <Info className="h-5 w-5 text-blue-500" />
-                                Информация
+                                {t('information')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3">
                             <div className="flex items-center gap-3 text-sm p-2 hover:bg-muted/50 rounded transition-colors">
                                 <Database className="h-4 w-4 text-muted-foreground" />
                                 <div className="flex-1">
-                                    <p className="font-medium">База данных</p>
-                                    <p className="text-xs text-muted-foreground">SQLite (WAL Mode)</p>
+                                    <p className="font-medium">{t('database')}</p>
+                                    <p className="text-xs text-muted-foreground">{t('databaseType')}</p>
                                 </div>
                                 <span className="text-xs bg-muted px-1.5 py-0.5 rounded">data/proxhost.db</span>
                             </div>
                             <div className="flex items-center gap-3 text-sm p-2 hover:bg-muted/50 rounded transition-colors">
                                 <HardDrive className="h-4 w-4 text-muted-foreground" />
                                 <div className="flex-1">
-                                    <p className="font-medium">Путь бэкапов</p>
-                                    <p className="text-xs text-muted-foreground">Автоматическое сохранение конфигураций</p>
+                                    <p className="font-medium">{t('backupPath')}</p>
+                                    <p className="text-xs text-muted-foreground">{t('backupPathDesc')}</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-3 text-sm p-2 hover:bg-muted/50 rounded transition-colors">
                                 <Server className="h-4 w-4 text-muted-foreground" />
                                 <div className="flex-1">
-                                    <p className="font-medium">Окружение</p>
+                                    <p className="font-medium">{t('environment')}</p>
                                     <p className="text-xs text-muted-foreground transition-all hover:text-foreground">
-                                        Сервер: {process.env.NODE_ENV}
+                                        {t('environment')}: {process.env.NODE_ENV}
                                     </p>
                                 </div>
                             </div>
@@ -335,11 +339,28 @@ export default function SettingsClient() {
                     </Card>
                 </div>
             </div>
+
+            {/* Confirm dialogs */}
+            <ConfirmDialog
+                open={updateConfirmOpen}
+                onOpenChange={setUpdateConfirmOpen}
+                title={t('confirmUpdate')}
+                message=""
+                onConfirm={performUpdate}
+            />
+            <ConfirmDialog
+                open={restartConfirmOpen}
+                onOpenChange={setRestartConfirmOpen}
+                title={t('restartConfirm')}
+                message=""
+                onConfirm={handleRestart}
+            />
         </div>
     );
 }
 
 function AICard() {
+    const t = useTranslations('settings');
     const [url, setUrl] = useState('http://localhost:11434');
     const [model, setModel] = useState('');
     const [enabled, setEnabled] = useState(false);
@@ -366,18 +387,18 @@ function AICard() {
         if (res.success && res.models) {
             setConnected(true);
             setModels(res.models);
-            if (showToast) toast.success(`Подключено! Найдено моделей: ${res.models.length}.`);
+            if (showToast) toast.success(`${t('connected')}! ${t('modelsFound')}: ${res.models.length}.`);
         } else {
             setConnected(false);
             setModels([]);
-            if (showToast) toast.error(`Ошибка подключения: ${res.message}`);
+            if (showToast) toast.error(`${t('connectionFailed')}: ${res.message}`);
         }
     }
 
     async function handleSave(newUrl: string, newModel: string, newEnabled: boolean) {
         // Validation only if we are enabling
         if (newEnabled && !newModel && connected) {
-            // allow saving enabled=true if model is missing? NO, force model selection if connected. 
+            // allow saving enabled=true if model is missing? NO, force model selection if connected.
             // If not connected, we probably shouldn't allow enabling unless we trust user.
             // Let's stick to: if enabling, we need a model IF we assume connection is ok.
         }
@@ -388,7 +409,7 @@ function AICard() {
 
         await saveAISettings(newUrl, newModel, newEnabled);
         setSaving(false);
-        toast.success(newEnabled ? 'AI функции активированы' : 'AI функции деактивированы');
+        toast.success(newEnabled ? t('aiEnabled') : t('aiDisabledMsg'));
 
         // Improve local state consistency
         if (!newEnabled) {
@@ -409,12 +430,12 @@ function AICard() {
                 <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-2">
                         <Sparkles className="h-5 w-5 text-purple-500" />
-                        AI Ассистент (Ollama)
+                        {t('aiAssistant')}
                     </CardTitle>
                     <div className="flex items-center gap-3">
                         {connected && enabled && (
                             <span className="text-xs px-2 py-1 rounded-full font-medium border bg-green-500/10 text-green-600 border-green-200">
-                                Подключено
+                                {t('connected')}
                             </span>
                         )}
                         <Switch
@@ -425,20 +446,20 @@ function AICard() {
                     </div>
                 </div>
                 <CardDescription>
-                    Подключите локальную AI модель (Ollama) для расширенных функций: анализ сети, объяснение логов, умные теги.
+                    {t('aiAssistantDesc')}
                 </CardDescription>
             </CardHeader>
             <CardContent className="p-6 space-y-4">
                 {!enabled ? (
                     <div className="text-center py-8 text-muted-foreground bg-muted/20 rounded-xl border border-dashed">
                         <Sparkles className="h-8 w-8 mx-auto mb-3 opacity-20" />
-                        <p className="text-sm font-medium">AI функции деактивированы</p>
-                        <p className="text-xs opacity-70 mt-1">Включите переключатель справа вверху для использования AI функций.</p>
+                        <p className="text-sm font-medium">{t('aiDisabled')}</p>
+                        <p className="text-xs opacity-70 mt-1">{t('aiDisabledDesc')}</p>
                     </div>
                 ) : (
                     <>
                         <div className="space-y-2">
-                            <Label>Ollama URL</Label>
+                            <Label>{t('ollamaUrl')}</Label>
                             <div className="flex gap-2">
                                 <Input
                                     value={url}
@@ -454,14 +475,14 @@ function AICard() {
                                     {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                                 </Button>
                             </div>
-                            <p className="text-[10px] text-muted-foreground">Стандартный порт 11434. Убедитесь, что Ollama запущен.</p>
+                            <p className="text-[10px] text-muted-foreground">{t('ollamaUrlDesc')}</p>
                         </div>
 
                         <div className="space-y-2">
-                            <Label>Выбрать модель</Label>
+                            <Label>{t('selectModel')}</Label>
                             <Select value={model} onValueChange={setModel} disabled={!connected || models.length === 0}>
                                 <SelectTrigger>
-                                    <SelectValue placeholder={connected ? "Выберите модель..." : "Сначала подключитесь..."} />
+                                    <SelectValue placeholder={connected ? t('selectModel') + "..." : t('selectModelPlaceholder')} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {models.map(m => (
@@ -481,7 +502,7 @@ function AICard() {
                         <div className="pt-2 flex justify-end">
                             <Button onClick={() => handleSave(url, model, true)} disabled={saving || !connected || !model} className="bg-purple-600 hover:bg-purple-700 text-white">
                                 <BrainCircuit className="h-4 w-4 mr-2" />
-                                Сохранить настройки
+                                {t('saveSettings')}
                             </Button>
                         </div>
                     </>

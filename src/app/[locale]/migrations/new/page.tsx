@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -36,6 +37,7 @@ interface VMMapping {
 
 export default function NewMigrationPage() {
     const router = useRouter();
+    const t = useTranslations('newMigration');
     const [step, setStep] = useState(0);
     // 0: Source/Target
     // 1: VM Selection
@@ -188,7 +190,7 @@ export default function NewMigrationPage() {
             });
 
             if (collisions.length > 0 && !options.autoVmid) { // Only block if explicit ID is used
-                if (!confirm(`Внимание: ${collisions.length} целевых ID уже заняты (например, ${collisions[0].vmid}). Продолжить? (Это может завершиться ошибкой)`)) {
+                if (!confirm(t('alerts.idConflict', { count: collisions.length, example: collisions[0].vmid }))) {
                     setStarting(false);
                     return;
                 }
@@ -221,7 +223,7 @@ export default function NewMigrationPage() {
                     }
                 }
 
-                alert(`Запланировано: ${successCount} из ${selectedVMs.length} миграций успешно запланировано на ${scheduledDate.toLocaleString()}.`);
+                alert(t('alerts.scheduledSuccess', { success: successCount, total: selectedVMs.length, date: scheduledDate.toLocaleString() }));
                 router.push('/jobs');
                 setStarting(false);
                 return;
@@ -257,7 +259,7 @@ export default function NewMigrationPage() {
                 if (res.message && (res.message.includes('SSH') || res.message.includes('Permission denied'))) {
                     setShowSshFix(true);
                 } else {
-                    alert('Ошибка: ' + res.message);
+                    alert(t('alerts.error') + ' ' + res.message);
                 }
                 setStarting(false);
             }
@@ -266,7 +268,7 @@ export default function NewMigrationPage() {
             if (msg.includes('SSH') || msg.includes('Permission denied')) {
                 setShowSshFix(true);
             } else {
-                alert('Ошибка: ' + msg);
+                alert(t('alerts.error') + ' ' + msg);
             }
             setStarting(false);
         }
@@ -277,11 +279,11 @@ export default function NewMigrationPage() {
         setFixingSsh(true);
         try {
             await setupSSHTrust(parseInt(sourceId), parseInt(targetId), sshPassword);
-            alert('SSH Trust исправлен. Попробуйте снова.');
+            alert(t('alerts.sshTrustFixed'));
             setShowSshFix(false);
             setSshPassword('');
         } catch (e: any) {
-            alert('Ошибка: ' + e.message);
+            alert(t('alerts.error') + ' ' + e.message);
         } finally {
             setFixingSsh(false);
         }
@@ -291,17 +293,17 @@ export default function NewMigrationPage() {
     return (
         <TooltipProvider>
             <div className="max-w-6xl mx-auto py-8">
-                <h1 className="text-3xl font-bold mb-8">Создать миграцию</h1>
+                <h1 className="text-3xl font-bold mb-8">{t('title')}</h1>
 
                 <div className="grid md:grid-cols-4 gap-8">
                     {/* Steps Sidebar */}
                     <div className="md:col-span-1 space-y-2">
                         {[
-                            { t: 'Источник и назначение', d: 'Выбрать сервер' },
-                            { t: 'Выбор VM', d: `${selectedVmIds.length} выбрано` },
-                            { t: 'Маппинг', d: 'Ресурсы и ID' },
-                            { t: 'Опции', d: 'Общие настройки' },
-                            { t: 'Подтверждение', d: 'Запустить' }
+                            { t: t('steps.sourceTarget'), d: t('steps.selectServer') },
+                            { t: t('steps.vmSelection'), d: `${selectedVmIds.length} ${t('steps.selected')}` },
+                            { t: t('steps.mapping'), d: t('steps.resourcesId') },
+                            { t: t('steps.options'), d: t('steps.settings') },
+                            { t: t('steps.confirm'), d: t('steps.start') }
                         ].map((s, idx) => (
                             <div key={idx} className={`flex items-center p-3 rounded-lg border transition-colors ${step === idx ? 'bg-primary/10 border-primary' : (step > idx ? 'bg-muted border-transparent opacity-50' : 'border-transparent opacity-50')}`}>
                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center border font-bold text-sm mr-3 ${step === idx ? 'bg-primary text-primary-foreground' : 'bg-background'}`}>
@@ -323,21 +325,21 @@ export default function NewMigrationPage() {
                                 {/* STEP 0: Servers */}
                                 {step === 0 && (
                                     <div className="space-y-8 animate-in fade-in">
-                                        <h2 className="text-xl font-semibold flex items-center gap-2"><ArrowRightLeft className="h-5 w-5" /> Выберите путь</h2>
+                                        <h2 className="text-xl font-semibold flex items-center gap-2"><ArrowRightLeft className="h-5 w-5" /> {t('step0.title')}</h2>
 
                                         {servers.length === 0 ? (
                                             <div className="p-8 border-2 border-dashed rounded-lg text-center space-y-4">
                                                 <div className="flex justify-center"><ServerIcon className="h-10 w-10 text-muted-foreground/50" /></div>
-                                                <h3 className="font-semibold text-lg">Серверы не найдены</h3>
-                                                <p className="text-muted-foreground">Сначала добавьте серверы Proxmox.</p>
-                                                <Button variant="outline" onClick={() => router.push('/servers')}>К серверам</Button>
+                                                <h3 className="font-semibold text-lg">{t('step0.noServersFound')}</h3>
+                                                <p className="text-muted-foreground">{t('step0.addServersFirst')}</p>
+                                                <Button variant="outline" onClick={() => router.push('/servers')}>{t('step0.toServers')}</Button>
                                             </div>
                                         ) : (
                                             <div className="grid gap-8 md:grid-cols-2">
                                                 {/* Source Server */}
                                                 <div className="space-y-4">
                                                     <div className="flex items-center justify-between">
-                                                        <Label className="text-base font-semibold uppercase tracking-wider text-muted-foreground">Откуда (источник)</Label>
+                                                        <Label className="text-base font-semibold uppercase tracking-wider text-muted-foreground">{t('step0.from')}</Label>
                                                         {sourceId && <Badge variant="outline" className="font-mono">{servers.find(s => s.id.toString() === sourceId)?.host}</Badge>}
                                                     </div>
                                                     <Select value={sourceId} onValueChange={(v) => {
@@ -347,11 +349,11 @@ export default function NewMigrationPage() {
                                                         <SelectTrigger className="h-14 font-medium text-lg w-full bg-background border-2 focus:ring-0 focus:border-primary">
                                                             <div className="flex items-center gap-3">
                                                                 <ServerIcon className="h-5 w-5 text-muted-foreground" />
-                                                                <SelectValue placeholder="Выберите исходный сервер..." />
+                                                                <SelectValue placeholder={t('step0.selectSource')} />
                                                             </div>
                                                         </SelectTrigger>
                                                         <SelectContent className="z-[100] max-h-[300px]">
-                                                            <SelectItem value="placeholder-disabled-source" disabled className="hidden">Выбрать...</SelectItem>
+                                                            <SelectItem value="placeholder-disabled-source" disabled className="hidden">{t('step0.select')}</SelectItem>
                                                             {servers.map(s => (
                                                                 <SelectItem key={s.id} value={s.id.toString()} disabled={s.id.toString() === targetId} className="cursor-pointer py-3">
                                                                     <span className="font-semibold text-base">{s.name}</span>
@@ -365,18 +367,18 @@ export default function NewMigrationPage() {
                                                 {/* Target Server */}
                                                 <div className="space-y-4">
                                                     <div className="flex items-center justify-between">
-                                                        <Label className="text-base font-semibold uppercase tracking-wider text-muted-foreground">Куда (назначение)</Label>
+                                                        <Label className="text-base font-semibold uppercase tracking-wider text-muted-foreground">{t('step0.to')}</Label>
                                                         {targetId && <Badge variant="outline" className="font-mono">{servers.find(s => s.id.toString() === targetId)?.host}</Badge>}
                                                     </div>
                                                     <Select value={targetId} onValueChange={setTargetId}>
                                                         <SelectTrigger className="h-14 font-medium text-lg w-full bg-background border-2 focus:ring-0 focus:border-primary">
                                                             <div className="flex items-center gap-3">
                                                                 <ServerIcon className="h-5 w-5 text-muted-foreground" />
-                                                                <SelectValue placeholder="Выберите целевой сервер..." />
+                                                                <SelectValue placeholder={t('step0.selectTarget')} />
                                                             </div>
                                                         </SelectTrigger>
                                                         <SelectContent className="z-[100] max-h-[300px]">
-                                                            <SelectItem value="placeholder-disabled-target" disabled className="hidden">Выбрать...</SelectItem>
+                                                            <SelectItem value="placeholder-disabled-target" disabled className="hidden">{t('step0.select')}</SelectItem>
                                                             {servers.map(s => (
                                                                 <SelectItem key={s.id} value={s.id.toString()} disabled={s.id.toString() === sourceId} className="cursor-pointer py-3">
                                                                     <span className="font-semibold text-base">{s.name}</span>
@@ -394,8 +396,8 @@ export default function NewMigrationPage() {
                                             <div className="flex items-center justify-between">
                                                 <div className="text-sm text-muted-foreground">
                                                     {sourceId && targetId ? (
-                                                        loadingVms ? <span className="flex items-center gap-2"><Loader2 className="h-3 w-3 animate-spin" /> Загрузка объектов...</span> : <span>{vms.length} объектов найдено.</span>
-                                                    ) : <span>Выберите сервер для продолжения.</span>}
+                                                        loadingVms ? <span className="flex items-center gap-2"><Loader2 className="h-3 w-3 animate-spin" /> {t('step0.loadingObjects')}</span> : <span>{vms.length} {t('step0.objectsFound')}</span>
+                                                    ) : <span>{t('step0.selectToContinue')}</span>}
                                                 </div>
 
                                                 <div className="flex gap-4">
@@ -409,7 +411,7 @@ export default function NewMigrationPage() {
                                                         }}
                                                     >
                                                         <Database className="h-4 w-4" />
-                                                        Мигрировать все
+                                                        {t('step0.migrateAll')}
                                                     </Button>
 
                                                     <Button
@@ -417,13 +419,13 @@ export default function NewMigrationPage() {
                                                         className="font-medium"
                                                         onClick={() => setStep(1)}
                                                     >
-                                                        Выбрать вручную <ArrowRight className="ml-2 h-4 w-4" />
+                                                        {t('step0.manualSelect')} <ArrowRight className="ml-2 h-4 w-4" />
                                                     </Button>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        {loadingResources && <div className="text-sm text-muted-foreground animate-pulse text-center">Загрузка целевых ресурсов... (VM & Сеть)</div>}
+                                        {loadingResources && <div className="text-sm text-muted-foreground animate-pulse text-center">{t('step0.loadingTargetResources')}</div>}
                                     </div>
                                 )}
 
@@ -431,16 +433,16 @@ export default function NewMigrationPage() {
                                 {step === 1 && (
                                     <div className="space-y-4 animate-in fade-in flex-1 flex flex-col">
                                         <div className="flex justify-between items-center">
-                                            <h2 className="text-xl font-semibold">Выбрать VM</h2>
+                                            <h2 className="text-xl font-semibold">{t('step1.title')}</h2>
                                             <div className="flex items-center gap-2 bg-muted/50 p-1.5 rounded-md">
                                                 <Checkbox id="selectAll" checked={selectedVmIds.length === vms.length && vms.length > 0} onCheckedChange={(c) => handleSelectAll(!!c)} />
-                                                <Label htmlFor="selectAll" className="text-sm cursor-pointer whitespace-nowrap">Выбрать все</Label>
+                                                <Label htmlFor="selectAll" className="text-sm cursor-pointer whitespace-nowrap">{t('step1.selectAll')}</Label>
                                             </div>
                                         </div>
 
                                         {vms.length === 0 && !loadingVms && (
                                             <div className="text-center py-10 border-2 border-dashed rounded-lg text-muted-foreground">
-                                                VM или контейнеры на исходном сервере не найдены.
+                                                {t('step1.noVms')}
                                             </div>
                                         )}
 
@@ -452,10 +454,10 @@ export default function NewMigrationPage() {
                                                     <thead className="bg-muted/90 backdrop-blur sticky top-0 z-10">
                                                         <tr className="text-left border-b">
                                                             <th className="p-3 w-10"></th>
-                                                            <th className="p-3">ID</th>
-                                                            <th className="p-3">Имя</th>
-                                                            <th className="p-3">Тип</th>
-                                                            <th className="p-3">Статус</th>
+                                                            <th className="p-3">{t('step1.id')}</th>
+                                                            <th className="p-3">{t('step1.name')}</th>
+                                                            <th className="p-3">{t('step1.type')}</th>
+                                                            <th className="p-3">{t('step1.status')}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody className="divide-y">
@@ -482,8 +484,8 @@ export default function NewMigrationPage() {
                                             </div>
                                         )}
                                         <div className="flex justify-between items-center text-xs text-muted-foreground border-t pt-2">
-                                            <span>{vms.length} всего объектов</span>
-                                            <span className="font-semibold text-primary">{selectedVmIds.length} отмечено для миграции</span>
+                                            <span>{vms.length} {t('step1.totalObjects')}</span>
+                                            <span className="font-semibold text-primary">{selectedVmIds.length} {t('step1.markedForMigration')}</span>
                                         </div>
                                     </div>
                                 )}
@@ -492,19 +494,19 @@ export default function NewMigrationPage() {
                                 {step === 2 && (
                                     <div className="space-y-4 animate-in fade-in flex-1 flex flex-col">
                                         <div className="flex justify-between items-center">
-                                            <h2 className="text-xl font-semibold">Отображение и ID</h2>
+                                            <h2 className="text-xl font-semibold">{t('step2.title')}</h2>
                                             <div className="flex gap-2">
                                                 <Select onValueChange={(v) => handleBulkMap('targetStorage', v)}>
-                                                    <SelectTrigger className="w-[150px] h-8 text-xs"><SelectValue placeholder="Масс. хранил." /></SelectTrigger>
+                                                    <SelectTrigger className="w-[150px] h-8 text-xs"><SelectValue placeholder={t('step2.bulkStorage')} /></SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem value="auto">Авто (Сохранить)</SelectItem>
+                                                        <SelectItem value="auto">{t('step2.autoSave')}</SelectItem>
                                                         {targetResources.storages.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                                                     </SelectContent>
                                                 </Select>
                                                 <Select onValueChange={(v) => handleBulkMap('network', v)}>
-                                                    <SelectTrigger className="w-[150px] h-8 text-xs"><SelectValue placeholder="Масс. сеть" /></SelectTrigger>
+                                                    <SelectTrigger className="w-[150px] h-8 text-xs"><SelectValue placeholder={t('step2.bulkNetwork')} /></SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem value="auto">Авто</SelectItem>
+                                                        <SelectItem value="auto">{t('step2.auto')}</SelectItem>
                                                         {targetResources.bridges.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
                                                     </SelectContent>
                                                 </Select>
@@ -515,10 +517,10 @@ export default function NewMigrationPage() {
                                             <table className="w-full text-sm">
                                                 <thead className="bg-muted sticky top-0 z-10 shadow-sm">
                                                     <tr className="text-left">
-                                                        <th className="p-3 w-[20%]">Исходная VM</th>
-                                                        <th className="p-3 w-[20%]">Целевой ID</th>
-                                                        <th className="p-3 w-[25%]">Целевое хранилище</th>
-                                                        <th className="p-3 w-[35%]">Отображение сети</th>
+                                                        <th className="p-3 w-[20%]">{t('step2.sourceVm')}</th>
+                                                        <th className="p-3 w-[20%]">{t('step2.targetId')}</th>
+                                                        <th className="p-3 w-[25%]">{t('step2.targetStorage')}</th>
+                                                        <th className="p-3 w-[35%]">{t('step2.networkMapping')}</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y">
@@ -550,7 +552,7 @@ export default function NewMigrationPage() {
                                                                                     <AlertTriangle className="h-4 w-4 text-red-500 animate-pulse" />
                                                                                 </TooltipTrigger>
                                                                                 <TooltipContent className="bg-red-500 text-white">
-                                                                                    ID {map.targetVmid} уже существует на целевом сервере!
+                                                                                    {t('step2.idExists', { id: map.targetVmid })}
                                                                                 </TooltipContent>
                                                                             </Tooltip>
                                                                         )}
@@ -565,7 +567,7 @@ export default function NewMigrationPage() {
                                                                     }}>
                                                                         <SelectTrigger className="h-8 text-xs w-full"><SelectValue /></SelectTrigger>
                                                                         <SelectContent>
-                                                                            <SelectItem value="auto"><span className="text-muted-foreground italic">Авто (Сохранить)</span></SelectItem>
+                                                                            <SelectItem value="auto"><span className="text-muted-foreground italic">{t('step2.autoSave')}</span></SelectItem>
                                                                             {targetResources.storages.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                                                                         </SelectContent>
                                                                     </Select>
@@ -573,7 +575,7 @@ export default function NewMigrationPage() {
                                                                 <td className="p-2 align-top">
                                                                     <div className="grid gap-2">
                                                                         {Object.keys(map.networkMapping).length === 0 ? (
-                                                                            <div className="text-xs text-muted-foreground italic p-1">Загрузка сети...</div>
+                                                                            <div className="text-xs text-muted-foreground italic p-1">{t('step2.loadingNetwork')}</div>
                                                                         ) : (
                                                                             Object.entries(map.networkMapping).map(([net, currentBridge]) => (
                                                                                 <div key={net} className="flex items-center gap-2">
@@ -588,9 +590,9 @@ export default function NewMigrationPage() {
                                                                                             setMappings(m);
                                                                                         }}
                                                                                     >
-                                                                                        <SelectTrigger className="h-7 text-xs flex-1"><SelectValue placeholder="Мост" /></SelectTrigger>
+                                                                                        <SelectTrigger className="h-7 text-xs flex-1"><SelectValue placeholder={t('step2.bridge')} /></SelectTrigger>
                                                                                         <SelectContent>
-                                                                                            <SelectItem value="auto"><span className="text-muted-foreground italic">Авто</span></SelectItem>
+                                                                                            <SelectItem value="auto"><span className="text-muted-foreground italic">{t('step2.auto')}</span></SelectItem>
                                                                                             {targetResources.bridges.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
                                                                                         </SelectContent>
                                                                                     </Select>
@@ -608,7 +610,7 @@ export default function NewMigrationPage() {
                                         <div className="flex items-center justify-between text-xs text-muted-foreground bg-blue-50/50 p-2 rounded border border-blue-100 dark:border-blue-900/30">
                                             <div className="flex items-center gap-2">
                                                 <HelpCircle className="h-4 w-4" />
-                                                <span>ID в <strong>красном</strong> - это конфликты. Измените ID или используйте "Авто VMID".</span>
+                                                <span dangerouslySetInnerHTML={{ __html: t('step2.idConflictHelp') }} />
                                             </div>
                                         </div>
                                     </div>
@@ -617,35 +619,35 @@ export default function NewMigrationPage() {
                                 {/* STEP 3: Options */}
                                 {step === 3 && (
                                     <div className="space-y-6 animate-in fade-in">
-                                        <h2 className="text-xl font-semibold">Опции</h2>
+                                        <h2 className="text-xl font-semibold">{t('step3.title')}</h2>
 
                                         <div className="grid md:grid-cols-2 gap-6">
                                             <div className="p-4 border rounded-lg space-y-4">
-                                                <h3 className="font-medium flex items-center gap-2"><ServerIcon className="h-4 w-4" /> Стратегия миграции</h3>
+                                                <h3 className="font-medium flex items-center gap-2"><ServerIcon className="h-4 w-4" /> {t('step3.strategy')}</h3>
                                                 <div className="space-y-3">
                                                     <div className="flex items-start gap-3">
                                                         <Checkbox id="autoVmid" checked={options.autoVmid} onCheckedChange={(c) => setOptions(o => ({ ...o, autoVmid: !!c }))} />
                                                         <div className="grid gap-1.5 leading-none">
-                                                            <Label htmlFor="autoVmid">Авто VMID (Переопределить)</Label>
-                                                            <p className="text-xs text-muted-foreground">Игнорирует ручные ID и автоматически назначает следующую свободную ID.</p>
+                                                            <Label htmlFor="autoVmid">{t('step3.autoVmid')}</Label>
+                                                            <p className="text-xs text-muted-foreground">{t('step3.autoVmidDesc')}</p>
                                                         </div>
                                                     </div>
                                                     <div className="flex items-start gap-3">
                                                         <Checkbox id="online" checked={options.online} onCheckedChange={(c) => setOptions(o => ({ ...o, online: !!c }))} />
                                                         <div className="grid gap-1.5 leading-none">
-                                                            <Label htmlFor="online">Онлайн режим</Label>
-                                                            <p className="text-xs text-muted-foreground">Снапшот миграция без простоя (экспериментально).</p>
+                                                            <Label htmlFor="online">{t('step3.onlineMode')}</Label>
+                                                            <p className="text-xs text-muted-foreground">{t('step3.onlineModeDesc')}</p>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
 
                                             <div className="p-4 border rounded-lg space-y-4 bg-yellow-500/5 border-yellow-200 dark:border-yellow-900">
-                                                <h3 className="font-medium flex items-center gap-2 text-yellow-700 dark:text-yellow-500"><Calendar className="h-4 w-4" /> Расписание</h3>
-                                                <p className="text-xs text-muted-foreground mb-2">Выполнить миграцию в более позднее время (например, ночью).</p>
+                                                <h3 className="font-medium flex items-center gap-2 text-yellow-700 dark:text-yellow-500"><Calendar className="h-4 w-4" /> {t('step3.schedule')}</h3>
+                                                <p className="text-xs text-muted-foreground mb-2">{t('step3.scheduleDesc')}</p>
 
                                                 <div className="grid gap-2">
-                                                    <Label htmlFor="schedule">Время начала (Опционально)</Label>
+                                                    <Label htmlFor="schedule">{t('step3.startTime')}</Label>
                                                     <Input
                                                         type="datetime-local"
                                                         id="schedule"
@@ -655,7 +657,7 @@ export default function NewMigrationPage() {
                                                     {options.schedule && (
                                                         <div className="flex items-center gap-2 text-xs text-green-600 animate-in fade-in">
                                                             <CheckCircle2 className="h-3 w-3" />
-                                                            <span>Миграция будет запланирована и не выполнится немедленно.</span>
+                                                            <span>{t('step3.scheduledMessage')}</span>
                                                         </div>
                                                     )}
                                                 </div>
@@ -670,30 +672,27 @@ export default function NewMigrationPage() {
                                         <div className="inline-flex items-center justify-center p-6 bg-blue-100 dark:bg-blue-900/20 rounded-full mb-4 animate-pulse">
                                             <ArrowRightLeft className="h-12 w-12 text-blue-600" />
                                         </div>
-                                        <h2 className="text-3xl font-bold">Готово к миграции</h2>
+                                        <h2 className="text-3xl font-bold">{t('step4.title')}</h2>
                                         <p className="text-muted-foreground max-w-md mx-auto">
-                                            Вы выбрали <strong>{selectedVmIds.length} VM</strong> с
-                                            <em> {servers.find(s => s.id.toString() === sourceId)?.name}</em> на
-                                            <em> {servers.find(s => s.id.toString() === targetId)?.name}</em>
-                                            {options.schedule ? ' запланировать' : ' перенести'}.
+                                            {t('step4.selectedVms', { count: selectedVmIds.length })} <em> {servers.find(s => s.id.toString() === sourceId)?.name}</em> {t('step4.fromTo')} <em> {servers.find(s => s.id.toString() === targetId)?.name}</em> {options.schedule ? t('step4.will') : t('step4.transfer')}.
                                         </p>
 
                                         <div className="flex justify-center gap-8 py-4 text-sm">
                                             <div className="text-center">
                                                 <div className="font-bold text-xl">{selectedVmIds.length}</div>
-                                                <div className="text-muted-foreground">ВМ</div>
+                                                <div className="text-muted-foreground">{t('step4.vm')}</div>
                                             </div>
                                             <div className="text-center">
-                                                <div className="font-bold text-xl">{options.autoVmid ? 'Новые (Авто)' : 'Вручную/Сохранить'}</div>
-                                                <div className="text-muted-foreground">ID</div>
+                                                <div className="font-bold text-xl">{options.autoVmid ? t('step4.newIds') : t('step4.manualSave')}</div>
+                                                <div className="text-muted-foreground">{t('step4.id')}</div>
                                             </div>
                                             <div className="text-center">
-                                                <div className="font-bold text-xl">{options.online ? 'Онлайн' : 'Офлайн'}</div>
-                                                <div className="text-muted-foreground">Режим</div>
+                                                <div className="font-bold text-xl">{options.online ? t('step4.online') : t('step4.offline')}</div>
+                                                <div className="text-muted-foreground">{t('step4.mode')}</div>
                                             </div>
                                             {options.schedule && (
                                                 <div className="text-center">
-                                                    <div className="font-bold text-xl text-yellow-600">Запланировано</div>
+                                                    <div className="font-bold text-xl text-yellow-600">{t('step4.scheduled')}</div>
                                                     <div className="text-muted-foreground">
                                                         {new Date(options.schedule).toLocaleDateString()} {new Date(options.schedule).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                     </div>
@@ -703,7 +702,7 @@ export default function NewMigrationPage() {
 
                                         <Button size="lg" className="w-full max-w-sm mx-auto" onClick={handleStart} disabled={starting}>
                                             {starting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : (options.schedule ? <Calendar className="mr-2 h-5 w-5" /> : <ArrowRight className="mr-2 h-5 w-5" />)}
-                                            {options.schedule ? 'Запланировать миграцию' : 'Запустить миграцию'}
+                                            {options.schedule ? t('step4.scheduleMigration') : t('step4.startMigration')}
                                         </Button>
                                     </div>
                                 )}
@@ -712,7 +711,7 @@ export default function NewMigrationPage() {
                                 {/* Navigation Buttons (Bottom) */}
                                 <div className="mt-auto pt-6 flex justify-between border-t">
                                     <Button variant="ghost" onClick={() => step > 0 ? setStep(step - 1) : router.back()} disabled={starting}>
-                                        <ArrowLeft className="mr-2 h-4 w-4" /> Назад
+                                        <ArrowLeft className="mr-2 h-4 w-4" /> {t('actions.back')}
                                     </Button>
 
                                     {step < 4 && (
@@ -720,7 +719,7 @@ export default function NewMigrationPage() {
                                             (step === 0 && (!sourceId || !targetId)) ||
                                             (step === 1 && selectedVmIds.length === 0)
                                         }>
-                                            Далее <ArrowRight className="ml-2 h-4 w-4" />
+                                            {t('actions.next')} <ArrowRight className="ml-2 h-4 w-4" />
                                         </Button>
                                     )}
                                 </div>
@@ -733,13 +732,13 @@ export default function NewMigrationPage() {
                 <Dialog open={showSshFix} onOpenChange={setShowSshFix}>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Исправить SSH соединение</DialogTitle>
-                            <DialogDescription>Введите root-пароль целевого сервера.</DialogDescription>
+                            <DialogTitle>{t('sshFix.title')}</DialogTitle>
+                            <DialogDescription>{t('sshFix.description')}</DialogDescription>
                         </DialogHeader>
-                        <Input type="password" value={sshPassword} onChange={(e) => setSshPassword(e.target.value)} placeholder="Root пароль" />
+                        <Input type="password" value={sshPassword} onChange={(e) => setSshPassword(e.target.value)} placeholder={t('sshFix.passwordPlaceholder')} />
                         <DialogFooter>
-                            <Button variant="outline" onClick={() => setShowSshFix(false)}>Отмена</Button>
-                            <Button onClick={handleFixSsh} disabled={fixingSsh}>{fixingSsh && <Loader2 className="mr-2 animate-spin" />} Исправить</Button>
+                            <Button variant="outline" onClick={() => setShowSshFix(false)}>{t('actions.cancel')}</Button>
+                            <Button onClick={handleFixSsh} disabled={fixingSsh}>{fixingSsh && <Loader2 className="mr-2 animate-spin" />} {t('actions.fixSsh')}</Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>

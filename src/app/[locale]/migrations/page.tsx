@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,8 @@ import { ArrowRightLeft, Plus, Clock, CheckCircle, XCircle, Loader2, AlertTriang
 import { MigrationTask } from '@/app/actions/migration';
 
 export default function MigrationsPage() {
+    const t = useTranslations('migrations');
+    const tCommon = useTranslations('common');
     const [tasks, setTasks] = useState<MigrationTask[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -33,7 +36,7 @@ export default function MigrationsPage() {
     }
 
     async function handleClearHistory() {
-        if (!confirm('Удалить всю историю (кроме выполняющихся задач)?')) return;
+        if (!confirm(t('clearHistoryConfirm'))) return;
         try {
             await fetch('/api/migrations?all=true', { method: 'DELETE' });
             fetchTasks();
@@ -41,11 +44,11 @@ export default function MigrationsPage() {
     }
 
     const statusConfig = {
-        pending: { icon: Clock, color: 'bg-gray-500/10 text-gray-500', label: 'Ожидает', animate: false },
-        running: { icon: Loader2, color: 'bg-blue-500/10 text-blue-500', label: 'Выполняется', animate: true },
-        completed: { icon: CheckCircle, color: 'bg-green-500/10 text-green-500', label: 'Завершена', animate: false },
-        failed: { icon: XCircle, color: 'bg-red-500/10 text-red-500', label: 'Сбой', animate: false },
-        cancelled: { icon: AlertTriangle, color: 'bg-amber-500/10 text-amber-500', label: 'Отменена', animate: false },
+        pending: { icon: Clock, color: 'bg-gray-500/10 text-gray-500', label: t('statusPending'), animate: false },
+        running: { icon: Loader2, color: 'bg-blue-500/10 text-blue-500', label: t('statusRunning'), animate: true },
+        completed: { icon: CheckCircle, color: 'bg-green-500/10 text-green-500', label: t('statusCompleted'), animate: false },
+        failed: { icon: XCircle, color: 'bg-red-500/10 text-red-500', label: t('statusFailed'), animate: false },
+        cancelled: { icon: AlertTriangle, color: 'bg-amber-500/10 text-amber-500', label: t('statusCancelled'), animate: false },
     };
 
     const activeTasks = tasks.filter(t => t.status === 'pending' || t.status === 'running');
@@ -55,14 +58,14 @@ export default function MigrationsPage() {
         <div className="space-y-8">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold">Миграции серверов</h1>
-                    <p className="text-muted-foreground">Полная миграция между серверами</p>
+                    <h1 className="text-3xl font-bold">{t('title')}</h1>
+                    <p className="text-muted-foreground">{t('subtitle')}</p>
                 </div>
                 <div className="flex gap-2">
                     <Link href="/migrations/new">
                         <Button className="gap-2">
                             <Plus className="h-4 w-4" />
-                            Создать миграцию
+                            {t('createNewMigration')}
                         </Button>
                     </Link>
                 </div>
@@ -97,13 +100,13 @@ export default function MigrationsPage() {
                                                                 <span className="font-semibold">{task.target_name}</span>
                                                             </div>
                                                             <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                                                <span>{task.progress}/{task.total_steps} шагов</span>
+                                                                <span>{task.progress}/{task.total_steps} {t('steps')}</span>
                                                                 {task.current_step && (
                                                                     <span className="truncate">• {task.steps.find(s => s.status === 'running')?.name?.replace('Migrate ', '') || task.current_step}</span>
                                                                 )}
                                                             </div>
                                                             <div className="text-sm text-blue-500 font-medium animate-pulse">
-                                                                {task.status === 'running' ? 'Миграция выполняется...' : 'Ожидание...'}
+                                                                {task.status === 'running' ? t('migrationRunning') : t('waiting')}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -111,7 +114,7 @@ export default function MigrationsPage() {
                                                 </div>
                                                 <div className="space-y-2">
                                                     <div className="flex justify-between text-sm">
-                                                        <span className="text-muted-foreground">{task.current_step || 'Инициализация...'}</span>
+                                                        <span className="text-muted-foreground">{task.current_step || t('initializing')}</span>
                                                         <span className="font-mono">{progressPercent}%</span>
                                                     </div>
                                                     <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -129,11 +132,11 @@ export default function MigrationsPage() {
                     {/* History */}
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                            <h2 className="text-xl font-semibold">История</h2>
+                            <h2 className="text-xl font-semibold">{t('history')}</h2>
                             {historyTasks.length > 0 && (
                                 <Button variant="ghost" size="sm" onClick={handleClearHistory} className="text-red-500 hover:text-red-600 hover:bg-red-50">
                                     <Trash2 className="h-4 w-4 mr-2" />
-                                    Очистить историю
+                                    {t('clearHistory')}
                                 </Button>
                             )}
                         </div>
@@ -142,8 +145,8 @@ export default function MigrationsPage() {
                             <Card>
                                 <CardContent className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
                                     <ArrowRightLeft className="h-12 w-12 opacity-20 mb-4" />
-                                    <p>Миграций не найдено.</p>
-                                    <p className="text-sm">Начните первую миграцию сверху справа.</p>
+                                    <p>{t('noMigrations')}</p>
+                                    <p className="text-sm">{t('startFirstMigration')}</p>
                                 </CardContent>
                             </Card>
                         ) : (
@@ -151,11 +154,11 @@ export default function MigrationsPage() {
                                 <table className="w-full text-sm">
                                     <thead>
                                         <tr className="bg-muted/50 text-left border-b">
-                                            <th className="p-3 font-medium">Статус</th>
-                                            <th className="p-3 font-medium">Откуда</th>
-                                            <th className="p-3 font-medium">Куда</th>
-                                            <th className="p-3 font-medium text-right">Дата</th>
-                                            <th className="p-3 font-medium text-right">Подробнее</th>
+                                            <th className="p-3 font-medium">{t('statusColumn')}</th>
+                                            <th className="p-3 font-medium">{t('from')}</th>
+                                            <th className="p-3 font-medium">{t('to')}</th>
+                                            <th className="p-3 font-medium text-right">{t('date')}</th>
+                                            <th className="p-3 font-medium text-right">{t('details')}</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y">
@@ -177,7 +180,7 @@ export default function MigrationsPage() {
                                                     </td>
                                                     <td className="p-3 text-right">
                                                         <Link href={`/migrations/${task.id}`}>
-                                                            <Button variant="ghost" size="sm">Просмотр</Button>
+                                                            <Button variant="ghost" size="sm">{t('view')}</Button>
                                                         </Link>
                                                     </td>
                                                 </tr>
@@ -185,7 +188,7 @@ export default function MigrationsPage() {
                                         })}
                                         {historyTasks.length === 0 && (
                                             <tr>
-                                                <td colSpan={5} className="p-8 text-center text-muted-foreground">История пуста.</td>
+                                                <td colSpan={5} className="p-8 text-center text-muted-foreground">{t('historyEmpty')}</td>
                                             </tr>
                                         )}
                                     </tbody>

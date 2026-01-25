@@ -3,6 +3,39 @@
 import db from '@/lib/db';
 import { getNetworkConfig } from './network';
 import { explainNetworkConfig, getAISettings } from './ai';
+import { getTranslations } from 'next-intl/server';
+import { headers, cookies } from 'next/headers';
+import { routing } from '@/i18n/routing';
+
+// Helper to get locale in server actions
+async function getServerLocale(): Promise<string> {
+    const headersList = await headers();
+    const cookieStore = await cookies();
+
+    // Try to get locale from cookie (next-intl stores it as 'NEXT_LOCALE')
+    const localeCookie = cookieStore.get('NEXT_LOCALE');
+    if (localeCookie?.value && routing.locales.includes(localeCookie.value as any)) {
+        return localeCookie.value;
+    }
+
+    // Fallback: try referer header
+    const referer = headersList.get('referer') || '';
+    const localeMatch = referer.match(/\/([a-z]{2})\//);
+    if (localeMatch) {
+        const locale = localeMatch[1];
+        if (routing.locales.includes(locale as any)) {
+            return locale;
+        }
+    }
+
+    // Final fallback to default locale
+    return routing.defaultLocale;
+}
+
+async function t(namespace: string) {
+    const locale = await getServerLocale();
+    return getTranslations({ locale, namespace });
+}
 
 export interface AnalysisResult {
     id: number;
@@ -49,7 +82,8 @@ export async function runNetworkAnalysis(serverId: number): Promise<string> {
             analysisResult = await explainNetworkConfig(config.interfaces);
         } catch (aiError: any) {
             console.error(`[AI Analysis] AI processing failed:`, aiError);
-            throw new Error(`AI-анализ не удался: ${aiError.message}`);
+            const aiT = await t('actionsAI');
+            throw new Error(`${aiT('networkAnalysisFailed')}: ${aiError.message}`);
         }
 
         // Serialize for DB/Frontend

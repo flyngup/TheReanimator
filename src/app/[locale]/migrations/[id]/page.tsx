@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +17,7 @@ import { MigrationTask, MigrationStep } from '@/app/actions/migration';
 export default function MigrationDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
     const router = useRouter();
+    const t = useTranslations('migrationDetail');
     const [task, setTask] = useState<MigrationTask | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -42,7 +44,7 @@ export default function MigrationDetailPage({ params }: { params: Promise<{ id: 
     }
 
     async function handleCancel() {
-        if (!confirm('Отменить миграцию и удалить задачу?')) return;
+        if (!confirm(t('cancelConfirm'))) return;
         try {
             await fetch(`/api/migrations/${id}`, { method: 'DELETE' });
             router.push('/migrations');
@@ -50,7 +52,7 @@ export default function MigrationDetailPage({ params }: { params: Promise<{ id: 
     }
 
     async function handleDelete() {
-        if (!confirm('Удалить эту запись из истории без возможности восстановления?')) return;
+        if (!confirm(t('deleteConfirm'))) return;
         try {
             await fetch(`/api/migrations/${id}`, { method: 'DELETE' });
             router.push('/migrations');
@@ -58,18 +60,18 @@ export default function MigrationDetailPage({ params }: { params: Promise<{ id: 
     }
 
     const statusConfig = {
-        pending: { icon: Clock, color: 'text-gray-500', bg: 'bg-gray-500/10', label: 'Ожидает', animate: false },
-        running: { icon: Loader2, color: 'text-blue-500', bg: 'bg-blue-500/10', label: 'Выполняется', animate: true },
-        completed: { icon: CheckCircle, color: 'text-green-500', bg: 'bg-green-500/10', label: 'Завершена', animate: false },
-        failed: { icon: XCircle, color: 'text-red-500', bg: 'bg-red-500/10', label: 'Сбой', animate: false },
-        cancelled: { icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-500/10', label: 'Отменена', animate: false },
+        pending: { icon: Clock, color: 'text-gray-500', bg: 'bg-gray-500/10', label: t('statusPending'), animate: false },
+        running: { icon: Loader2, color: 'text-blue-500', bg: 'bg-blue-500/10', label: t('statusRunning'), animate: true },
+        completed: { icon: CheckCircle, color: 'text-green-500', bg: 'bg-green-500/10', label: t('statusCompleted'), animate: false },
+        failed: { icon: XCircle, color: 'text-red-500', bg: 'bg-red-500/10', label: t('statusFailed'), animate: false },
+        cancelled: { icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-500/10', label: t('statusCancelled'), animate: false },
     };
 
     if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
     if (!task) return (
         <div className="text-center py-20">
-            <h1 className="text-2xl font-bold">Nicht gefunden</h1>
-            <Link href="/migrations"><Button className="mt-4">Назад</Button></Link>
+            <h1 className="text-2xl font-bold">{t('notFound')}</h1>
+            <Link href="/migrations"><Button className="mt-4">{t('back')}</Button></Link>
         </div>
     );
 
@@ -103,7 +105,7 @@ export default function MigrationDetailPage({ params }: { params: Promise<{ id: 
                     </Button>
                 ) : (
                     <Button variant="outline" onClick={handleDelete} className="gap-2 text-red-500 hover:text-red-700 hover:bg-red-50 border-red-200">
-                        <Trash2 className="h-4 w-4" /> Удалить
+                        <Trash2 className="h-4 w-4" /> {t('delete')}
                     </Button>
                 )}
             </div>
@@ -212,7 +214,7 @@ export default function MigrationDetailPage({ params }: { params: Promise<{ id: 
                                     {task.status === 'running' && <span className="animate-pulse inline-block w-2 h-4 bg-zinc-500 align-middle ml-1" />}
                                 </>
                             ) : (
-                                <span className="text-zinc-500 italic">Ещё нет записей лога...</span>
+                                <span className="text-zinc-500 italic">{t('noLogEntries')}</span>
                             )}
                         </div>
                     </ScrollArea>

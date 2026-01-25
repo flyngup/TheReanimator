@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -21,6 +22,7 @@ interface SyncDialogProps {
 }
 
 export function SyncDialog({ item, servers, onSuccess }: SyncDialogProps) {
+    const t = useTranslations('library');
     const [open, setOpen] = useState(false);
     const [targetServerId, setTargetServerId] = useState<string>("");
     const [targetStorage, setTargetStorage] = useState<string>("");
@@ -42,7 +44,7 @@ export function SyncDialog({ item, servers, onSuccess }: SyncDialogProps) {
             setStorages(avail);
             if (avail.length > 0) setTargetStorage(avail[0]);
         } catch (error) {
-            toast.error("Ошибка загрузки хранилищ");
+            toast.error(t('storageLoadError'));
         } finally {
             setLoadingStorages(false);
         }
@@ -59,11 +61,11 @@ export function SyncDialog({ item, servers, onSuccess }: SyncDialogProps) {
                 targetStorage,
                 item.type
             );
-            toast.success("Синхронизация успешна", { description: `${item.name} скопирован.` });
+            toast.success(t('syncSuccess'), { description: t('syncSuccessDesc', { name: item.name }) });
             setOpen(false);
             if (onSuccess) onSuccess();
         } catch (error: any) {
-            toast.error("Ошибка синхронизации", { description: error.message });
+            toast.error(t('syncError'), { description: error.message });
         } finally {
             setSyncing(false);
         }
@@ -76,30 +78,30 @@ export function SyncDialog({ item, servers, onSuccess }: SyncDialogProps) {
             <DialogTrigger asChild>
                 <Button variant="ghost" size="sm" disabled={eligibleTargets.length === 0}>
                     <Copy className="h-4 w-4 mr-2" />
-                    Синхронизировать
+                    {t('syncButton')}
                 </Button>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Синхронизация образа</DialogTitle>
+                    <DialogTitle>{t('syncImageTitle')}</DialogTitle>
                     <DialogDescription>
-                        Копировать <strong>{item.name}</strong> на другой сервер.
+                        {t('syncImageDesc', { name: item.name })}
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="grid gap-4 py-4">
                     <div className="grid gap-2">
-                        <Label>Источник</Label>
+                        <Label>{t('source')}</Label>
                         <div className="text-sm font-mono bg-muted p-2 rounded">
                             {sourceLocation.serverName} ({sourceLocation.storage})
                         </div>
                     </div>
 
                     <div className="grid gap-2">
-                        <Label>Целевой сервер</Label>
+                        <Label>{t('targetServer')}</Label>
                         <Select value={targetServerId} onValueChange={handleServerChange}>
                             <SelectTrigger>
-                                <SelectValue placeholder="Выберите сервер" />
+                                <SelectValue placeholder={t('selectServer')} />
                             </SelectTrigger>
                             <SelectContent>
                                 {eligibleTargets.map(s => (
@@ -111,10 +113,10 @@ export function SyncDialog({ item, servers, onSuccess }: SyncDialogProps) {
 
                     {targetServerId && (
                         <div className="grid gap-2">
-                            <Label>Целевое хранилище</Label>
+                            <Label>{t('targetStorage')}</Label>
                             <Select value={targetStorage} onValueChange={setTargetStorage} disabled={loadingStorages || storages.length === 0}>
                                 <SelectTrigger>
-                                    <SelectValue placeholder={loadingStorages ? "Загрузка хранилищ..." : "Выберите хранилище"} />
+                                    <SelectValue placeholder={loadingStorages ? t('loadingStorages') : t('selectStorage')} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {storages.map(s => (
@@ -123,17 +125,17 @@ export function SyncDialog({ item, servers, onSuccess }: SyncDialogProps) {
                                 </SelectContent>
                             </Select>
                             {storages.length === 0 && !loadingStorages && targetServerId && (
-                                <p className="text-xs text-red-500">Совместимое хранилище не найдено.</p>
+                                <p className="text-xs text-red-500">{t('noCompatibleStorage')}</p>
                             )}
                         </div>
                     )}
                 </div>
 
                 <DialogFooter>
-                    <Button variant="outline" onClick={() => setOpen(false)} disabled={syncing}>Отмена</Button>
+                    <Button variant="outline" onClick={() => setOpen(false)} disabled={syncing}>{t('cancel')}</Button>
                     <Button onClick={handleSync} disabled={!targetServerId || !targetStorage || syncing}>
                         {syncing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Синхронизировать
+                        {t('syncButton')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

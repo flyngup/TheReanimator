@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Server, Trash2, ExternalLink, ChevronDown, ChevronRight, FolderOpen, Search, Layers, Clock } from "lucide-react";
 import { ServerJobsDialog } from '@/components/server/details/ServerJobsDialog';
+import { useTranslations } from 'next-intl';
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 interface ServerItem {
     id: number;
@@ -25,9 +27,12 @@ interface ServersClientProps {
 }
 
 export default function ServersClient({ servers, groups, onDeleteServer }: ServersClientProps) {
+    const t = useTranslations('servers');
     const [searchTerm, setSearchTerm] = useState('');
     const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(['ungrouped', ...groups]));
     const [deletingId, setDeletingId] = useState<number | null>(null);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [serverToDelete, setServerToDelete] = useState<number | null>(null);
 
     // Filter servers based on search
     const filteredServers = useMemo(() => {
@@ -69,14 +74,21 @@ export default function ServersClient({ servers, groups, onDeleteServer }: Serve
     };
 
     const handleDelete = async (id: number) => {
-        if (!confirm('Удалить этот сервер? Все бэкапы и задачи также будут удалены.')) return;
-        setDeletingId(id);
+        setServerToDelete(id);
+        setDeleteConfirmOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!serverToDelete) return;
+        setDeleteConfirmOpen(false);
+        setDeletingId(serverToDelete);
         try {
-            await onDeleteServer(id);
+            await onDeleteServer(serverToDelete);
         } catch (e) {
-            alert('Ошибка удаления: ' + (e instanceof Error ? e.message : String(e)));
+            alert(t('deleteError') + ': ' + (e instanceof Error ? e.message : String(e)));
         }
         setDeletingId(null);
+        setServerToDelete(null);
     };
 
     const expandAll = () => {
@@ -95,16 +107,16 @@ export default function ServersClient({ servers, groups, onDeleteServer }: Serve
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold">Серверы</h1>
+                    <h1 className="text-3xl font-bold">{t('title')}</h1>
                     <p className="text-muted-foreground">
-                        Управление серверами Proxmox VE и PBS
-                        {searchTerm && ` (${displayedServers} из ${totalServers})`}
+                        {t('subtitle')}
+                        {searchTerm && ` (${displayedServers} {t('of')} ${totalServers})`}
                     </p>
                 </div>
                 <Link href="/servers/new">
                     <Button>
                         <Plus className="mr-2 h-4 w-4" />
-                        Добавить сервер
+                        {t('addServer')}
                     </Button>
                 </Link>
             </div>
@@ -115,7 +127,7 @@ export default function ServersClient({ servers, groups, onDeleteServer }: Serve
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                         type="search"
-                        placeholder="Поиск сервера, типа или группы..."
+                        placeholder={t('searchPlaceholder')}
                         className="pl-10"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -124,10 +136,10 @@ export default function ServersClient({ servers, groups, onDeleteServer }: Serve
                 <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={expandAll}>
                         <Layers className="h-4 w-4 mr-2" />
-                        Развернуть все
+                        {t('expandAll')}
                     </Button>
                     <Button variant="outline" size="sm" onClick={collapseAll}>
-                        Свернуть все
+                        {t('collapseAll')}
                     </Button>
                 </div>
             </div>
@@ -136,12 +148,12 @@ export default function ServersClient({ servers, groups, onDeleteServer }: Serve
                 <Card className="border-dashed">
                     <CardContent className="flex flex-col items-center justify-center py-12">
                         <Server className="h-12 w-12 text-muted-foreground mb-4" />
-                        <h3 className="text-lg font-semibold mb-2">Нет серверов</h3>
+                        <h3 className="text-lg font-semibold mb-2">{t('noServers')}</h3>
                         <p className="text-muted-foreground text-center mb-4">
-                            Добавьте первый сервер Proxmox.
+                            {t('noServersDesc')}
                         </p>
                         <Link href="/servers/new">
-                            <Button>Добавить сервер</Button>
+                            <Button>{t('addServer')}</Button>
                         </Link>
                     </CardContent>
                 </Card>
@@ -183,7 +195,7 @@ export default function ServersClient({ servers, groups, onDeleteServer }: Serve
                                                     {pbsCount} PBS
                                                 </span>
                                             )}
-                                            <span className="ml-2">{groupServers.length} серверов</span>
+                                            <span className="ml-2">{groupServers.length} {t('servers')}</span>
                                         </div>
                                     </div>
                                 </CardHeader>
@@ -191,7 +203,7 @@ export default function ServersClient({ servers, groups, onDeleteServer }: Serve
                                     <CardContent className="p-0 divide-y divide-border/50">
                                         {groupServers.length === 0 ? (
                                             <div className="p-4 text-center text-muted-foreground text-sm">
-                                                Нет серверов в группе
+                                                {t('noServersInGroup')}
                                             </div>
                                         ) : (
                                             groupServers.map((server) => (
@@ -200,6 +212,7 @@ export default function ServersClient({ servers, groups, onDeleteServer }: Serve
                                                     server={server}
                                                     onDelete={handleDelete}
                                                     isDeleting={deletingId === server.id}
+                                                    t={t}
                                                 />
                                             ))
                                         )}
@@ -224,10 +237,10 @@ export default function ServersClient({ servers, groups, onDeleteServer }: Serve
                                             <ChevronRight className="h-5 w-5 text-muted-foreground" />
                                         )}
                                         <Server className="h-5 w-5 text-muted-foreground" />
-                                        <CardTitle className="text-base text-muted-foreground">Без группы</CardTitle>
+                                        <CardTitle className="text-base text-muted-foreground">{t('ungrouped')}</CardTitle>
                                     </div>
                                     <span className="text-sm text-muted-foreground">
-                                        {groupedServers['ungrouped'].length} серверов
+                                        {groupedServers['ungrouped'].length} {t('servers')}
                                     </span>
                                 </div>
                             </CardHeader>
@@ -239,6 +252,7 @@ export default function ServersClient({ servers, groups, onDeleteServer }: Serve
                                             server={server}
                                             onDelete={handleDelete}
                                             isDeleting={deletingId === server.id}
+                                            t={t}
                                         />
                                     ))}
                                 </CardContent>
@@ -247,6 +261,16 @@ export default function ServersClient({ servers, groups, onDeleteServer }: Serve
                     )}
                 </div>
             )}
+
+            {/* Confirm Dialog */}
+            <ConfirmDialog
+                open={deleteConfirmOpen}
+                onOpenChange={setDeleteConfirmOpen}
+                title={t('deleteConfirm')}
+                message=""
+                onConfirm={confirmDelete}
+                variant="destructive"
+            />
         </div>
     );
 }
@@ -254,11 +278,13 @@ export default function ServersClient({ servers, groups, onDeleteServer }: Serve
 function ServerRow({
     server,
     onDelete,
-    isDeleting
+    isDeleting,
+    t
 }: {
     server: ServerItem;
     onDelete: (id: number) => void;
     isDeleting: boolean;
+    t: (key: string) => string;
 }) {
     return (
         <div className="flex items-center justify-between p-4 hover:bg-muted/5 transition-colors">
@@ -280,7 +306,7 @@ function ServerRow({
                 <Link href={`/servers/${server.id}`}>
                     <Button variant="outline" size="sm">
                         <ExternalLink className="mr-2 h-4 w-4" />
-                        Подробнее
+                        {t('moreDetails')}
                     </Button>
                 </Link>
                 <Button

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { getUsers, createUser, updateUser, deleteUser, getRoles, getUserRoles, setUserRoles, User, Role, getCurrentUser } from '@/app/actions/userAuth';
 import { getServers, Server } from '@/app/actions/server';
 import { getUserServerAccess, setUserServerAccess } from '@/app/actions/userAuth';
@@ -32,8 +33,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, Plus, Trash2, Shield, Server as ServerIcon, Edit, UserPlus, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { redirect } from 'next/navigation';
+import { useLocale } from 'next-intl';
 
 export default function UsersPage() {
+    const t = useTranslations('users');
+    const tCommon = useTranslations('common');
+    const locale = useLocale();
     const [users, setUsers] = useState<User[]>([]);
     const [roles, setRoles] = useState<Role[]>([]);
     const [servers, setServers] = useState<Server[]>([]);
@@ -77,7 +82,7 @@ export default function UsersPage() {
             setServers(serversData);
             setCurrentUser(cu);
         } catch (e) {
-            toast.error('Ошибка при загрузке');
+            toast.error(t('errorLoading'));
         } finally {
             setLoading(false);
         }
@@ -85,7 +90,7 @@ export default function UsersPage() {
 
     async function handleCreateUser() {
         if (!newUsername || !newPassword) {
-            toast.error('Имя пользователя и пароль обязательны');
+            toast.error(t('usernamePasswordRequired'));
             return;
         }
 
@@ -99,7 +104,7 @@ export default function UsersPage() {
             });
 
             if (result.success) {
-                toast.success('Пользователь создан');
+                toast.success(t('userCreated'));
                 setCreateOpen(false);
                 setNewUsername('');
                 setNewPassword('');
@@ -107,10 +112,10 @@ export default function UsersPage() {
                 setNewIsAdmin(false);
                 loadData();
             } else {
-                toast.error(result.error || 'Ошибка при создании');
+                toast.error(result.error || t('errorCreating'));
             }
         } catch (e) {
-            toast.error('Ошибка при создании');
+            toast.error(t('errorCreating'));
         } finally {
             setCreating(false);
         }
@@ -153,11 +158,11 @@ export default function UsersPage() {
             }));
             await setUserServerAccess(editUser.id, accessList);
 
-            toast.success('Пользователь сохранён');
+            toast.success(t('userSaved'));
             setEditUser(null);
             loadData();
         } catch (e) {
-            toast.error('Ошибка при сохранении');
+            toast.error(t('errorSaving'));
         } finally {
             setSaving(false);
         }
@@ -166,26 +171,26 @@ export default function UsersPage() {
     async function handleToggleActive(user: User) {
         try {
             await updateUser(user.id, { is_active: !user.is_active });
-            toast.success(user.is_active ? 'Пользователь деактивирован' : 'Пользователь активирован');
+            toast.success(user.is_active ? t('userDeactivated') : t('userActivated'));
             loadData();
         } catch (e) {
-            toast.error('Ошибка при обновлении');
+            toast.error(t('errorUpdating'));
         }
     }
 
     async function handleDeleteUser(user: User) {
-        if (!confirm(`Действительно удалить пользователя "${user.username}"?`)) return;
+        if (!confirm(t('confirmDeleteUser', { username: user.username }))) return;
 
         try {
             const result = await deleteUser(user.id);
             if (result.success) {
-                toast.success('Пользователь удалён');
+                toast.success(t('userDeleted'));
                 loadData();
             } else {
-                toast.error(result.error || 'Ошибка при удалении');
+                toast.error(result.error || t('errorDeleting'));
             }
         } catch (e) {
-            toast.error('Ошибка при удалении');
+            toast.error(t('errorDeleting'));
         }
     }
 
@@ -222,27 +227,27 @@ export default function UsersPage() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-3xl font-bold">Пользователи</h1>
-                    <p className="text-muted-foreground">Управление пользователями, ролями и правами доступа</p>
+                    <h1 className="text-3xl font-bold">{t('title')}</h1>
+                    <p className="text-muted-foreground">{t('subtitle')}</p>
                 </div>
 
                 <Dialog open={createOpen} onOpenChange={setCreateOpen}>
                     <DialogTrigger asChild>
                         <Button>
                             <UserPlus className="h-4 w-4 mr-2" />
-                            Новый пользователь
+                            {t('newUser')}
                         </Button>
                     </DialogTrigger>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Создать нового пользователя</DialogTitle>
+                            <DialogTitle>{t('createNewUser')}</DialogTitle>
                             <DialogDescription>
-                                Пользователь должен сменить пароль при первом входе.
+                                {t('userMustChangePassword')}
                             </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 py-4">
                             <div className="space-y-2">
-                                <Label>Имя пользователя</Label>
+                                <Label>{t('username')}</Label>
                                 <Input
                                     value={newUsername}
                                     onChange={(e) => setNewUsername(e.target.value)}
@@ -250,16 +255,16 @@ export default function UsersPage() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label>Пароль</Label>
+                                <Label>{t('password')}</Label>
                                 <Input
                                     type="password"
                                     value={newPassword}
                                     onChange={(e) => setNewPassword(e.target.value)}
-                                    placeholder="Временный пароль"
+                                    placeholder={t('temporaryPassword')}
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label>E-Mail (optional)</Label>
+                                <Label>{t('email')} (optional)</Label>
                                 <Input
                                     type="email"
                                     value={newEmail}
@@ -273,14 +278,14 @@ export default function UsersPage() {
                                     checked={newIsAdmin}
                                     onCheckedChange={(checked) => setNewIsAdmin(!!checked)}
                                 />
-                                <Label htmlFor="isAdmin">Администратор</Label>
+                                <Label htmlFor="isAdmin">{t('isAdmin')}</Label>
                             </div>
                         </div>
                         <DialogFooter>
-                            <Button variant="outline" onClick={() => setCreateOpen(false)}>Отмена</Button>
+                            <Button variant="outline" onClick={() => setCreateOpen(false)}>{tCommon('cancel')}</Button>
                             <Button onClick={handleCreateUser} disabled={creating}>
                                 {creating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                                Создать
+                                {tCommon('create')}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
@@ -292,11 +297,11 @@ export default function UsersPage() {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Пользователь</TableHead>
-                                <TableHead>Статус</TableHead>
-                                <TableHead>Роль</TableHead>
-                                <TableHead>Последний вход</TableHead>
-                                <TableHead className="text-right">Действия</TableHead>
+                                <TableHead>{t('username')}</TableHead>
+                                <TableHead>{t('status')}</TableHead>
+                                <TableHead>{t('role')}</TableHead>
+                                <TableHead>{t('lastLogin')}</TableHead>
+                                <TableHead className="text-right">{t('actions')}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -308,7 +313,7 @@ export default function UsersPage() {
                                             {user.is_admin && (
                                                 <Badge variant="secondary" className="text-xs">
                                                     <Shield className="h-3 w-3 mr-1" />
-                                                    Админ
+                                                    {t('admin')}
                                                 </Badge>
                                             )}
                                         </div>
@@ -326,8 +331,8 @@ export default function UsersPage() {
                                     <TableCell>—</TableCell>
                                     <TableCell className="text-muted-foreground">
                                         {user.last_login
-                                            ? new Date(user.last_login).toLocaleString('ru-RU')
-                                            : 'Никогда'
+                                            ? new Date(user.last_login).toLocaleString(locale)
+                                            : t('never')
                                         }
                                     </TableCell>
                                     <TableCell className="text-right">
@@ -361,21 +366,21 @@ export default function UsersPage() {
             <Dialog open={!!editUser} onOpenChange={(open) => !open && setEditUser(null)}>
                 <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle>Редактирование пользователя: {editUser?.username}</DialogTitle>
+                        <DialogTitle>{t('editUserTitle', { username: editUser?.username || '' })}</DialogTitle>
                         <DialogDescription>
-                            Настройка ролей и прав доступа к серверам
+                            {t('configureRolesAccess')}
                         </DialogDescription>
                     </DialogHeader>
 
                     <Tabs defaultValue="roles" className="mt-4">
                         <TabsList>
-                            <TabsTrigger value="roles">Роли</TabsTrigger>
-                            <TabsTrigger value="servers">Доступ к серверам</TabsTrigger>
+                            <TabsTrigger value="roles">{t('roles')}</TabsTrigger>
+                            <TabsTrigger value="servers">{t('serverAccess')}</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="roles" className="space-y-4 mt-4">
                             <p className="text-sm text-muted-foreground">
-                                Роли определяют права пользователя в системе.
+                                {t('rolesDefinePermissions')}
                             </p>
                             <div className="space-y-2">
                                 {roles.map(role => (
@@ -397,15 +402,15 @@ export default function UsersPage() {
 
                         <TabsContent value="servers" className="space-y-4 mt-4">
                             <p className="text-sm text-muted-foreground">
-                                Детальные права для каждого сервера. Администраторы имеют полный доступ.
+                                {t('detailedServerPermissions')}
                             </p>
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Сервер</TableHead>
-                                        <TableHead className="text-center">Просмотр</TableHead>
-                                        <TableHead className="text-center">Управление</TableHead>
-                                        <TableHead className="text-center">Миграция</TableHead>
+                                        <TableHead>{t('server')}</TableHead>
+                                        <TableHead className="text-center">{t('view')}</TableHead>
+                                        <TableHead className="text-center">{t('manage')}</TableHead>
+                                        <TableHead className="text-center">{t('migration')}</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -446,10 +451,10 @@ export default function UsersPage() {
                     </Tabs>
 
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setEditUser(null)}>Отмена</Button>
+                        <Button variant="outline" onClick={() => setEditUser(null)}>{tCommon('cancel')}</Button>
                         <Button onClick={handleSaveUser} disabled={saving}>
                             {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                            Сохранить
+                            {tCommon('save')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

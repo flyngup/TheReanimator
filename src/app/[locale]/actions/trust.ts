@@ -1,14 +1,44 @@
 'use server';
 
+import { headers, cookies } from 'next/headers';
+import { getTranslations } from 'next-intl/server';
+import { routing } from '@/i18n/routing';
 import { getServer } from './server';
 import { createSSHClient } from '@/lib/ssh';
 
+// Helper function to get locale from request
+async function getServerLocale(): Promise<string> {
+    const headersList = await headers();
+    const cookieStore = await cookies();
+
+    // Try to get locale from cookie first
+    const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value;
+    if (cookieLocale && routing.locales.includes(cookieLocale as any)) {
+        return cookieLocale;
+    }
+
+    // Try to get from Accept-Language header
+    const acceptLanguage = headersList.get('accept-language');
+    if (acceptLanguage) {
+        const preferredLocale = acceptLanguage.split(',')[0].split('-')[0];
+        if (routing.locales.includes(preferredLocale as any)) {
+            return preferredLocale;
+        }
+    }
+
+    // Fallback to default locale
+    return routing.defaultLocale;
+}
+
 // --- Single Trust Setup ---
 export async function setupSSHTrust(sourceId: number, targetId: number, rootPassword: string): Promise<string> {
+    const locale = await getServerLocale();
+    const t = await getTranslations({ locale, namespace: 'actionsTrust' });
+
     const source = await getServer(sourceId);
     const target = await getServer(targetId);
 
-    if (!source || !target) throw new Error('Сервер не найден');
+    if (!source || !target) throw new Error(t('serverNotFound'));
 
     // 1. Source Key
     const sourceSsh = createSSHClient(source);
@@ -57,9 +87,9 @@ export async function setupSSHTrust(sourceId: number, targetId: number, rootPass
             await targetSsh.exec(`echo "${pubKey.trim()}" >> ~/.ssh/authorized_keys`);
             await targetSsh.exec('chmod 600 ~/.ssh/authorized_keys');
         }
-        return 'SSH Trust успешно настроен!';
+        return t('sshTrustSuccess');
     } catch (e: any) {
-        throw new Error(`Подключение к целевому серверу не удалось: ${e.message}`);
+        throw new Error(t('targetConnectionFailed', { error: e.message }));
     } finally {
         await targetSsh.disconnect();
     }

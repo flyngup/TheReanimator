@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { NetworkInterface } from '@/lib/network-parser';
 import { getNetworkConfig, saveNetworkConfig } from '@/app/actions/network';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -21,6 +22,7 @@ interface NetworkEditorProps {
 }
 
 export function NetworkEditor({ serverId }: NetworkEditorProps) {
+    const t = useTranslations('networkEditor');
     const [interfaces, setInterfaces] = useState<NetworkInterface[]>([]);
     const [originalInterfaces, setOriginalInterfaces] = useState<NetworkInterface[]>([]);
     const [loading, setLoading] = useState(true);
@@ -39,28 +41,28 @@ export function NetworkEditor({ serverId }: NetworkEditorProps) {
             setOriginalInterfaces(JSON.parse(JSON.stringify(res.interfaces))); // Deep copy
             setHasChanges(false);
         } else {
-            toast.error('Ошибка загрузки сетевой конфигурации: ' + res.error);
+            toast.error(t('errorLoadingConfig') + res.error);
         }
         setLoading(false);
     }
 
     async function handleSave(apply: boolean) {
-        if (!confirm(apply ? 'Сохранить и ПРИМЕНИТЬ конфигурацию?\nВнимание: сетевое соединение может быть прервано.' : 'Сохранить только конфигурацию?')) return;
+        if (!confirm(apply ? t('confirmSaveAndApply') : t('confirmSaveOnly'))) return;
 
         setSaving(true);
         const res = await saveNetworkConfig(serverId, interfaces, apply);
         if (res.success) {
-            toast.success(apply ? 'Сохранено и применено' : 'Сохранено');
+            toast.success(apply ? t('savedAndApplied') : t('saved'));
             setOriginalInterfaces(JSON.parse(JSON.stringify(interfaces)));
             setHasChanges(false);
         } else {
-            toast.error('Ошибка сохранения: ' + res.error);
+            toast.error(t('errorSaving') + res.error);
         }
         setSaving(false);
     }
 
     const handleRevert = () => {
-        if (confirm('Отменить изменения?')) {
+        if (confirm(t('confirmRevert'))) {
             setInterfaces(JSON.parse(JSON.stringify(originalInterfaces)));
             setHasChanges(false);
         }
@@ -89,29 +91,29 @@ export function NetworkEditor({ serverId }: NetworkEditorProps) {
         <Card className="w-full">
             <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                    <CardTitle>Сетевые интерфейсы</CardTitle>
+                    <CardTitle>{t('title')}</CardTitle>
                     <CardDescription>
-                        Конфигурация /etc/network/interfaces
+                        {t('description')}
                     </CardDescription>
                 </div>
                 <div className="flex gap-2">
                     <Link href={`/servers/${serverId}/network-analysis`}>
                         <Button variant="outline" size="sm">
                             <Bot className="mr-2 h-4 w-4" />
-                            AI анализ
+                            {t('aiAnalysis')}
                         </Button>
                     </Link>
 
                     {hasChanges && (
                         <Button variant="outline" size="sm" onClick={handleRevert} disabled={saving}>
-                            <Undo className="mr-2 h-4 w-4" /> Отмена
+                            <Undo className="mr-2 h-4 w-4" /> {t('cancel')}
                         </Button>
                     )}
                     <Button variant="outline" size="sm" onClick={() => loadConfig()} disabled={saving || hasChanges}>
-                        <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Обновить
+                        <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> {t('refresh')}
                     </Button>
                     <Button size="sm" onClick={() => handleSave(true)} disabled={!hasChanges || saving} className={hasChanges ? "bg-amber-600 hover:bg-amber-700" : ""}>
-                        <Save className="mr-2 h-4 w-4" /> Применить
+                        <Save className="mr-2 h-4 w-4" /> {t('apply')}
                     </Button>
                 </div>
             </CardHeader>
@@ -123,14 +125,14 @@ export function NetworkEditor({ serverId }: NetworkEditorProps) {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead className="w-[100px]">Имя</TableHead>
-                                    <TableHead className="w-[80px]">Тип</TableHead>
-                                    <TableHead className="w-[150px]">CIDR / IP</TableHead>
-                                    <TableHead className="w-[150px]">Шлюз</TableHead>
-                                    <TableHead>Порты</TableHead>
-                                    <TableHead>Комментарий</TableHead>
-                                    <TableHead className="w-[80px]">Автозапуск</TableHead>
-                                    <TableHead className="w-[100px] text-right">Действия</TableHead>
+                                    <TableHead className="w-[100px]">{t('name')}</TableHead>
+                                    <TableHead className="w-[80px]">{t('type')}</TableHead>
+                                    <TableHead className="w-[150px]">{t('cidrIp')}</TableHead>
+                                    <TableHead className="w-[150px]">{t('gateway')}</TableHead>
+                                    <TableHead>{t('ports')}</TableHead>
+                                    <TableHead>{t('comment')}</TableHead>
+                                    <TableHead className="w-[80px]">{t('autoStart')}</TableHead>
+                                    <TableHead className="w-[100px] text-right">{t('actions')}</TableHead>
                                 </TableRow>
                             </TableHeader >
                             <TableBody>
@@ -199,6 +201,7 @@ interface EditDialogProps {
 }
 
 function InterfaceDialog({ mode, initialData, onSave }: EditDialogProps) {
+    const t = useTranslations('networkEditor');
     const [open, setOpen] = useState(false);
 
     // Helper to guess type
@@ -245,7 +248,7 @@ function InterfaceDialog({ mode, initialData, onSave }: EditDialogProps) {
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 {mode === 'create' ? (
-                    <Button variant="outline"><Plus className="mr-2 h-4 w-4" /> Создать</Button>
+                    <Button variant="outline"><Plus className="mr-2 h-4 w-4" /> {t('create')}</Button>
                 ) : (
                     <Button variant="ghost" size="icon">
                         <Network className="h-4 w-4" />
@@ -254,27 +257,27 @@ function InterfaceDialog({ mode, initialData, onSave }: EditDialogProps) {
             </DialogTrigger>
             <DialogContent className="max-w-xl">
                 <DialogHeader>
-                    <DialogTitle>{mode === 'create' ? 'Создать интерфейс' : `Редактировать ${data.name}`}</DialogTitle>
+                    <DialogTitle>{mode === 'create' ? t('createInterface') : t('editInterface', { name: data.name })}</DialogTitle>
                 </DialogHeader>
 
                 <div className="grid gap-4 py-4">
                     {/* Basic Settings */}
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label>Имя</Label>
+                            <Label>{t('name')}</Label>
                             <Input value={data.name} onChange={e => handleChange('name', e.target.value)} placeholder="vmbr0" disabled={mode === 'edit'} />
                         </div>
                         <div className="space-y-2">
-                            <Label>Тип</Label>
+                            <Label>{t('type')}</Label>
                             <Select value={type} onValueChange={(v: any) => setType(v)} disabled={mode === 'edit'}>
                                 <SelectTrigger>
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="eth">Ethernet (физический/VLAN)</SelectItem>
-                                    <SelectItem value="bridge">Linux Bridge</SelectItem>
-                                    <SelectItem value="bond">Linux Bond</SelectItem>
-                                    <SelectItem value="loopback">Loopback</SelectItem>
+                                    <SelectItem value="eth">{t('ethernetPhysicalVlan')}</SelectItem>
+                                    <SelectItem value="bridge">{t('linuxBridge')}</SelectItem>
+                                    <SelectItem value="bond">{t('linuxBond')}</SelectItem>
+                                    <SelectItem value="loopback">{t('loopback')}</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -282,11 +285,11 @@ function InterfaceDialog({ mode, initialData, onSave }: EditDialogProps) {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label>IPv4 / CIDR</Label>
+                            <Label>{t('ipv4Cidr')}</Label>
                             <Input value={data.address || ''} onChange={e => handleChange('address', e.target.value)} placeholder="192.168.1.10/24" />
                         </div>
                         <div className="space-y-2">
-                            <Label>Шлюз</Label>
+                            <Label>{t('gateway')}</Label>
                             <Input value={data.gateway || ''} onChange={e => handleChange('gateway', e.target.value)} placeholder="192.168.1.1" />
                         </div>
                     </div>
@@ -294,18 +297,18 @@ function InterfaceDialog({ mode, initialData, onSave }: EditDialogProps) {
                     <div className="flex items-center space-x-2">
                         <Checkbox id="auto" checked={data.auto} onCheckedChange={(c) => handleChange('auto', c === true)} />
                         <label htmlFor="auto" className="text-sm font-medium leading-none">
-                            Запускать при старте
+                            {t('launchAtStartup')}
                         </label>
                     </div>
 
                     {/* Bridge Specific */}
                     {type === 'bridge' && (
                         <div className="space-y-2 border-t pt-2 mt-2 bg-muted/20 p-2 rounded">
-                            <Label className="uppercase text-xs font-bold text-muted-foreground">Конфигурация Bridge</Label>
+                            <Label className="uppercase text-xs font-bold text-muted-foreground">{t('bridgeConfiguration')}</Label>
                             <div className="space-y-2">
-                                <Label>Порты</Label>
-                                <Input value={data.bridge_ports || ''} onChange={e => handleChange('bridge_ports', e.target.value)} placeholder="eno1 eno2 ... или пусто" />
-                                <p className="text-xs text-muted-foreground">Интерфейсы через пробел</p>
+                                <Label>{t('ports')}</Label>
+                                <Input value={data.bridge_ports || ''} onChange={e => handleChange('bridge_ports', e.target.value)} placeholder={t('portsPlaceholder')} />
+                                <p className="text-xs text-muted-foreground">{t('interfacesSpace')}</p>
                             </div>
                         </div>
                     )}
@@ -313,7 +316,7 @@ function InterfaceDialog({ mode, initialData, onSave }: EditDialogProps) {
                     {/* Bond Specific */}
                     {type === 'bond' && (
                         <div className="space-y-2 border-t pt-2 mt-2 bg-muted/20 p-2 rounded">
-                            <Label className="uppercase text-xs font-bold text-muted-foreground">Конфигурация Bond</Label>
+                            <Label className="uppercase text-xs font-bold text-muted-foreground">{t('bondConfiguration')}</Label>
                             <div className="grid gap-2">
                                 <div>
                                     <Label>Slaves</Label>
@@ -321,7 +324,7 @@ function InterfaceDialog({ mode, initialData, onSave }: EditDialogProps) {
                                 </div>
                                 <div className="grid grid-cols-2 gap-2">
                                     <div>
-                                        <Label>Режим</Label>
+                                        <Label>{t('mode')}</Label>
                                         <Select value={data.bond_mode || 'balance-rr'} onValueChange={v => handleChange('bond_mode', v)}>
                                             <SelectTrigger><SelectValue /></SelectTrigger>
                                             <SelectContent>
@@ -336,12 +339,12 @@ function InterfaceDialog({ mode, initialData, onSave }: EditDialogProps) {
                                         </Select>
                                     </div>
                                     <div>
-                                        <Label>Hash Policy</Label>
+                                        <Label>{t('hashPolicy')}</Label>
                                         <Input value={data.bond_xmit_hash_policy || ''} onChange={e => handleChange('bond_xmit_hash_policy', e.target.value)} placeholder="layer2+3" />
                                     </div>
                                 </div>
                                 <div>
-                                    <Label>Miimon</Label>
+                                    <Label>{t('miimon')}</Label>
                                     <Input value={String(data.bond_miimon || '100')} type="number" onChange={e => handleChange('bond_miimon', parseInt(e.target.value))} />
                                 </div>
                             </div>
@@ -349,14 +352,14 @@ function InterfaceDialog({ mode, initialData, onSave }: EditDialogProps) {
                     )}
 
                     <div className="space-y-2">
-                        <Label>Комментарий</Label>
-                        <Input value={data.comments.join(' ')} onChange={e => handleChange('comments', [e.target.value])} placeholder="# Описание" />
+                        <Label>{t('comment')}</Label>
+                        <Input value={data.comments.join(' ')} onChange={e => handleChange('comments', [e.target.value])} placeholder={t('descriptionPlaceholder')} />
                     </div>
 
                 </div>
 
                 <DialogFooter>
-                    <Button onClick={handleSave}>Сохранить</Button>
+                    <Button onClick={handleSave}>{t('apply')}</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

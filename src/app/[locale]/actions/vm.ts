@@ -1,8 +1,35 @@
 'use server';
 
+import { headers, cookies } from 'next/headers';
+import { getTranslations } from 'next-intl/server';
+import { routing } from '@/i18n/routing';
 import { createSSHClient, SSHClient } from '@/lib/ssh';
 import db from '@/lib/db';
 import { syncServerVMs } from './sync';
+
+// Helper function to get locale from request
+async function getServerLocale(): Promise<string> {
+    const headersList = await headers();
+    const cookieStore = await cookies();
+
+    // Try to get locale from cookie first
+    const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value;
+    if (cookieLocale && routing.locales.includes(cookieLocale as any)) {
+        return cookieLocale;
+    }
+
+    // Try to get from Accept-Language header
+    const acceptLanguage = headersList.get('accept-language');
+    if (acceptLanguage) {
+        const preferredLocale = acceptLanguage.split(',')[0].split('-')[0];
+        if (routing.locales.includes(preferredLocale as any)) {
+            return preferredLocale;
+        }
+    }
+
+    // Fallback to default locale
+    return routing.defaultLocale;
+}
 
 // --- Interfaces ---
 
@@ -154,7 +181,9 @@ async function migrateLocal(ctx: MigrationContext): Promise<string> {
 
     // Check if moving to same node
     if (ctx.sourceNode === ctx.targetNode) {
-        throw new Error(`VM befindet sich bereits auf Node ${ctx.targetNode}.`);
+        const locale = await getServerLocale();
+        const t = await getTranslations({ locale, namespace: 'actionsVM' });
+        throw new Error(t('vmAlreadyOnNode', { node: ctx.targetNode }));
     }
 
     let cmd = '';
@@ -219,7 +248,9 @@ async function prepareVMForMigration(
         status = await ssh.exec(`/usr/sbin/${cmd} status ${vmid}`);
         log(`[VM Prep] Current status: ${status.trim()}`);
     } catch (e) {
-        throw new Error(`VM ${vmid} nicht gefunden oder nicht erreichbar`);
+        const locale = await getServerLocale();
+        const t = await getTranslations({ locale, namespace: 'actionsVM' });
+        throw new Error(t('vmNotFoundOrUnreachable', { vmid }));
     }
 
     // Handle paused/prelaunch state
@@ -321,7 +352,9 @@ async function findBestStoragePath(
         candidates.sort((a, b) => b.avail - a.avail);
 
         if (candidates.length === 0) {
-            throw new Error(`Kein Volume mit genügend Speicher gefunden.`);
+            const locale = await getServerLocale();
+            const t = await getTranslations({ locale, namespace: 'actionsVM' });
+            throw new Error(t('noVolumeWithEnoughSpace'));
         }
 
         // Prefer /var/lib/vz/dump if valid
@@ -364,12 +397,14 @@ async function testServerToServerSSH(
             throw new Error('Unexpected response');
         }
     } catch (e: any) {
+        const locale = await getServerLocale();
+        const t = await getTranslations({ locale, namespace: 'actionsVM' });
         throw new Error(
-            `Server-to-Server SSH не удалось!\n\n` +
-            `Исходный сервер должен иметь доступ по SSH к целевому серверу.\n` +
-            `Выполните на ИСХОДНОМ сервере:\n\n` +
+            t('serverToServerSSHFailed') +
+            t('sourceServerMustHaveSSHAccess') +
+            t('runOnSourceServer') +
             `  ssh-copy-id root@${targetHost}\n\n` +
-            `Ошибка: ${e.message}`
+            t('error') + ` ${e.message}`
         );
     }
 }
@@ -390,7 +425,9 @@ async function runPreFlightChecks(
         await sourceSsh.exec('echo "OK"');
         log('[Check 1/6] ✓ Source SSH OK');
     } catch (e) {
-        throw new Error('SSH-подключение к исходному серверу не удалось');
+        const locale = await getServerLocale();
+        const t = await getTranslations({ locale, namespace: 'actionsVM' });
+        throw new Error(t('sshConnectionToSourceFailed'));
     }
 
     // 2. SSH Connectivity - Target
@@ -399,7 +436,9 @@ async function runPreFlightChecks(
         await targetSsh.exec('echo "OK"');
         log('[Check 2/6] ✓ Target SSH OK');
     } catch (e) {
-        throw new Error('SSH-подключение к целевому серверу не удалось');
+        const locale = await getServerLocale();
+        const t = await getTranslations({ locale, namespace: 'actionsVM' });
+        throw new Error(t('sshConnectionToTargetFailed'));
     }
 
     // 3. VM State Recovery
@@ -434,7 +473,9 @@ async function runPreFlightChecks(
         const found = storages.find((s: any) => s.storage === targetStorage);
         if (!found) {
             const available = storages.map((s: any) => s.storage).join(', ');
-            throw new Error(`Storage "${targetStorage}" nicht gefunden auf Zielserver!\nVerfügbar: ${available}`);
+            const locale = await getServerLocale();
+            const t = await getTranslations({ locale, namespace: 'actionsVM' });
+            throw new Error(t('storageNotFoundOnTarget', { storage: targetStorage, available }));
         }
         log(`[Check 5/6] ✓ Target storage "${targetStorage}" exists`);
     } catch (e: any) {
@@ -475,7 +516,11 @@ async function migrateRemote(ctx: MigrationContext): Promise<string> {
     if (!targetHost && target.url) {
         try { targetHost = new URL(target.url).hostname; } catch { targetHost = target.url; }
     }
-    if (!targetHost) throw new Error('Zielserver hat keine Host-IP konfiguriert.');
+    if (!targetHost) {
+        const locale = await getServerLocale();
+        const t = await getTranslations({ locale, namespace: 'actionsVM' });
+        throw new Error(t('targetServerNoHostIP'));
+    }
 
     // ========== PRE-FLIGHT CHECKS ==========
     await runPreFlightChecks(ctx, targetHost, log);
@@ -578,7 +623,9 @@ async function migrateRemote(ctx: MigrationContext): Promise<string> {
 
             // Check global timeout
             if (Date.now() - pollStartTime > maxPollingTime) {
-                throw new Error('vzdump Timeout: Backup dauert länger als 2 Stunden');
+                const locale = await getServerLocale();
+                const t = await getTranslations({ locale, namespace: 'actionsVM' });
+                throw new Error(t('vzdumpTimeout'));
             }
 
             // Check if process still exists
@@ -599,7 +646,9 @@ async function migrateRemote(ctx: MigrationContext): Promise<string> {
                         lastLogContent = tail;
                         lastLogChangeTime = Date.now();
                     } else if (Date.now() - lastLogChangeTime > staleTimeout) {
-                        throw new Error('vzdump scheint hängen geblieben: Keine Log-Aktivität seit 10 Minuten');
+                        const locale = await getServerLocale();
+                        const t = await getTranslations({ locale, namespace: 'actionsVM' });
+                        throw new Error(t('vzdumpStale'));
                     }
 
                     const lines = tail.split('\n');
@@ -611,7 +660,9 @@ async function migrateRemote(ctx: MigrationContext): Promise<string> {
             } catch (e: any) {
                 consecutiveErrors++;
                 if (consecutiveErrors > 30) {
-                    throw new Error(`vzdump Polling abgebrochen: ${consecutiveErrors} aufeinanderfolgende Fehler`);
+                    const locale = await getServerLocale();
+                    const t = await getTranslations({ locale, namespace: 'actionsVM' });
+                    throw new Error(t('vzdumpPollingAborted', { count: consecutiveErrors }));
                 }
             }
         }
@@ -818,7 +869,9 @@ async function migrateRemote(ctx: MigrationContext): Promise<string> {
             try { await targetSsh.exec(`rm -f ${targetBackupDir}/*`); } catch { }
         }
 
-        throw new Error(`Миграция не удалась:\n\n${error.message}\n\nПожалуйста, проверьте:\n- SSH-доступ между серверами (для SCP)\n- Достаточно места для бэкапа в /tmp\n- Целевое хранилище доступно`);
+        const locale = await getServerLocale();
+        const t = await getTranslations({ locale, namespace: 'actionsVM' });
+        throw new Error(t('migrationFailed', { error: error.message }));
     }
 }
 
@@ -903,10 +956,14 @@ async function pollMigrationTaskWithLogs(
             const logJson = await client.exec(logCmd);
             const logData = JSON.parse(logJson);
             const lastLogs = logData.slice(-15).map((l: any) => l.t).join('\n');
-            errorDetails = `\n\nПоследние записи лога:\n${lastLogs}`;
+            const locale = await getServerLocale();
+            const t = await getTranslations({ locale, namespace: 'actionsVM' });
+            errorDetails = '\n\n' + t('lastLogEntries') + '\n' + lastLogs;
         } catch { }
 
-        throw new Error(`Миграция не удалась со статусом: ${exitStatus}${errorDetails}`);
+        const locale = await getServerLocale();
+        const t = await getTranslations({ locale, namespace: 'actionsVM' });
+        throw new Error(t('migrationFailedWithStatus') + ` ${exitStatus}${errorDetails}`);
     }
 
     log('[Migration] Task completed with status: OK');
