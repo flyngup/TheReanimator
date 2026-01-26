@@ -4,7 +4,16 @@ DeepL Auto-Translation Script for TheReanimator-i18n
 
 Automatically translates new keys from default locale to all other locales.
 Reads supported languages from src/i18n/routing.ts
+
+Features:
+- Uses official DeepL Python library
+- Tracks value changes with MD5 hashes
+- Only translates missing or changed keys
+- Preserves existing translations
+
+Uses official DeepL Python library: https://pypi.org/project/deepl/
 """
+import hashlib
 import json
 import os
 import re
@@ -12,10 +21,10 @@ import sys
 from pathlib import Path
 
 try:
-    import requests
+    import deepl
 except ImportError:
-    print("❌ Error: requests module not found")
-    print("   Run: pip install requests")
+    print("❌ Error: deepl module not found")
+    print("   Run: pip install deepl")
     sys.exit(1)
 
 # Configuration
@@ -25,25 +34,63 @@ if not DEEPL_API_KEY:
     print("   Set it in GitHub Secrets: DEEPL_API_KEY")
     sys.exit(1)
 
-DEEPL_URL = "https://api-free.deepl.com/v2/translate"
+# Use free API endpoint for keys ending with ':fx' or set server URL explicitly
+if ":fx" in DEEPL_API_KEY:
+    deepl_client = deepl.DeepLClient(DEEPL_API_KEY)
+else:
+    # For backward compatibility with old free keys
+    deepl_client = deepl.DeepLClient(DEEPL_API_KEY, server_url="https://api-free.deepl.com")
+
 LOCALES_DIR = Path("src/messages")
 ROUTING_FILE = Path("src/i18n/routing.ts")
+HASHES_FILE = Path("src/messages/.translation_hashes.json")
 
 # DeepL language code mapping (target languages only)
+# Full list: https://developers.deepl.com/docs/api-reference/languages
 DEEPL_LANG_CODES = {
-    "en": "EN",  # English
-    "ru": "RU",  # Russian
-    "es": "ES",  # Spanish
-    "fr": "FR",  # French
-    "it": "IT",  # Italian
-    "pt": "PT",  # Portuguese
-    "nl": "NL",  # Dutch
-    "pl": "PL",  # Polish
-    "uk": "UK",  # Ukrainian
-    "ja": "JA",  # Japanese
-    "zh": "ZH",  # Chinese
+    "en": "EN-US",  # English (American)
+    "ru": "RU",     # Russian
+    "es": "ES-ES",  # Spanish (Iberian)
+    "fr": "FR",     # French
+    "it": "IT",     # Italian
+    "pt": "PT-BR",  # Portuguese (Brazilian)
+    "nl": "NL",     # Dutch
+    "pl": "PL",     # Polish
+    "uk": "UK",     # Ukrainian
+    "ja": "JA",     # Japanese
+    "zh": "ZH",     # Chinese (simplified)
     # Add more as needed
 }
+
+def get_hash(text: str) -> str:
+    """Generate MD5 hash of text for change tracking"""
+    return hashlib.md5(str(text).encode('utf-8')).hexdigest()[:8]
+
+def load_hashes() -> dict:
+    """Load existing hashes from .translation_hashes.json"""
+    if HASHES_FILE.exists():
+        try:
+            with open(HASHES_FILE, encoding="utf-8") as f:
+                return json.load(f)
+        except:
+            return {}
+    return {}
+
+def save_hashes(hashes: dict):
+    """Save hashes to .translation_hashes.json"""
+    with open(HASHES_FILE, "w", encoding="utf-8") as f:
+        json.dump(hashes, f, ensure_ascii=False, indent=2)
+
+def get_nested_value(obj: dict, path: str):
+    """Get value from nested dict using dot notation path"""
+    keys = path.split('.')
+    current = obj
+    for key in keys:
+        if isinstance(current, dict) and key in current:
+            current = current[key]
+        else:
+            return None
+    return current
 
 def get_locales_from_routing():
     """Extract locales array from routing.ts"""
@@ -81,7 +128,7 @@ def get_all_namespaces():
     return ["messages"]
 
 def translate_text(text: str, target_lang: str, source_lang: str = None) -> str:
-    """Translate text using DeepL API"""
+    """Translate text using DeepL API (official library)"""
     if not text.strip():
         return text
 
@@ -90,31 +137,42 @@ def translate_text(text: str, target_lang: str, source_lang: str = None) -> str:
         return text
 
     try:
-        data = {
+        # Build translation parameters
+        params = {
             "text": text,
             "target_lang": target_lang,
-            "tag_handling": "xml",
-            "preserve_formatting": True
+            "preserve_formatting": True,
+            "tag_handling": "xml"
         }
 
         # Only set source_lang if provided (DeepL can auto-detect)
         if source_lang:
-            data["source_lang"] = source_lang
+            params["source_lang"] = source_lang
 
-        response = requests.post(
-            DEEPL_URL,
-            headers={"Authorization": f"DeepL-Auth-Key {DEEPL_API_KEY}"},
-            data=data,
-            timeout=10
-        )
-        response.raise_for_status()
-        return response.json()["translations"][0]["text"]
-    except Exception as e:
+        # Use official DeepL library
+        result = deepl_client.translate_text(**params)
+        return result.text
+
+    except deepl.DeepLException as e:
         print(f"      ❌ Translation error: {e}")
         return text  # Return original on error
+    except Exception as e:
+        print(f"      ❌ Unexpected error: {e}")
+        return text  # Return original on error
+
+def collect_all_keys(data: dict, prefix: str = "") -> dict:
+    """Collect all keys with their values from nested structure"""
+    result = {}
+    for key, value in data.items():
+        current_path = f"{prefix}.{key}" if prefix else key
+        if isinstance(value, dict):
+            result.update(collect_all_keys(value, current_path))
+        else:
+            result[current_path] = value
+    return result
 
 def main():
-    print("🌍 Starting DeepL Auto-Translation...")
+    print("🌍 Starting DeepL Auto-Translation (using official library with hash tracking)...")
 
     # Get locales from routing.ts
     all_locales = get_locales_from_routing()
@@ -139,7 +197,10 @@ def main():
         print("❌ No namespaces found")
         return
 
+    # Load existing hashes
+    hashes = load_hashes()
     total_translations = 0
+    changed_keys = 0
 
     for ns in namespaces:
         src_file = LOCALES_DIR / f"{default_locale}.json"
@@ -153,6 +214,20 @@ def main():
 
         print(f"📦 Processing: {src_file}")
         print(f"   Total namespaces: {len(src_data)}")
+
+        # Collect all keys from source (flattened)
+        src_keys = collect_all_keys(src_data)
+
+        # Check for changed values in source
+        for key_path, value in src_keys.items():
+            current_hash = get_hash(str(value))
+            stored_hash = hashes.get(key_path)
+
+            if stored_hash != current_hash:
+                if stored_hash is not None:
+                    print(f"   🔑 Changed key detected: {key_path}")
+                    changed_keys += 1
+                hashes[key_path] = current_hash
 
         for target_locale in target_locales:
             # Get DeepL language code
@@ -170,47 +245,53 @@ def main():
             except:
                 target_data = {}
 
-            # Find missing keys recursively in nested structure
-            def find_missing_keys(src_obj, tgt_obj, path=""):
-                missing = []
-                if isinstance(src_obj, dict):
-                    for key, value in src_obj.items():
-                        current_path = f"{path}.{key}" if path else key
-                        if isinstance(value, (str, int, float, bool)):
-                            if key not in tgt_obj or not tgt_obj[key]:
-                                missing.append((current_path, key, value, path, tgt_obj))
-                        elif isinstance(value, dict):
-                            tgt_child = tgt_obj.get(key, {}) if isinstance(tgt_obj, dict) else {}
-                            missing.extend(find_missing_keys(value, tgt_child, current_path))
-                return missing
+            # Find missing or changed keys
+            missing_or_changed = []
 
-            missing_items = find_missing_keys(src_data, target_data)
+            for key_path, value in src_keys.items():
+                target_value = get_nested_value(target_data, key_path)
 
-            if not missing_items:
-                print(f"   {target_locale}: ✅ All keys present")
+                # Missing key
+                if target_value is None:
+                    missing_or_changed.append((key_path, value, "missing"))
+                    continue
+
+                # Check if value changed (hash mismatch)
+                current_hash = hashes.get(key_path)
+                if current_hash:
+                    # Value exists in target but source changed
+                    # We need to re-translate
+                    missing_or_changed.append((key_path, value, "changed"))
+
+            if not missing_or_changed:
+                print(f"   {target_locale}: ✅ All keys present and up-to-date")
                 continue
 
-            print(f"   {target_locale}: Translating {len(missing_items)} missing keys")
+            print(f"   {target_locale}: Translating {len(missing_or_changed)} keys", end="")
+            if changed_keys > 0:
+                print(f" (including {changed_keys} changed)")
+            else:
+                print()
 
-            # Translate and insert missing keys
-            for full_path, key, value, parent_path, parent_obj in missing_items:
+            # Translate missing or changed keys
+            for full_path, value, reason in missing_or_changed:
                 translated = translate_text(str(value), dl_lang_code, source_lang_code)
 
                 # Build nested structure and set value
-                if parent_path:
-                    parts = parent_path.split('.')
-                    current = target_data
-                    for part in parts:
-                        if part not in current:
-                            current[part] = {}
-                        if not isinstance(current[part], dict):
-                            current[part] = {}
-                        current = current[part]
-                    current[key] = translated
-                else:
-                    target_data[key] = translated
+                parts = full_path.split('.')
+                current = target_data
+                for i, part in enumerate(parts[:-1]):
+                    if part not in current:
+                        current[part] = {}
+                    if not isinstance(current[part], dict):
+                        current[part] = {}
+                    current = current[part]
 
-                print(f"      ✓ {full_path}")
+                # Set the translated value
+                current[parts[-1]] = translated
+
+                status_icon = "🔄" if reason == "changed" else "✓"
+                print(f"      {status_icon} {full_path}")
                 total_translations += 1
 
             # Save updated translations
@@ -222,9 +303,13 @@ def main():
 
         print()
 
+    # Save updated hashes
+    save_hashes(hashes)
+
     print(f"✅ Translation complete!")
     print(f"   Total translations: {total_translations}")
-    print(f"   DeepL quota used: ~{total_translations} requests")
+    print(f"   Changed keys re-translated: {changed_keys}")
+    print(f"   DeepL quota used: ~{total_translations} characters")
 
 if __name__ == "__main__":
     main()
