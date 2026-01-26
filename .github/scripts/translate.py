@@ -172,50 +172,6 @@ def collect_all_keys(data: dict, prefix: str = "") -> dict:
             result[current_path] = value
     return result
 
-def remove_orphaned_keys(src_data: dict, tgt_data: dict) -> int:
-    """Remove keys from target that don't exist in source. Returns count of removed keys."""
-    # Collect all valid keys from source
-    src_keys = collect_all_keys(src_data)
-
-    def collect_all_target_keys(data: dict, prefix: str = "") -> list:
-        """Collect all key paths from target data"""
-        keys = []
-        for key, value in data.items():
-            current_path = f"{prefix}.{key}" if prefix else key
-            if isinstance(value, dict):
-                keys.extend(collect_all_target_keys(value, current_path))
-            else:
-                keys.append(current_path)
-        return keys
-
-    tgt_keys = collect_all_target_keys(tgt_data)
-
-    # Find orphaned keys (exist in target but not in source)
-    orphaned_keys = [key for key in tgt_keys if key not in src_keys]
-
-    # Remove orphaned keys from target data
-    removed_count = 0
-    for key_path in orphaned_keys:
-        parts = key_path.split('.')
-        if len(parts) == 1:
-            if parts[0] in tgt_data:
-                del tgt_data[parts[0]]
-                removed_count += 1
-        else:
-            # Navigate to parent and delete the key
-            current = tgt_data
-            for part in parts[:-1]:
-                if part in current and isinstance(current[part], dict):
-                    current = current[part]
-                else:
-                    break
-            else:
-                if parts[-1] in current:
-                    del current[parts[-1]]
-                    removed_count += 1
-
-    return removed_count
-
 def main():
     print("🌍 Starting DeepL Auto-Translation (using requests with hash tracking)...")
 
@@ -297,10 +253,10 @@ def main():
             except:
                 target_data = {}
 
-            # Remove orphaned keys (exist in target but not in source)
-            removed_count = remove_orphaned_keys(src_data, target_data)
-            if removed_count > 0:
-                print(f"   {target_locale}: 🧹 Removed {removed_count} orphaned keys")
+            # WARNING: Do NOT auto-remove orphaned keys!
+            # Keys may exist in translations but not in source (de.json)
+            # If they're used in code, removing them will break the app
+            # Instead, manually add missing keys to source file first
 
             # Find missing or changed keys
             missing_or_changed = []

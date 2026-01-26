@@ -30,8 +30,7 @@
     "optional": "Optional",
     "required": "Required",
     "url": "URL",
-    "deeplTest": "This is an automatic test of DeepL translation.",
-    "hashTestKey": "This is a MODIFIED test for hash tracking"
+    "deeplTest": "This is an automatic test of DeepL translation."
   },
   "nav": {
     "dashboard": "Dashboard",

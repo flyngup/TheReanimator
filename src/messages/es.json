@@ -30,8 +30,7 @@
     "no": "No.",
     "optional": "Opcional",
     "required": "Necesario",
-    "url": "URL",
-    "hashTestKey": "Esta es una prueba MODIFICADA para el seguimiento del hash"
+    "url": "URL"
   },
   "nav": {
     "dashboard": "panel de control",

@@ -786,10 +786,12 @@
     "hereIsConfig": "Hier ist die Konfiguration:\n"
   },
   "actionsConfig": {
-    "tagsNotFoundOnSource": "Tags nicht auf Quelle gefunden."
+    "tagsNotFoundOnSource": "Tags nicht auf Quelle gefunden.",
+    "aiAnalysisFailed": "KI-Analyse fehlgeschlagen"
   },
   "actionsTrust": {
     "serverNotFound": "Server nicht gefunden",
+    "sshTrustSetupSuccess": "SSH-Trust-Setup erfolgreich!",
     "sshTrustSuccess": "SSH-Vertrauen erfolgreich eingerichtet!",
     "targetConnectionFailed": "Verbindung zum Zielserver fehlgeschlagen: {error}"
   },
