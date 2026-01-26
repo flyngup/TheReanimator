@@ -1116,5 +1116,6 @@
   "backupLogic.backupNotFound": "6c65a388",
   "backupLogic.invalidPath": "1c1038ed",
   "backupLogic.fileNotFound": "4142f1e0",
-  "backupLogic.fileRestored": "a15fa267"
+  "backupLogic.fileRestored": "a15fa267",
+  "common.hashTestKey": "c3523620"
 }
