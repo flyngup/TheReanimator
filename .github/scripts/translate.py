@@ -29,10 +29,10 @@ DEEPL_URL = "https://api-free.deepl.com/v2/translate"
 LOCALES_DIR = Path("src/messages")
 ROUTING_FILE = Path("src/i18n/routing.ts")
 
-# DeepL language code mapping
+# DeepL language code mapping (target languages only)
 DEEPL_LANG_CODES = {
-    "en": "EN",
-    "ru": "RU",
+    "en": "EN",  # English
+    "ru": "RU",  # Russian
     "es": "ES",  # Spanish
     "fr": "FR",  # French
     "it": "IT",  # Italian
@@ -80,7 +80,7 @@ def get_all_namespaces():
     # Flat structure - single file per language
     return ["messages"]
 
-def translate_text(text: str, target_lang: str) -> str:
+def translate_text(text: str, target_lang: str, source_lang: str = None) -> str:
     """Translate text using DeepL API"""
     if not text.strip():
         return text
@@ -90,16 +90,21 @@ def translate_text(text: str, target_lang: str) -> str:
         return text
 
     try:
+        data = {
+            "text": text,
+            "target_lang": target_lang,
+            "tag_handling": "xml",
+            "preserve_formatting": True
+        }
+
+        # Only set source_lang if provided (DeepL can auto-detect)
+        if source_lang:
+            data["source_lang"] = source_lang
+
         response = requests.post(
             DEEPL_URL,
             headers={"Authorization": f"DeepL-Auth-Key {DEEPL_API_KEY}"},
-            data={
-                "text": text,
-                "source_lang": SRC_LANG,
-                "target_lang": target_lang,
-                "tag_handling": "xml",
-                "preserve_formatting": True
-            },
+            data=data,
             timeout=10
         )
         response.raise_for_status()
@@ -114,6 +119,7 @@ def main():
     # Get locales from routing.ts
     all_locales = get_locales_from_routing()
     default_locale = get_default_locale()
+    source_lang_code = default_locale.upper()  # DeepL source lang (e.g., 'de' -> 'DE')
 
     print(f"   Source locale: {default_locale}")
     print(f"   All locales: {', '.join(all_locales)}")
@@ -188,7 +194,7 @@ def main():
 
             # Translate and insert missing keys
             for full_path, key, value, parent_path, parent_obj in missing_items:
-                translated = translate_text(str(value), dl_lang_code)
+                translated = translate_text(str(value), dl_lang_code, source_lang_code)
 
                 # Build nested structure and set value
                 if parent_path:
