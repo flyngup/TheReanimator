@@ -33,13 +33,13 @@ TARGET_LANGS = {
 LOCALES_DIR = Path("src/messages")
 
 def get_all_namespaces():
-    """Get all JSON files from de directory (source of truth)"""
-    de_dir = LOCALES_DIR / "de"
-    if not de_dir.exists():
-        print(f"❌ Error: Directory {de_dir} not found")
+    """Get all JSON files - using flat structure (de.json, en.json, ru.json)"""
+    if not (LOCALES_DIR / "de.json").exists():
+        print(f"❌ Error: File {LOCALES_DIR / 'de.json'} not found")
         return []
 
-    return [f.stem for f in de_dir.glob("*.json") if f.is_file()]
+    # Flat structure - single file per language
+    return ["messages"]
 
 def translate_text(text: str, target_lang: str) -> str:
     """Translate text using DeepL API"""
@@ -59,7 +59,7 @@ def translate_text(text: str, target_lang: str) -> str:
                 "source_lang": SRC_LANG,
                 "target_lang": target_lang,
                 "tag_handling": "xml",
-                "preserve_formating": True
+                "preserve_formatting": True
             },
             timeout=10
         )
@@ -83,7 +83,7 @@ def main():
     total_translations = 0
 
     for ns in namespaces:
-        src_file = LOCALES_DIR / "de" / f"{ns}.json"
+        src_file = LOCALES_DIR / "de.json"
 
         if not src_file.exists():
             print(f"⚠️  Skipping {ns} - source file not found")
@@ -92,11 +92,11 @@ def main():
         with open(src_file, encoding="utf-8") as f:
             src_data = json.load(f)
 
-        print(f"📦 Processing namespace: {ns}")
-        print(f"   Keys: {len(src_data)}")
+        print(f"📦 Processing: {src_file}")
+        print(f"   Total keys: {len(src_data)}")
 
         for dl_lang, lang_code in TARGET_LANGS.items():
-            target_file = LOCALES_DIR / lang_code / f"{ns}.json"
+            target_file = LOCALES_DIR / f"{lang_code}.json"
 
             # Load existing translations
             try:
@@ -122,11 +122,10 @@ def main():
             for key, text in missing_keys:
                 translated = translate_text(text, dl_lang)
                 target_data[key] = translated
-                print(f"      ✓ {key}: {text[:30]}...")
+                print(f"      ✓ {key}")
                 total_translations += 1
 
             # Save updated translations
-            target_file.parent.mkdir(parents=True, exist_ok=True)
             with open(target_file, "w", encoding="utf-8") as f:
                 json.dump(target_data, f, ensure_ascii=False, indent=2)
 
