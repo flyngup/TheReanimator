@@ -201,7 +201,6 @@ def main():
     # Load existing hashes
     hashes = load_hashes()
     total_translations = 0
-    changed_keys = 0
 
     for ns in namespaces:
         src_file = LOCALES_DIR / f"{default_locale}.json"
@@ -219,16 +218,24 @@ def main():
         # Collect all keys from source (flattened)
         src_keys = collect_all_keys(src_data)
 
-        # Check for changed values in source
+        # Track changed keys to re-translate (hash mismatch)
+        changed_keys_set = set()
+
+        # Check for changed values in source and update hashes
         for key_path, value in src_keys.items():
             current_hash = get_hash(str(value))
             stored_hash = hashes.get(key_path)
 
-            if stored_hash != current_hash:
-                if stored_hash is not None:
-                    print(f"   🔑 Changed key detected: {key_path}")
-                    changed_keys += 1
-                hashes[key_path] = current_hash
+            if stored_hash and stored_hash != current_hash:
+                # Hash changed - source value was modified
+                changed_keys_set.add(key_path)
+                print(f"   🔑 Changed key detected: {key_path}")
+
+            # Always update hash to current value
+            hashes[key_path] = current_hash
+
+        # Count total changed keys (once, not per language)
+        changed_keys_count = len(changed_keys_set)
 
         for target_locale in target_locales:
             # Get DeepL language code
@@ -257,11 +264,8 @@ def main():
                     missing_or_changed.append((key_path, value, "missing"))
                     continue
 
-                # Check if value changed (hash mismatch)
-                current_hash = hashes.get(key_path)
-                if current_hash:
-                    # Value exists in target but source changed
-                    # We need to re-translate
+                # Check if this key was modified in source
+                if key_path in changed_keys_set:
                     missing_or_changed.append((key_path, value, "changed"))
 
             if not missing_or_changed:
@@ -269,8 +273,8 @@ def main():
                 continue
 
             print(f"   {target_locale}: Translating {len(missing_or_changed)} keys", end="")
-            if changed_keys > 0:
-                print(f" (including {changed_keys} changed)")
+            if changed_keys_count > 0:
+                print(f" (including {changed_keys_count} changed)")
             else:
                 print()
 
@@ -309,7 +313,7 @@ def main():
 
     print(f"✅ Translation complete!")
     print(f"   Total translations: {total_translations}")
-    print(f"   Changed keys re-translated: {changed_keys}")
+    print(f"   Changed keys re-translated: {changed_keys_count}")
     print(f"   DeepL quota used: ~{total_translations} characters")
 
 if __name__ == "__main__":
