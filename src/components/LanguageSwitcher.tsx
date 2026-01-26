@@ -22,7 +22,7 @@ export function LanguageSwitcher() {
     startTransition(() => {
       // Remove current locale from pathname
       const segments = pathname.split('/').filter(Boolean);
-      if (segments[0] && ['de', 'ru', 'en'].includes(segments[0])) {
+      if (segments[0] && ['de', 'ru', 'en', 'es', 'fr'].includes(segments[0])) {
         segments[0] = newLocale;
       } else {
         segments.unshift(newLocale);
@@ -36,6 +36,8 @@ export function LanguageSwitcher() {
     { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
     { code: 'ru', name: 'Русский', flag: '🇷🇺' },
     { code: 'en', name: 'English', flag: '🇺🇸' },
+    { code: 'es', name: 'Español', flag: '🇪🇸' },
+    { code: 'fr', name: 'Français', flag: '🇫🇷' },
   ];
 
   return (
