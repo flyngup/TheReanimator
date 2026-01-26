@@ -2,10 +2,12 @@
 """
 DeepL Auto-Translation Script for TheReanimator-i18n
 
-Translates new keys from German (de.json) to other languages (en, ru, etc.)
+Automatically translates new keys from default locale to all other locales.
+Reads supported languages from src/i18n/routing.ts
 """
 import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -24,13 +26,50 @@ if not DEEPL_API_KEY:
     sys.exit(1)
 
 DEEPL_URL = "https://api-free.deepl.com/v2/translate"
-SRC_LANG = "DE"  # German - source language
-TARGET_LANGS = {
-    "EN": "en",
-    "RU": "ru",
-    # Add more languages here: ES (Spanish), FR (French), etc.
-}
 LOCALES_DIR = Path("src/messages")
+ROUTING_FILE = Path("src/i18n/routing.ts")
+
+# DeepL language code mapping
+DEEPL_LANG_CODES = {
+    "en": "EN",
+    "ru": "RU",
+    "es": "ES",  # Spanish
+    "fr": "FR",  # French
+    "it": "IT",  # Italian
+    "pt": "PT",  # Portuguese
+    "nl": "NL",  # Dutch
+    "pl": "PL",  # Polish
+    "uk": "UK",  # Ukrainian
+    "ja": "JA",  # Japanese
+    "zh": "ZH",  # Chinese
+    # Add more as needed
+}
+
+def get_locales_from_routing():
+    """Extract locales array from routing.ts"""
+    if not ROUTING_FILE.exists():
+        print(f"❌ Error: {ROUTING_FILE} not found")
+        sys.exit(1)
+
+    content = ROUTING_FILE.read_text(encoding="utf-8")
+
+    # Extract locales array using regex
+    match = re.search(r"locales\s*:\s*\[([^\]]+)\]", content)
+    if not match:
+        print("❌ Error: Could not find locales array in routing.ts")
+        sys.exit(1)
+
+    # Parse the array
+    locales_str = match.group(1)
+    locales = re.findall(r"'([a-z]{2})'", locales_str)
+
+    return locales
+
+def get_default_locale():
+    """Extract default locale from routing.ts"""
+    content = ROUTING_FILE.read_text(encoding="utf-8")
+    match = re.search(r"defaultLocale\s*:\s*'([a-z]{2})'", content)
+    return match.group(1) if match else "de"
 
 def get_all_namespaces():
     """Get all JSON files - using flat structure (de.json, en.json, ru.json)"""
@@ -71,8 +110,22 @@ def translate_text(text: str, target_lang: str) -> str:
 
 def main():
     print("🌍 Starting DeepL Auto-Translation...")
-    print(f"   Source: German (de.json)")
-    print(f"   Targets: {', '.join(TARGET_LANGS.values())}")
+
+    # Get locales from routing.ts
+    all_locales = get_locales_from_routing()
+    default_locale = get_default_locale()
+
+    print(f"   Source locale: {default_locale}")
+    print(f"   All locales: {', '.join(all_locales)}")
+
+    # Filter target locales (all except default)
+    target_locales = [loc for loc in all_locales if loc != default_locale]
+
+    if not target_locales:
+        print("   ⚠️  No target locales found (only default locale configured)")
+        return
+
+    print(f"   Target locales: {', '.join(target_locales)}")
     print()
 
     namespaces = get_all_namespaces()
@@ -83,7 +136,7 @@ def main():
     total_translations = 0
 
     for ns in namespaces:
-        src_file = LOCALES_DIR / "de.json"
+        src_file = LOCALES_DIR / f"{default_locale}.json"
 
         if not src_file.exists():
             print(f"⚠️  Skipping {ns} - source file not found")
@@ -95,8 +148,14 @@ def main():
         print(f"📦 Processing: {src_file}")
         print(f"   Total namespaces: {len(src_data)}")
 
-        for dl_lang, lang_code in TARGET_LANGS.items():
-            target_file = LOCALES_DIR / f"{lang_code}.json"
+        for target_locale in target_locales:
+            # Get DeepL language code
+            dl_lang_code = DEEPL_LANG_CODES.get(target_locale)
+            if not dl_lang_code:
+                print(f"   {target_locale}: ⚠️  Skip - not supported by DeepL")
+                continue
+
+            target_file = LOCALES_DIR / f"{target_locale}.json"
 
             # Load existing translations
             try:
@@ -122,14 +181,14 @@ def main():
             missing_items = find_missing_keys(src_data, target_data)
 
             if not missing_items:
-                print(f"   {lang_code}: ✅ All keys present")
+                print(f"   {target_locale}: ✅ All keys present")
                 continue
 
-            print(f"   {lang_code}: Translating {len(missing_items)} missing keys")
+            print(f"   {target_locale}: Translating {len(missing_items)} missing keys")
 
             # Translate and insert missing keys
             for full_path, key, value, parent_path, parent_obj in missing_items:
-                translated = translate_text(str(value), dl_lang)
+                translated = translate_text(str(value), dl_lang_code)
 
                 # Build nested structure and set value
                 if parent_path:
@@ -149,10 +208,11 @@ def main():
                 total_translations += 1
 
             # Save updated translations
+            target_file.parent.mkdir(parents=True, exist_ok=True)
             with open(target_file, "w", encoding="utf-8") as f:
                 json.dump(target_data, f, ensure_ascii=False, indent=2)
 
-            print(f"   {lang_code}: ✅ Saved translations")
+            print(f"   {target_locale}: ✅ Saved translations")
 
         print()
 
