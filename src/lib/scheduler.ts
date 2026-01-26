@@ -1,9 +1,9 @@
 import cron from 'node-cron';
 import db from './db';
 import { performFullBackup } from './backup-logic';
-import { scanAllVMs, scanHost, scanEntireInfrastructure } from '@/app/actions/scan';
-import { migrateVM } from '@/app/actions/vm';
-import { runNetworkAnalysis } from '@/app/actions/network_analysis';
+import { scanAllVMs, scanHost, scanEntireInfrastructure } from '@/lib/actions/scan';
+import { migrateVM } from '@/lib/actions/vm';
+import { runNetworkAnalysis } from '@/lib/actions/network_analysis';
 
 let scheduledTasks: any[] = [];
 
@@ -123,7 +123,7 @@ async function refreshNodeStats() {
 
     for (const server of servers) {
         try {
-            const { getServer, determineNodeName } = await import('@/app/actions/vm');
+            const { getServer, determineNodeName } = await import('@/lib/actions/vm');
             const { createSSHClient } = await import('@/lib/ssh');
 
             const srv = await getServer(server.id);
@@ -272,7 +272,7 @@ export async function runJob(job: any) {
 
         } else if (job.job_type === 'network_analysis') {
             // Check AI Config
-            const { getAISettings } = await import('@/app/actions/ai');
+            const { getAISettings } = await import('@/lib/actions/ai');
             const ai = await getAISettings();
 
             if (!ai.model) {

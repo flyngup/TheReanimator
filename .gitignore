@@ -52,3 +52,8 @@ data/*.db-shm
 
 data/config-backups/
 !data/.keep
+
+# IDE & AI
+.claude/
+.idea/
+TRANSLATION_PLAN.md

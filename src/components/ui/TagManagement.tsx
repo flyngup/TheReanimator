@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Tag, getTags, createTag, deleteTag, syncTagsFromProxmox, pushTagsToServer } from '@/app/actions/tags';
+import { useTranslations } from 'next-intl';
+import { Tag, getTags, createTag, deleteTag, syncTagsFromProxmox, pushTagsToServer } from '@/lib/actions/tags';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -22,6 +23,7 @@ function getContrastColor(hexColor: string) {
 }
 
 export default function TagManagement({ serverId }: { serverId: number }) {
+    const t = useTranslations('tagManagement');
     const [tags, setTags] = useState<Tag[]>([]);
     const [loading, setLoading] = useState(false);
     const [newTagName, setNewTagName] = useState('');
@@ -39,7 +41,7 @@ export default function TagManagement({ serverId }: { serverId: number }) {
             const fetchedTags = await getTags();
             setTags(fetchedTags);
         } catch (e) {
-            toast.error('Fehler beim Laden der Tags');
+            toast.error(t('errorLoading'));
         } finally {
             setLoading(false);
         }
@@ -69,23 +71,23 @@ export default function TagManagement({ serverId }: { serverId: number }) {
             if (res.success && res.tag) {
                 setTags([...tags, res.tag]);
                 setNewTagName('');
-                toast.success('Tag erstellt');
+                toast.success(t('tagCreated'));
             } else {
-                toast.error(res.error || 'Fehler beim Erstellen');
+                toast.error(res.error || t('errorCreating'));
             }
         } catch (e) {
-            toast.error('Fehler beim Erstellen');
+            toast.error(t('errorCreating'));
         }
     }
 
     async function handleDeleteTag(id: number) {
-        if (!confirm('Tag löschen? Dies entfernt nur den lokalen Eintrag.')) return;
+        if (!confirm(t('deleteConfirm'))) return;
         try {
             await deleteTag(id);
             setTags(tags.filter(t => t.id !== id));
-            toast.success('Tag gelöscht');
+            toast.success(t('tagDeleted'));
         } catch (e) {
-            toast.error('Fehler beim Löschen');
+            toast.error(t('errorDeleting'));
         }
     }
 
@@ -126,7 +128,7 @@ export default function TagManagement({ serverId }: { serverId: number }) {
         <Card className="w-full">
             <CardHeader className="pb-3">
                 <CardTitle className="flex justify-between items-center">
-                    <span>Tag Management</span>
+                    <span>{t('title')}</span>
                     <div className="flex gap-2">
                         <Button variant="outline" size="sm" onClick={handleSync} disabled={syncing}>
                             {syncing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
@@ -139,15 +141,15 @@ export default function TagManagement({ serverId }: { serverId: number }) {
                     </div>
                 </CardTitle>
                 <CardDescription>
-                    Tags lokal verwalten und mit Proxmox synchronisieren
+                    {t('description')}
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                {/* Create New Tag */}
+                {/* Create Tag */}
                 <div className="flex gap-2 items-end">
                     <div className="flex-1">
                         <Input
-                            placeholder="Neuer Tag (z.B. production)"
+                            placeholder={t('newTagPlaceholder')}
                             value={newTagName}
                             onChange={(e) => setNewTagName(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleCreateTag()}
@@ -168,7 +170,7 @@ export default function TagManagement({ serverId }: { serverId: number }) {
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                        placeholder="Tags suchen..."
+                        placeholder={t('searchPlaceholder')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="pl-9"

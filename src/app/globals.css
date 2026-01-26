@@ -186,3 +186,21 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom Scrollbar for Server Visualization */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+
+/* Remove hover effect - keep scrollbar consistent */
