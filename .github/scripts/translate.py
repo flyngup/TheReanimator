@@ -93,7 +93,7 @@ def main():
             src_data = json.load(f)
 
         print(f"📦 Processing: {src_file}")
-        print(f"   Total keys: {len(src_data)}")
+        print(f"   Total namespaces: {len(src_data)}")
 
         for dl_lang, lang_code in TARGET_LANGS.items():
             target_file = LOCALES_DIR / f"{lang_code}.json"
@@ -105,31 +105,54 @@ def main():
             except:
                 target_data = {}
 
-            # Find missing keys
-            missing_keys = [
-                (key, text)
-                for key, text in src_data.items()
-                if key not in target_data or not target_data[key]
-            ]
+            # Find missing keys recursively in nested structure
+            def find_missing_keys(src_obj, tgt_obj, path=""):
+                missing = []
+                if isinstance(src_obj, dict):
+                    for key, value in src_obj.items():
+                        current_path = f"{path}.{key}" if path else key
+                        if isinstance(value, (str, int, float, bool)):
+                            if key not in tgt_obj or not tgt_obj[key]:
+                                missing.append((current_path, key, value, path, tgt_obj))
+                        elif isinstance(value, dict):
+                            tgt_child = tgt_obj.get(key, {}) if isinstance(tgt_obj, dict) else {}
+                            missing.extend(find_missing_keys(value, tgt_child, current_path))
+                return missing
 
-            if not missing_keys:
+            missing_items = find_missing_keys(src_data, target_data)
+
+            if not missing_items:
                 print(f"   {lang_code}: ✅ All keys present")
                 continue
 
-            print(f"   {lang_code}: Translating {len(missing_keys)} missing keys")
+            print(f"   {lang_code}: Translating {len(missing_items)} missing keys")
 
-            # Translate missing keys
-            for key, text in missing_keys:
-                translated = translate_text(text, dl_lang)
-                target_data[key] = translated
-                print(f"      ✓ {key}")
+            # Translate and insert missing keys
+            for full_path, key, value, parent_path, parent_obj in missing_items:
+                translated = translate_text(str(value), dl_lang)
+
+                # Build nested structure and set value
+                if parent_path:
+                    parts = parent_path.split('.')
+                    current = target_data
+                    for part in parts:
+                        if part not in current:
+                            current[part] = {}
+                        if not isinstance(current[part], dict):
+                            current[part] = {}
+                        current = current[part]
+                    current[key] = translated
+                else:
+                    target_data[key] = translated
+
+                print(f"      ✓ {full_path}")
                 total_translations += 1
 
             # Save updated translations
             with open(target_file, "w", encoding="utf-8") as f:
                 json.dump(target_data, f, ensure_ascii=False, indent=2)
 
-            print(f"   {lang_code}: ✅ Saved {len(target_data)} keys")
+            print(f"   {lang_code}: ✅ Saved translations")
 
         print()
 
